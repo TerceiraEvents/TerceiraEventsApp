@@ -1,9 +1,9 @@
 import { load as yamlLoad } from 'js-yaml';
 
 const SPECIAL_EVENTS_URL =
-  'https://raw.githubusercontent.com/AngraEvents/Angraevents.github.io/main/_data/special_events.yml';
+  'https://raw.githubusercontent.com/TerceiraEvents/Angraevents.github.io/main/_data/special_events.yml';
 const WEEKLY_EVENTS_URL =
-  'https://raw.githubusercontent.com/AngraEvents/Angraevents.github.io/main/_data/weekly.yml';
+  'https://raw.githubusercontent.com/TerceiraEvents/Angraevents.github.io/main/_data/weekly.yml';
 
 let cachedSpecialEvents = null;
 let cachedWeeklyEvents = null;

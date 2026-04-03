@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Angra Events",
-    "slug": "AngraEventsApp",
+    "name": "Terceira Events",
+    "slug": "TerceiraEventsApp",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -14,7 +14,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.angraevents.app"
+      "bundleIdentifier": "com.terceiraevents.app"
     },
     "android": {
       "adaptiveIcon": {
@@ -22,7 +22,7 @@
         "backgroundColor": "#2d5016"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.angraevents.app"
+      "package": "com.terceiraevents.app"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -30,11 +30,11 @@
     "plugins": [
       "expo-web-browser"
     ],
+    "owner": "chrisrackauckas",
     "extra": {
       "eas": {
-        "projectId": "7df58899-de11-4c3e-8bfa-2e0e0eade507"
+        "projectId": "fc3bd113-0884-4800-b6f0-7adcf97f0990"
       }
-    },
-    "owner": "chrisrackauckas"
+    }
   }
 }

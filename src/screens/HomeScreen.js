@@ -13,8 +13,8 @@ export default function HomeScreen({ navigation }) {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.hero}>
-        <Text style={styles.title}>Angra Events</Text>
-        <Text style={styles.subtitle}>{"What's happening in Angra do Heroísmo"}</Text>
+        <Text style={styles.title}>Terceira Events</Text>
+        <Text style={styles.subtitle}>{"What's happening on Terceira Island"}</Text>
       </View>
 
       <View style={styles.intro}>
@@ -22,7 +22,7 @@ export default function HomeScreen({ navigation }) {
           {"Terceira is known as \"the amusement park\" of the Azores \u2014 famous for its bullfights on a rope, vibrant festivals, live music, and cultural events year-round."}
         </Text>
         <Text style={styles.introText}>
-          {"This app helps you discover what's happening in Angra do Heroísmo, from weekly karaoke nights to special concerts and festivals."}
+          {"This app helps you discover what's happening across Terceira, from weekly karaoke nights to special concerts and festivals."}
         </Text>
       </View>
 

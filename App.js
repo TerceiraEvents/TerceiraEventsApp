@@ -53,7 +53,7 @@ export default function App() {
         <Tab.Screen
           name="Home"
           component={HomeScreen}
-          options={{ title: 'Angra Events', headerShown: false }}
+          options={{ title: 'Terceira Events', headerShown: false }}
         />
         <Tab.Screen
           name="Weekly"
