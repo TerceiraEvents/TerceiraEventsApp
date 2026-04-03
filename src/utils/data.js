@@ -39,9 +39,11 @@ export function clearCache() {
   cachedWeeklyEvents = null;
 }
 
-export function parseEventDate(dateStr) {
-  if (!dateStr) return null;
-  const d = new Date(dateStr + 'T00:00:00');
+export function parseEventDate(dateValue) {
+  if (!dateValue) return null;
+  // js-yaml auto-parses YAML dates into Date objects
+  if (dateValue instanceof Date) return dateValue;
+  const d = new Date(dateValue + 'T00:00:00');
   return isNaN(d.getTime()) ? null : d;
 }
 
