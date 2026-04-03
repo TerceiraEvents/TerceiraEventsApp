@@ -15,8 +15,7 @@ export default function ResourcesScreen() {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.header}>Other Resources</Text>
       <Text style={styles.intro}>
-        We're not the only game in town. Here are other great ways to find out
-        what's happening on Terceira.
+        {"We're not the only game in town. Here are other great ways to find out what's happening on Terceira."}
       </Text>
 
       {resources.map((r) => (
@@ -41,8 +40,7 @@ export default function ResourcesScreen() {
 
       <Text style={styles.sectionTitle}>Instagram Accounts to Follow</Text>
       <Text style={styles.sectionIntro}>
-        Follow these for event announcements, flyers, and what's happening
-        around Angra.
+        {"Follow these for event announcements, flyers, and what's happening around Angra."}
       </Text>
       <View style={styles.socialList}>
         {instagramAccounts.map((a) => (
