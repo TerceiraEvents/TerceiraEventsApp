@@ -29,6 +29,12 @@
     },
     "plugins": [
       "expo-web-browser"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "7df58899-de11-4c3e-8bfa-2e0e0eade507"
+      }
+    },
+    "owner": "chrisrackauckas"
   }
 }
