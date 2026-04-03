@@ -8,20 +8,42 @@ import {
   RefreshControl,
 } from 'react-native';
 import { colors, fonts } from '../utils/theme';
-import { fetchSpecialEvents, isThisWeek, isUpcoming, clearCache } from '../utils/data';
+import {
+  fetchSpecialEvents,
+  fetchWeeklyEvents,
+  isThisWeek,
+  isUpcoming,
+  clearCache,
+} from '../utils/data';
+import {
+  getRemindedEvents,
+  setEventReminder,
+  removeEventReminder,
+  makeEventKey,
+} from '../utils/storage';
+import {
+  requestPermissions,
+  rescheduleAllNotifications,
+  scheduleOneReminder,
+} from '../utils/notifications';
 import EventCard from '../components/EventCard';
 import LoadingView from '../components/LoadingView';
 
-export default function SpecialEventsScreen({ navigation }) {
+export default function SpecialEventsScreen() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState('thisWeek');
+  const [remindedKeys, setRemindedKeys] = useState(new Set());
 
   const loadEvents = useCallback(async (forceRefresh = false) => {
     if (forceRefresh) clearCache();
-    const all = await fetchSpecialEvents();
+    const [all, reminded] = await Promise.all([
+      fetchSpecialEvents(),
+      getRemindedEvents(),
+    ]);
     setEvents(all);
+    setRemindedKeys(reminded);
   }, []);
 
   useEffect(() => {
@@ -31,10 +53,45 @@ export default function SpecialEventsScreen({ navigation }) {
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await loadEvents(true);
+    // Reschedule notifications on refresh since data may have changed
+    const [special, weekly] = await Promise.all([
+      fetchSpecialEvents(),
+      fetchWeeklyEvents(),
+    ]);
+    await rescheduleAllNotifications(special, weekly);
     setRefreshing(false);
   }, [loadEvents]);
 
+  const handleToggleReminder = useCallback(
+    async (event) => {
+      const key = makeEventKey(event);
+      const isCurrentlyReminded = remindedKeys.has(key);
+
+      if (!isCurrentlyReminded) {
+        const granted = await requestPermissions();
+        if (!granted) return;
+        await setEventReminder(event);
+        await scheduleOneReminder(event);
+      } else {
+        await removeEventReminder(event);
+        // Full reschedule to remove the cancelled notification
+        const [special, weekly] = await Promise.all([
+          fetchSpecialEvents(),
+          fetchWeeklyEvents(),
+        ]);
+        await rescheduleAllNotifications(special, weekly);
+      }
+
+      // Refresh reminded keys
+      const updated = await getRemindedEvents();
+      setRemindedKeys(updated);
+    },
+    [remindedKeys],
+  );
+
   if (loading) return <LoadingView />;
+
+  const showReminder = filter !== 'archive';
 
   const filtered =
     filter === 'thisWeek'
@@ -77,7 +134,13 @@ export default function SpecialEventsScreen({ navigation }) {
       <FlatList
         data={filtered}
         keyExtractor={(item, index) => `${item.date}-${item.name}-${index}`}
-        renderItem={({ item }) => <EventCard event={item} />}
+        renderItem={({ item }) => (
+          <EventCard
+            event={item}
+            reminded={remindedKeys.has(makeEventKey(item))}
+            onToggleReminder={showReminder ? handleToggleReminder : undefined}
+          />
+        )}
         contentContainerStyle={styles.list}
         refreshControl={
           <RefreshControl

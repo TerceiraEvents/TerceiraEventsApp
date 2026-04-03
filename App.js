@@ -1,15 +1,18 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Text } from 'react-native';
 import { colors } from './src/utils/theme';
+import { fetchSpecialEvents, fetchWeeklyEvents } from './src/utils/data';
+import { rescheduleAllNotifications } from './src/utils/notifications';
 
 import HomeScreen from './src/screens/HomeScreen';
 import WeeklyScreen from './src/screens/WeeklyScreen';
 import SpecialEventsScreen from './src/screens/SpecialEventsScreen';
 import VenuesScreen from './src/screens/VenuesScreen';
 import ResourcesScreen from './src/screens/ResourcesScreen';
+import SettingsScreen from './src/screens/SettingsScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -19,9 +22,26 @@ const tabIcons = {
   Events: { focused: '\u2605', unfocused: '\u2606' },
   Venues: { focused: '\u{1F4CD}', unfocused: '\u{1F4CD}' },
   Resources: { focused: '\u{1F517}', unfocused: '\u{1F517}' },
+  Settings: { focused: '\u2699\uFE0F', unfocused: '\u2699' },
 };
 
 export default function App() {
+  // On app start, refresh notification schedules in case the
+  // event data has changed since the app was last opened.
+  useEffect(() => {
+    (async () => {
+      try {
+        const [special, weekly] = await Promise.all([
+          fetchSpecialEvents(),
+          fetchWeeklyEvents(),
+        ]);
+        await rescheduleAllNotifications(special, weekly);
+      } catch {
+        // Silently ignore — notifications are best-effort
+      }
+    })();
+  }, []);
+
   return (
     <NavigationContainer>
       <StatusBar style="light" />
@@ -74,6 +94,11 @@ export default function App() {
           name="Resources"
           component={ResourcesScreen}
           options={{ title: 'More' }}
+        />
+        <Tab.Screen
+          name="Settings"
+          component={SettingsScreen}
+          options={{ title: 'Settings' }}
         />
       </Tab.Navigator>
     </NavigationContainer>

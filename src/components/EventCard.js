@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Linking } from 'react-native'
 import { colors, fonts } from '../utils/theme';
 import { parseEventDate, formatDate } from '../utils/data';
 
-export default function EventCard({ event }) {
+export default function EventCard({ event, reminded, onToggleReminder }) {
   const date = parseEventDate(event.date);
   const formatted = date ? formatDate(date) : null;
 
@@ -23,7 +23,20 @@ export default function EventCard({ event }) {
         </View>
       )}
       <View style={styles.content}>
-        <Text style={styles.name}>{event.name}</Text>
+        <View style={styles.titleRow}>
+          <Text style={[styles.name, onToggleReminder && styles.nameWithBell]}>
+            {event.name}
+          </Text>
+          {onToggleReminder && (
+            <TouchableOpacity
+              onPress={() => onToggleReminder(event)}
+              style={[styles.bellButton, reminded && styles.bellActive]}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Text style={styles.bellIcon}>{reminded ? '\u{1F514}' : '\u{1F515}'}</Text>
+            </TouchableOpacity>
+          )}
+        </View>
         {event.festival && (
           <View style={styles.festivalBadge}>
             <Text style={styles.festivalText}>{event.festival}</Text>
@@ -98,11 +111,30 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+  },
   name: {
     fontSize: fonts.sizeMedium,
     fontWeight: '700',
     color: colors.text,
     marginBottom: 2,
+    flex: 1,
+  },
+  nameWithBell: {
+    marginRight: 8,
+  },
+  bellButton: {
+    padding: 4,
+    borderRadius: 16,
+  },
+  bellActive: {
+    backgroundColor: '#fef3c7',
+  },
+  bellIcon: {
+    fontSize: 18,
   },
   festivalBadge: {
     alignSelf: 'flex-start',

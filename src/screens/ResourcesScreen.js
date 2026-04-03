@@ -35,6 +35,14 @@ export default function ResourcesScreen() {
               <Text style={styles.appStoreText}>Download on App Store</Text>
             </TouchableOpacity>
           )}
+          {r.playStore && (
+            <TouchableOpacity
+              onPress={() => Linking.openURL(r.playStore)}
+              style={styles.appStoreButton}
+            >
+              <Text style={styles.appStoreText}>Download on Google Play</Text>
+            </TouchableOpacity>
+          )}
         </TouchableOpacity>
       ))}
 
