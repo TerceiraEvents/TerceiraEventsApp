@@ -172,7 +172,7 @@ export const resources = [
     description: 'The go-to app for finding touradas à corda (rope bullfights) across Terceira. Real-time alerts, event calendar, GPS directions, and weather updates. The bull season runs from May 1 to October 15, with over 200 events per year.',
     url: 'https://bullfightfinder-landing-page.web.app/',
     appStore: 'https://apps.apple.com/us/app/bullfight-finder/id1659230479',
-    playStore: 'https://play.google.com/store/apps/details?id=com.bullfightfinder.app',
+    playStore: 'https://play.google.com/store/apps/details?id=com.eventfinder.bullfightfinderandroid',
   },
   {
     name: 'Câmara Municipal — Eventos',
