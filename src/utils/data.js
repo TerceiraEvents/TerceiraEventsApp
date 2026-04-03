@@ -1,4 +1,4 @@
-import yaml from 'js-yaml';
+import { load as yamlLoad } from 'js-yaml';
 
 const SPECIAL_EVENTS_URL =
   'https://raw.githubusercontent.com/AngraEvents/Angraevents.github.io/main/_data/special_events.yml';
@@ -13,7 +13,7 @@ export async function fetchSpecialEvents() {
   try {
     const response = await fetch(SPECIAL_EVENTS_URL);
     const text = await response.text();
-    cachedSpecialEvents = yaml.load(text) || [];
+    cachedSpecialEvents = yamlLoad(text) || [];
     return cachedSpecialEvents;
   } catch (error) {
     console.error('Failed to fetch special events:', error);
@@ -26,7 +26,7 @@ export async function fetchWeeklyEvents() {
   try {
     const response = await fetch(WEEKLY_EVENTS_URL);
     const text = await response.text();
-    cachedWeeklyEvents = yaml.load(text) || [];
+    cachedWeeklyEvents = yamlLoad(text) || [];
     return cachedWeeklyEvents;
   } catch (error) {
     console.error('Failed to fetch weekly events:', error);
