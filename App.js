@@ -1,8 +1,9 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Text } from 'react-native';
+import * as Notifications from 'expo-notifications';
 import { colors } from './src/utils/theme';
 import { fetchSpecialEvents, fetchWeeklyEvents } from './src/utils/data';
 import { rescheduleAllNotifications } from './src/utils/notifications';
@@ -25,10 +26,18 @@ const tabIcons = {
   Settings: { focused: '\u2699\uFE0F', unfocused: '\u2699' },
 };
 
+function handleNotificationNavigation(navigation, data) {
+  if (!data) return;
+  if (data.type === 'daily_summary' || data.type === 'event_reminder') {
+    navigation.navigate('Events');
+  }
+}
+
 export default function App() {
-  // On app start, refresh notification schedules in case the
-  // event data has changed since the app was last opened.
+  const navigationRef = useRef(null);
+
   useEffect(() => {
+    // Reschedule notifications on app start
     (async () => {
       try {
         const [special, weekly] = await Promise.all([
@@ -40,10 +49,36 @@ export default function App() {
         // Silently ignore — notifications are best-effort
       }
     })();
+
+    // Handle notification tapped while app is running
+    const responseSubscription =
+      Notifications.addNotificationResponseReceivedListener((response) => {
+        const data = response.notification.request.content.data;
+        if (navigationRef.current) {
+          handleNotificationNavigation(navigationRef.current, data);
+        }
+      });
+
+    // Handle notification that opened the app from killed state
+    Notifications.getLastNotificationResponseAsync().then((response) => {
+      if (response) {
+        const data = response.notification.request.content.data;
+        // Small delay to ensure navigation is ready
+        setTimeout(() => {
+          if (navigationRef.current) {
+            handleNotificationNavigation(navigationRef.current, data);
+          }
+        }, 500);
+      }
+    });
+
+    return () => {
+      responseSubscription.remove();
+    };
   }, []);
 
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
       <StatusBar style="light" />
       <Tab.Navigator
         screenOptions={({ route }) => ({
