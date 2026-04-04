@@ -1,7 +1,16 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Linking } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Linking, Alert, Share, Platform, Image } from 'react-native';
+import * as Calendar from 'expo-calendar';
 import { colors, fonts } from '../utils/theme';
 import { parseEventDate, formatDate } from '../utils/data';
+
+const BASE_URL =
+  'https://raw.githubusercontent.com/TerceiraEvents/Angraevents.github.io/main';
+
+function getImageUrl(imagePath) {
+  // imagePath is like "/assets/images/events/festival-teatro-2026.jpg"
+  return `${BASE_URL}${imagePath}`;
+}
 
 export default function EventCard({ event, reminded, onToggleReminder }) {
   const date = parseEventDate(event.date);
@@ -10,6 +19,77 @@ export default function EventCard({ event, reminded, onToggleReminder }) {
   const openInstagram = () => {
     if (event.instagram) {
       Linking.openURL(event.instagram);
+    }
+  };
+
+  const addToCalendar = async () => {
+    try {
+      const { status } = await Calendar.requestCalendarPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission denied', 'Calendar access is required to add events.');
+        return;
+      }
+
+      const calendars = await Calendar.getCalendarsAsync(Calendar.EntityTypes.EVENT);
+      let targetCalendar;
+      if (Platform.OS === 'ios') {
+        targetCalendar = await Calendar.getDefaultCalendarAsync();
+      } else {
+        targetCalendar =
+          calendars.find((c) => c.accessLevel === 'owner' && c.isPrimary) ||
+          calendars.find((c) => c.accessLevel === 'owner') ||
+          calendars.find((c) => c.allowsModifications);
+      }
+
+      if (!targetCalendar) {
+        Alert.alert('Error', 'No writable calendar found on this device.');
+        return;
+      }
+
+      const eventDate = parseEventDate(event.date);
+      const startDate = new Date(eventDate);
+      if (event.time) {
+        const [hours, minutes] = event.time.split(':').map(Number);
+        startDate.setHours(hours, minutes, 0, 0);
+      } else {
+        startDate.setHours(12, 0, 0, 0);
+      }
+
+      const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
+
+      const location = [event.venue, event.address].filter(Boolean).join(', ');
+
+      await Calendar.createEventAsync(targetCalendar.id, {
+        title: event.name,
+        startDate,
+        endDate,
+        location,
+        notes: event.description || '',
+      });
+
+      Alert.alert('Added to calendar!', `"${event.name}" has been added to your calendar.`);
+    } catch (error) {
+      Alert.alert('Error', 'Could not add event to calendar. ' + error.message);
+    }
+  };
+
+  const shareEvent = async () => {
+    const dateLine = formatted
+      ? `${formatted.month} ${formatted.day}, ${formatted.year}`
+      : '';
+    const timePart = event.time ? ` at ${event.time}` : '';
+    const venueLine = [event.venue, event.address].filter(Boolean).join(', ');
+
+    const lines = [event.name];
+    if (dateLine) lines.push(`${dateLine}${timePart}`);
+    if (venueLine) lines.push(venueLine);
+    lines.push('');
+    lines.push('Shared from Terceira Events');
+
+    try {
+      await Share.share({ message: lines.join('\n') });
+    } catch {
+      // user cancelled or share failed
     }
   };
 
@@ -24,9 +104,25 @@ export default function EventCard({ event, reminded, onToggleReminder }) {
       )}
       <View style={styles.content}>
         <View style={styles.titleRow}>
-          <Text style={[styles.name, onToggleReminder && styles.nameWithBell]}>
+          <Text style={[styles.name, styles.nameWithButtons]}>
             {event.name}
           </Text>
+          <TouchableOpacity
+            onPress={shareEvent}
+            style={styles.shareButton}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Text style={styles.shareIcon}>{'\u{1F4E4}'}</Text>
+          </TouchableOpacity>
+          {onToggleReminder && (
+            <TouchableOpacity
+              onPress={addToCalendar}
+              style={styles.calendarButton}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Text style={styles.calendarIcon}>{'\u{1F4C5}'}</Text>
+            </TouchableOpacity>
+          )}
           {onToggleReminder && (
             <TouchableOpacity
               onPress={() => onToggleReminder(event)}
@@ -46,6 +142,14 @@ export default function EventCard({ event, reminded, onToggleReminder }) {
         {event.time && <Text style={styles.time}>{event.time}</Text>}
         {event.description && (
           <Text style={styles.description}>{event.description}</Text>
+        )}
+        {event.image && (
+          <Image
+            source={{ uri: getImageUrl(event.image) }}
+            style={styles.eventImage}
+            resizeMode="cover"
+            accessibilityLabel={`Image for ${event.name}`}
+          />
         )}
         {event.address && (
           <TouchableOpacity
@@ -123,8 +227,24 @@ const styles = StyleSheet.create({
     marginBottom: 2,
     flex: 1,
   },
-  nameWithBell: {
+  nameWithButtons: {
     marginRight: 8,
+  },
+  shareButton: {
+    padding: 4,
+    borderRadius: 16,
+    marginRight: 2,
+  },
+  shareIcon: {
+    fontSize: 18,
+  },
+  calendarButton: {
+    padding: 4,
+    borderRadius: 16,
+    marginRight: 2,
+  },
+  calendarIcon: {
+    fontSize: 18,
   },
   bellButton: {
     padding: 4,
@@ -166,6 +286,12 @@ const styles = StyleSheet.create({
     color: colors.textLight,
     marginTop: 4,
     lineHeight: 20,
+  },
+  eventImage: {
+    width: '100%',
+    height: 180,
+    borderRadius: 8,
+    marginTop: 8,
   },
   address: {
     fontSize: fonts.sizeSmall,

@@ -1,12 +1,36 @@
 import { load as yamlLoad } from 'js-yaml';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const SPECIAL_EVENTS_URL =
   'https://raw.githubusercontent.com/TerceiraEvents/Angraevents.github.io/main/_data/special_events.yml';
 const WEEKLY_EVENTS_URL =
   'https://raw.githubusercontent.com/TerceiraEvents/Angraevents.github.io/main/_data/weekly.yml';
 
+const STORAGE_KEY_SPECIAL = 'terceiraevents_cache_special';
+const STORAGE_KEY_WEEKLY = 'terceiraevents_cache_weekly';
+
 let cachedSpecialEvents = null;
 let cachedWeeklyEvents = null;
+
+async function loadFromStorage(key) {
+  try {
+    const yamlText = await AsyncStorage.getItem(key);
+    if (yamlText !== null) {
+      return yamlLoad(yamlText) || [];
+    }
+  } catch (e) {
+    console.error('Failed to read from AsyncStorage:', e);
+  }
+  return null;
+}
+
+async function saveToStorage(key, yamlText) {
+  try {
+    await AsyncStorage.setItem(key, yamlText);
+  } catch (e) {
+    console.error('Failed to write to AsyncStorage:', e);
+  }
+}
 
 export async function fetchSpecialEvents() {
   if (cachedSpecialEvents) return cachedSpecialEvents;
@@ -14,9 +38,15 @@ export async function fetchSpecialEvents() {
     const response = await fetch(SPECIAL_EVENTS_URL);
     const text = await response.text();
     cachedSpecialEvents = yamlLoad(text) || [];
+    await saveToStorage(STORAGE_KEY_SPECIAL, text);
     return cachedSpecialEvents;
   } catch (error) {
     console.error('Failed to fetch special events:', error);
+    const stored = await loadFromStorage(STORAGE_KEY_SPECIAL);
+    if (stored) {
+      cachedSpecialEvents = stored;
+      return cachedSpecialEvents;
+    }
     return [];
   }
 }
@@ -27,9 +57,15 @@ export async function fetchWeeklyEvents() {
     const response = await fetch(WEEKLY_EVENTS_URL);
     const text = await response.text();
     cachedWeeklyEvents = yamlLoad(text) || [];
+    await saveToStorage(STORAGE_KEY_WEEKLY, text);
     return cachedWeeklyEvents;
   } catch (error) {
     console.error('Failed to fetch weekly events:', error);
+    const stored = await loadFromStorage(STORAGE_KEY_WEEKLY);
+    if (stored) {
+      cachedWeeklyEvents = stored;
+      return cachedWeeklyEvents;
+    }
     return [];
   }
 }
