@@ -35,6 +35,25 @@
           "icon": "./assets/icon.png",
           "color": "#2d5016"
         }
+      ],
+      "expo-calendar",
+      [
+        "react-native-android-widget",
+        {
+          "widgets": [
+            {
+              "name": "TodayEvents",
+              "label": "Terceira Events - Today",
+              "description": "Shows today's events on Terceira Island",
+              "minWidth": "250dp",
+              "minHeight": "180dp",
+              "targetCellWidth": 3,
+              "targetCellHeight": 3,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            }
+          ]
+        }
       ]
     ],
     "owner": "chrisrackauckas",
