@@ -8,6 +8,26 @@ import {
 } from './storage';
 import { parseEventDate, formatDate } from './data';
 
+const DAILY_GREETINGS = [
+  "Good Moo-rning! Here's today's lineup:",
+  "Udderly exciting day ahead on Terceira:",
+  "Holy cow! Look what's happening today:",
+  "No bull \u2014 here's what's on today:",
+  "Herd it here first! Today's events:",
+  "Moo-ve over, boring days! Today's packed:",
+  "Don't have a cow, but today is stacked:",
+  "The steaks are high today:",
+  "Legen-dairy day ahead:",
+  "Pasture bedtime? Not with today's events:",
+  "Cud you believe today's lineup?",
+  "Terceira-sly good lineup today:",
+  "Island vibes and good times \u2014 today on Terceira:",
+  "The bull's on the rope and the night is young:",
+  "From Angra to Praia, today's got it all:",
+  "Grab the rope! Today's events are charging:",
+  "Today's lineup is on the loose:",
+];
+
 // Configure how notifications appear when app is in foreground
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -110,9 +130,14 @@ async function scheduleDailySummaries(
     // Don't schedule if the trigger time has already passed
     if (triggerDate <= new Date()) continue;
 
+    // Pick a deterministic-but-varied greeting based on the date
+    const greetingIndex =
+      (targetDate.getDate() + targetDate.getMonth() * 31) % DAILY_GREETINGS.length;
+    const greeting = DAILY_GREETINGS[greetingIndex];
+
     await Notifications.scheduleNotificationAsync({
       content: {
-        title: `${totalEvents} event${totalEvents > 1 ? 's' : ''} today`,
+        title: greeting,
         body,
         data: { type: 'daily_summary', date: targetDateStr },
       },
