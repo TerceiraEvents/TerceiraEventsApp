@@ -14,7 +14,7 @@ import {
 import { colors, fonts } from '../utils/theme';
 
 const SUBMIT_URL =
-  'https://terceira-events-submit.YOUR_SUBDOMAIN.workers.dev/submit-event';
+  'https://event-submit-worker.terceriaevents.workers.dev/submit-event';
 
 const INITIAL_FORM = {
   eventName: '',
@@ -59,14 +59,14 @@ export default function SuggestEventScreen() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          eventName: form.eventName.trim(),
+          name: form.eventName.trim(),
           date: form.date.trim(),
-          time: form.time.trim() || null,
+          time: form.time.trim() || undefined,
           venue: form.venue.trim(),
-          address: form.address.trim() || null,
-          description: form.description.trim() || null,
-          instagramLink: form.instagramLink.trim() || null,
-          submitterName: form.submitterName.trim() || null,
+          address: form.address.trim() || undefined,
+          description: form.description.trim() || undefined,
+          instagram: form.instagramLink.trim() || undefined,
+          submitterName: form.submitterName.trim() || undefined,
         }),
       });
 
