@@ -7,6 +7,7 @@ const buttons = [
   { title: 'Special Events', subtitle: "What's on this week", screen: 'Events' },
   { title: 'Venues', subtitle: 'Where to go', screen: 'Venues' },
   { title: 'Resources', subtitle: 'Other ways to find events', screen: 'Resources' },
+  { title: 'Suggest Event', subtitle: 'Submit an event for review', screen: 'SuggestEvent' },
 ];
 
 export default function HomeScreen({ navigation }) {

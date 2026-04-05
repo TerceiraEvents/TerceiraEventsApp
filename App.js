@@ -14,6 +14,7 @@ import SpecialEventsScreen from './src/screens/SpecialEventsScreen';
 import VenuesScreen from './src/screens/VenuesScreen';
 import ResourcesScreen from './src/screens/ResourcesScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
+import SuggestEventScreen from './src/screens/SuggestEventScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -134,6 +135,14 @@ export default function App() {
           name="Settings"
           component={SettingsScreen}
           options={{ title: 'Settings' }}
+        />
+        <Tab.Screen
+          name="SuggestEvent"
+          component={SuggestEventScreen}
+          options={{
+            title: 'Suggest Event',
+            tabBarButton: () => null,
+          }}
         />
       </Tab.Navigator>
     </NavigationContainer>
