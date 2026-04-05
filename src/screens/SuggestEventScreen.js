@@ -10,11 +10,15 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  Image,
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { colors, fonts } from '../utils/theme';
 
-const SUBMIT_URL =
-  'https://event-submit-worker.terceriaevents.workers.dev/submit-event';
+const WORKER_BASE = 'https://event-submit-worker.terceriaevents.workers.dev';
+const SUBMIT_URL = `${WORKER_BASE}/submit-event`;
+const UPLOAD_URL = `${WORKER_BASE}/upload-image`;
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
 const INITIAL_FORM = {
   eventName: '',
@@ -30,9 +34,52 @@ const INITIAL_FORM = {
 export default function SuggestEventScreen() {
   const [form, setForm] = useState(INITIAL_FORM);
   const [submitting, setSubmitting] = useState(false);
+  const [imageAsset, setImageAsset] = useState(null);
 
   const updateField = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const pickImage = async () => {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      Alert.alert(
+        'Permission Needed',
+        'Photo library access is required to attach an image.',
+      );
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: false,
+      quality: 0.8,
+    });
+    if (result.canceled) return;
+    const asset = result.assets && result.assets[0];
+    if (!asset) return;
+    if (asset.fileSize && asset.fileSize > MAX_IMAGE_BYTES) {
+      Alert.alert('Image Too Large', 'Please choose an image under 5 MB.');
+      return;
+    }
+    setImageAsset(asset);
+  };
+
+  const clearImage = () => setImageAsset(null);
+
+  const uploadImage = async (asset) => {
+    const mimeType = asset.mimeType || 'image/jpeg';
+    const fetchRes = await fetch(asset.uri);
+    const blob = await fetchRes.blob();
+    const response = await fetch(UPLOAD_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': mimeType },
+      body: blob,
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok || !result.success) {
+      throw new Error(result.error || 'Image upload failed');
+    }
+    return result.url;
   };
 
   const validate = () => {
@@ -55,6 +102,11 @@ export default function SuggestEventScreen() {
 
     setSubmitting(true);
     try {
+      let imageUrl;
+      if (imageAsset) {
+        imageUrl = await uploadImage(imageAsset);
+      }
+
       const response = await fetch(SUBMIT_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -66,6 +118,7 @@ export default function SuggestEventScreen() {
           address: form.address.trim() || undefined,
           description: form.description.trim() || undefined,
           instagram: form.instagramLink.trim() || undefined,
+          image: imageUrl,
           submitterName: form.submitterName.trim() || undefined,
         }),
       });
@@ -79,10 +132,11 @@ export default function SuggestEventScreen() {
         'Your event suggestion has been submitted for review.',
       );
       setForm(INITIAL_FORM);
-    } catch {
+      setImageAsset(null);
+    } catch (err) {
       Alert.alert(
         'Submission Failed',
-        'Could not submit your event suggestion. Please check your internet connection and try again.',
+        err.message || 'Could not submit your event suggestion. Please check your internet connection and try again.',
       );
     } finally {
       setSubmitting(false);
@@ -168,6 +222,24 @@ export default function SuggestEventScreen() {
             keyboardType="url"
             autoCapitalize="none"
           />
+
+          <View style={styles.divider} />
+          <Text style={styles.label}>Event Flyer / Poster</Text>
+          <Text style={styles.hint}>
+            Please include a flyer image whenever possible.
+          </Text>
+          {imageAsset ? (
+            <View style={styles.imagePreviewWrap}>
+              <Image source={{ uri: imageAsset.uri }} style={styles.imagePreview} />
+              <TouchableOpacity onPress={clearImage} style={styles.removeImageButton}>
+                <Text style={styles.removeImageText}>Remove</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <TouchableOpacity style={styles.pickImageButton} onPress={pickImage}>
+              <Text style={styles.pickImageText}>Choose Image</Text>
+            </TouchableOpacity>
+          )}
 
           <View style={styles.divider} />
           <FormField
@@ -326,5 +398,42 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
     marginTop: 16,
     lineHeight: 18,
+  },
+  hint: {
+    fontSize: fonts.sizeSmall,
+    color: colors.textMuted,
+    marginBottom: 8,
+  },
+  pickImageButton: {
+    backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 8,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  pickImageText: {
+    fontSize: fonts.sizeBody,
+    color: colors.primary,
+    fontWeight: '600',
+  },
+  imagePreviewWrap: {
+    alignItems: 'center',
+  },
+  imagePreview: {
+    width: '100%',
+    height: 200,
+    borderRadius: 8,
+    resizeMode: 'cover',
+  },
+  removeImageButton: {
+    marginTop: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+  },
+  removeImageText: {
+    fontSize: fonts.sizeSmall,
+    color: colors.error,
+    fontWeight: '600',
   },
 });

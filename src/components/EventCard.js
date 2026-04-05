@@ -8,7 +8,9 @@ const BASE_URL =
   'https://raw.githubusercontent.com/TerceiraEvents/Angraevents.github.io/main';
 
 function getImageUrl(imagePath) {
-  // imagePath is like "/assets/images/events/festival-teatro-2026.jpg"
+  // Full URL (e.g. from R2 uploads): use as-is
+  if (/^https?:\/\//i.test(imagePath)) return imagePath;
+  // Relative path on the website repo: prepend GitHub raw base
   return `${BASE_URL}${imagePath}`;
 }
 
