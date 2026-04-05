@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Linking, Alert, Share, Platform, Image } from 'react-native';
 import * as Calendar from 'expo-calendar';
 import { colors, fonts } from '../utils/theme';
 import { parseEventDate, formatDate } from '../utils/data';
+import FlagEventModal from './FlagEventModal';
 
 const BASE_URL =
   'https://raw.githubusercontent.com/TerceiraEvents/Angraevents.github.io/main';
@@ -15,6 +16,7 @@ function getImageUrl(imagePath) {
 }
 
 export default function EventCard({ event, reminded, onToggleReminder }) {
+  const [flagVisible, setFlagVisible] = useState(false);
   const date = parseEventDate(event.date);
   const formatted = date ? formatDate(date) : null;
 
@@ -125,6 +127,13 @@ export default function EventCard({ event, reminded, onToggleReminder }) {
               <Text style={styles.calendarIcon}>{'\u{1F4C5}'}</Text>
             </TouchableOpacity>
           )}
+          <TouchableOpacity
+            onPress={() => setFlagVisible(true)}
+            style={styles.flagButton}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Text style={styles.flagIcon}>{'\u{1F6A9}'}</Text>
+          </TouchableOpacity>
           {onToggleReminder && (
             <TouchableOpacity
               onPress={() => onToggleReminder(event)}
@@ -170,6 +179,11 @@ export default function EventCard({ event, reminded, onToggleReminder }) {
           </TouchableOpacity>
         )}
       </View>
+      <FlagEventModal
+        visible={flagVisible}
+        event={event}
+        onClose={() => setFlagVisible(false)}
+      />
     </View>
   );
 }
@@ -246,6 +260,14 @@ const styles = StyleSheet.create({
     marginRight: 2,
   },
   calendarIcon: {
+    fontSize: 18,
+  },
+  flagButton: {
+    padding: 4,
+    borderRadius: 16,
+    marginRight: 2,
+  },
+  flagIcon: {
     fontSize: 18,
   },
   bellButton: {
