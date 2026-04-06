@@ -25,7 +25,8 @@
         "backgroundColor": "#2d5016"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.terceiraevents.app"
+      "package": "com.terceiraevents.app",
+      "versionCode": 2
     },
     "web": {
       "favicon": "./assets/favicon.png"
