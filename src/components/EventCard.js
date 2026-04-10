@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Linking, Alert, Share, Platfo
 import * as Calendar from 'expo-calendar';
 import { colors, fonts } from '../utils/theme';
 import { parseEventDate, formatDate } from '../utils/data';
+import { normalizeEventTags, getTagMeta } from '../utils/tags';
 import FlagEventModal from './FlagEventModal';
 
 const BASE_URL =
@@ -19,6 +20,7 @@ export default function EventCard({ event, reminded, onToggleReminder }) {
   const [flagVisible, setFlagVisible] = useState(false);
   const date = parseEventDate(event.date);
   const formatted = date ? formatDate(date) : null;
+  const tagSlugs = normalizeEventTags(event);
 
   const openInstagram = () => {
     if (event.instagram) {
@@ -144,21 +146,38 @@ export default function EventCard({ event, reminded, onToggleReminder }) {
             </TouchableOpacity>
           )}
         </View>
-        <View style={styles.badgeRow}>
-          {event.festival && (
-            <View style={styles.festivalBadge}>
-              <Text style={styles.festivalText}>{event.festival}</Text>
-            </View>
-          )}
-          {event.kid_friendly && (
-            <View
-              style={styles.kidFriendlyBadge}
-              accessibilityLabel="Kid friendly event"
-            >
-              <Text style={styles.kidFriendlyText}>👶 Kid Friendly</Text>
-            </View>
-          )}
-        </View>
+        {(event.festival || tagSlugs.length > 0) && (
+          <View style={styles.badgeRow}>
+            {event.festival && (
+              <View style={styles.festivalBadge}>
+                <Text style={styles.festivalText}>{event.festival}</Text>
+              </View>
+            )}
+            {tagSlugs.map((slug) => {
+              const meta = getTagMeta(slug);
+              const isKid = slug === 'kid-friendly';
+              return (
+                <View
+                  key={slug}
+                  style={[
+                    styles.tagBadge,
+                    isKid && styles.kidFriendlyBadge,
+                  ]}
+                  accessibilityLabel={`${meta.label} tag`}
+                >
+                  <Text
+                    style={[
+                      styles.tagBadgeText,
+                      isKid && styles.kidFriendlyText,
+                    ]}
+                  >
+                    {meta.emoji} {meta.label}
+                  </Text>
+                </View>
+              );
+            })}
+          </View>
+        )}
         <Text style={styles.venue}>{event.venue}</Text>
         {event.time && <Text style={styles.time}>{event.time}</Text>}
         {event.description && (
@@ -308,18 +327,26 @@ const styles = StyleSheet.create({
     fontSize: fonts.sizeSmall,
     fontWeight: '600',
   },
-  kidFriendlyBadge: {
+  tagBadge: {
     alignSelf: 'flex-start',
-    backgroundColor: colors.kidFriendlyBadge,
-    borderRadius: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
+    backgroundColor: '#f4efe0',
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
     borderWidth: 1,
+    borderColor: '#e0d6b8',
+  },
+  tagBadgeText: {
+    color: '#4a3f1a',
+    fontSize: fonts.sizeSmall,
+    fontWeight: '600',
+  },
+  kidFriendlyBadge: {
+    backgroundColor: colors.kidFriendlyBadge,
     borderColor: colors.kidFriendlyBadgeDark,
   },
   kidFriendlyText: {
     color: colors.kidFriendlyBadgeText,
-    fontSize: fonts.sizeSmall,
     fontWeight: '700',
   },
   venue: {

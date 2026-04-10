@@ -12,6 +12,7 @@ import {
   Platform,
 } from 'react-native';
 import { colors, fonts } from '../utils/theme';
+import { TAGS } from '../utils/tags';
 
 const SUBMIT_URL =
   'https://event-submit-worker.terceriaevents.workers.dev/submit-event';
@@ -26,7 +27,7 @@ const INITIAL_FORM = {
   instagramLink: '',
   imageUrl: '',
   submitterName: '',
-  kidFriendly: false,
+  tags: [],
 };
 
 export default function SuggestEventScreen() {
@@ -35,6 +36,16 @@ export default function SuggestEventScreen() {
 
   const updateField = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const toggleTag = (slug) => {
+    setForm((prev) => {
+      const has = prev.tags.includes(slug);
+      return {
+        ...prev,
+        tags: has ? prev.tags.filter((t) => t !== slug) : [...prev.tags, slug],
+      };
+    });
   };
 
   const validate = () => {
@@ -69,7 +80,7 @@ export default function SuggestEventScreen() {
           description: form.description.trim() || undefined,
           instagram: form.instagramLink.trim() || undefined,
           image: form.imageUrl.trim() || undefined,
-          kid_friendly: form.kidFriendly ? true : undefined,
+          tags: form.tags.length ? form.tags : undefined,
           submitterName: form.submitterName.trim() || undefined,
         }),
       });
@@ -187,34 +198,36 @@ export default function SuggestEventScreen() {
           </Text>
 
           <View style={styles.divider} />
-          <TouchableOpacity
-            style={[
-              styles.kidFriendlyToggle,
-              form.kidFriendly && styles.kidFriendlyToggleActive,
-            ]}
-            onPress={() => updateField('kidFriendly', !form.kidFriendly)}
-            activeOpacity={0.7}
-            accessibilityRole="switch"
-            accessibilityState={{ checked: form.kidFriendly }}
-          >
-            <View
-              style={[
-                styles.checkbox,
-                form.kidFriendly && styles.checkboxChecked,
-              ]}
-            >
-              {form.kidFriendly ? <Text style={styles.checkmark}>✓</Text> : null}
+          <View>
+            <Text style={styles.label}>Tags</Text>
+            <Text style={styles.hint}>
+              Pick all that apply. These help visitors filter the calendar.
+            </Text>
+            <View style={styles.tagChipsRow}>
+              {TAGS.map((t) => {
+                const active = form.tags.includes(t.slug);
+                return (
+                  <TouchableOpacity
+                    key={t.slug}
+                    style={[styles.tagChip, active && styles.tagChipActive]}
+                    onPress={() => toggleTag(t.slug)}
+                    activeOpacity={0.7}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: active }}
+                  >
+                    <Text
+                      style={[
+                        styles.tagChipText,
+                        active && styles.tagChipTextActive,
+                      ]}
+                    >
+                      {t.emoji} {t.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
-            <View style={styles.kidFriendlyLabelWrap}>
-              <Text style={styles.kidFriendlyLabel}>
-                👶 Kid Friendly
-              </Text>
-              <Text style={styles.hint}>
-                Check if the event is suitable for children (family screenings,
-                parades, daytime shows, etc.)
-              </Text>
-            </View>
-          </TouchableOpacity>
+          </View>
 
           <View style={styles.divider} />
           <FormField
@@ -379,42 +392,31 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     marginTop: 4,
   },
-  kidFriendlyToggle: {
+  tagChipsRow: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 12,
-    paddingVertical: 4,
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 8,
   },
-  kidFriendlyToggleActive: {
-    // visual feedback handled by checkbox state
-  },
-  checkbox: {
-    width: 24,
-    height: 24,
-    borderRadius: 6,
-    borderWidth: 2,
-    borderColor: colors.kidFriendlyBadgeDark,
+  tagChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 999,
     backgroundColor: colors.background,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 2,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
-  checkboxChecked: {
-    backgroundColor: colors.kidFriendlyBadge,
-    borderColor: colors.kidFriendlyBadgeDark,
+  tagChipActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
-  checkmark: {
-    color: colors.kidFriendlyBadgeText,
-    fontSize: 16,
-    fontWeight: '900',
-    lineHeight: 18,
+  tagChipText: {
+    fontSize: fonts.sizeSmall,
+    color: colors.textLight,
+    fontWeight: '600',
   },
-  kidFriendlyLabelWrap: {
-    flex: 1,
-  },
-  kidFriendlyLabel: {
-    fontSize: fonts.sizeBody,
+  tagChipTextActive: {
+    color: colors.white,
     fontWeight: '700',
-    color: colors.text,
   },
 });
