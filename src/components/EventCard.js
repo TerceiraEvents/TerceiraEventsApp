@@ -144,11 +144,21 @@ export default function EventCard({ event, reminded, onToggleReminder }) {
             </TouchableOpacity>
           )}
         </View>
-        {event.festival && (
-          <View style={styles.festivalBadge}>
-            <Text style={styles.festivalText}>{event.festival}</Text>
-          </View>
-        )}
+        <View style={styles.badgeRow}>
+          {event.festival && (
+            <View style={styles.festivalBadge}>
+              <Text style={styles.festivalText}>{event.festival}</Text>
+            </View>
+          )}
+          {event.kid_friendly && (
+            <View
+              style={styles.kidFriendlyBadge}
+              accessibilityLabel="Kid friendly event"
+            >
+              <Text style={styles.kidFriendlyText}>👶 Kid Friendly</Text>
+            </View>
+          )}
+        </View>
         <Text style={styles.venue}>{event.venue}</Text>
         {event.time && <Text style={styles.time}>{event.time}</Text>}
         {event.description && (
@@ -280,18 +290,37 @@ const styles = StyleSheet.create({
   bellIcon: {
     fontSize: 18,
   },
+  badgeRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginBottom: 4,
+  },
   festivalBadge: {
     alignSelf: 'flex-start',
     backgroundColor: colors.festivalBadge,
     borderRadius: 4,
     paddingHorizontal: 8,
     paddingVertical: 2,
-    marginBottom: 4,
   },
   festivalText: {
     color: colors.white,
     fontSize: fonts.sizeSmall,
     fontWeight: '600',
+  },
+  kidFriendlyBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: colors.kidFriendlyBadge,
+    borderRadius: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderWidth: 1,
+    borderColor: colors.kidFriendlyBadgeDark,
+  },
+  kidFriendlyText: {
+    color: colors.kidFriendlyBadgeText,
+    fontSize: fonts.sizeSmall,
+    fontWeight: '700',
   },
   venue: {
     fontSize: fonts.sizeBody,

@@ -26,6 +26,7 @@ const INITIAL_FORM = {
   instagramLink: '',
   imageUrl: '',
   submitterName: '',
+  kidFriendly: false,
 };
 
 export default function SuggestEventScreen() {
@@ -68,6 +69,7 @@ export default function SuggestEventScreen() {
           description: form.description.trim() || undefined,
           instagram: form.instagramLink.trim() || undefined,
           image: form.imageUrl.trim() || undefined,
+          kid_friendly: form.kidFriendly ? true : undefined,
           submitterName: form.submitterName.trim() || undefined,
         }),
       });
@@ -183,6 +185,36 @@ export default function SuggestEventScreen() {
           <Text style={styles.hint}>
             Link to a flyer or poster image. Include whenever possible!
           </Text>
+
+          <View style={styles.divider} />
+          <TouchableOpacity
+            style={[
+              styles.kidFriendlyToggle,
+              form.kidFriendly && styles.kidFriendlyToggleActive,
+            ]}
+            onPress={() => updateField('kidFriendly', !form.kidFriendly)}
+            activeOpacity={0.7}
+            accessibilityRole="switch"
+            accessibilityState={{ checked: form.kidFriendly }}
+          >
+            <View
+              style={[
+                styles.checkbox,
+                form.kidFriendly && styles.checkboxChecked,
+              ]}
+            >
+              {form.kidFriendly ? <Text style={styles.checkmark}>✓</Text> : null}
+            </View>
+            <View style={styles.kidFriendlyLabelWrap}>
+              <Text style={styles.kidFriendlyLabel}>
+                👶 Kid Friendly
+              </Text>
+              <Text style={styles.hint}>
+                Check if the event is suitable for children (family screenings,
+                parades, daytime shows, etc.)
+              </Text>
+            </View>
+          </TouchableOpacity>
 
           <View style={styles.divider} />
           <FormField
@@ -346,5 +378,43 @@ const styles = StyleSheet.create({
     fontSize: fonts.sizeSmall,
     color: colors.textMuted,
     marginTop: 4,
+  },
+  kidFriendlyToggle: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+    paddingVertical: 4,
+  },
+  kidFriendlyToggleActive: {
+    // visual feedback handled by checkbox state
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: colors.kidFriendlyBadgeDark,
+    backgroundColor: colors.background,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 2,
+  },
+  checkboxChecked: {
+    backgroundColor: colors.kidFriendlyBadge,
+    borderColor: colors.kidFriendlyBadgeDark,
+  },
+  checkmark: {
+    color: colors.kidFriendlyBadgeText,
+    fontSize: 16,
+    fontWeight: '900',
+    lineHeight: 18,
+  },
+  kidFriendlyLabelWrap: {
+    flex: 1,
+  },
+  kidFriendlyLabel: {
+    fontSize: fonts.sizeBody,
+    fontWeight: '700',
+    color: colors.text,
   },
 });

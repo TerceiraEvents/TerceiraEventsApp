@@ -114,6 +114,36 @@ export function isThisWeek(event) {
   return d >= today && d < weekFromNow;
 }
 
+// Returns true when the event matches a free-text query against its name,
+// venue, and description. An empty or whitespace-only query always matches.
+export function matchesSearchQuery(event, query) {
+  if (!query) return true;
+  const q = String(query).trim().toLowerCase();
+  if (!q) return true;
+  const name = (event?.name || '').toLowerCase();
+  const venue = (event?.venue || '').toLowerCase();
+  const desc = (event?.description || '').toLowerCase();
+  return (
+    name.indexOf(q) !== -1 ||
+    venue.indexOf(q) !== -1 ||
+    desc.indexOf(q) !== -1
+  );
+}
+
+// Applies the optional kid-friendly toggle and search query to a list of
+// events. Pure function — no dependency on the current date, so callers
+// should pre-filter by thisWeek/upcoming/archive before calling this.
+export function applyEventFilters(events, { search = '', kidFriendlyOnly = false } = {}) {
+  let result = events;
+  if (kidFriendlyOnly) {
+    result = result.filter((e) => Boolean(e?.kid_friendly));
+  }
+  if (search && String(search).trim()) {
+    result = result.filter((e) => matchesSearchQuery(e, search));
+  }
+  return result;
+}
+
 export const venues = [
   {
     name: 'Tasca do Camões',
