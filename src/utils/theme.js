@@ -12,6 +12,10 @@ export const colors = {
   white: '#ffffff',
   error: '#c0392b',
   festivalBadge: '#8b5e3c',
+  kidFriendlyBadge: '#f5a623',
+  kidFriendlyBadgeDark: '#d68f10',
+  kidFriendlyBadgeText: '#3a2a00',
+  kidFriendlyBadgeBg: '#fff8ea',
 };
 
 export const fonts = {

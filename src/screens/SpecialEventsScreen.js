@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   FlatList,
   TouchableOpacity,
   RefreshControl,
+  TextInput,
 } from 'react-native';
 import { colors, fonts } from '../utils/theme';
 import {
@@ -14,6 +15,7 @@ import {
   isThisWeek,
   isUpcoming,
   clearCache,
+  applyEventFilters,
 } from '../utils/data';
 import {
   getRemindedEvents,
@@ -35,6 +37,8 @@ export default function SpecialEventsScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState('thisWeek');
   const [remindedKeys, setRemindedKeys] = useState(new Set());
+  const [search, setSearch] = useState('');
+  const [kidFriendlyOnly, setKidFriendlyOnly] = useState(false);
 
   const loadEvents = useCallback(async (forceRefresh = false) => {
     if (forceRefresh) clearCache();
@@ -89,16 +93,17 @@ export default function SpecialEventsScreen() {
     [remindedKeys],
   );
 
+  const filtered = useMemo(() => {
+    let base;
+    if (filter === 'thisWeek') base = events.filter(isThisWeek).reverse();
+    else if (filter === 'upcoming') base = events.filter(isUpcoming).reverse();
+    else base = events.filter((e) => !isUpcoming(e));
+    return applyEventFilters(base, { search, kidFriendlyOnly });
+  }, [events, filter, search, kidFriendlyOnly]);
+
   if (loading) return <LoadingView />;
 
   const showReminder = filter !== 'archive';
-
-  const filtered =
-    filter === 'thisWeek'
-      ? events.filter(isThisWeek).reverse()
-      : filter === 'upcoming'
-        ? events.filter(isUpcoming).reverse()
-        : events.filter((e) => !isUpcoming(e));
 
   return (
     <View style={styles.container}>
@@ -129,6 +134,34 @@ export default function SpecialEventsScreen() {
             </TouchableOpacity>
           ))}
         </View>
+        <TextInput
+          style={styles.searchInput}
+          value={search}
+          onChangeText={setSearch}
+          placeholder="Search by name, venue, or description…"
+          placeholderTextColor={colors.textMuted}
+          returnKeyType="search"
+          clearButtonMode="while-editing"
+          autoCorrect={false}
+        />
+        <TouchableOpacity
+          style={[
+            styles.kidToggle,
+            kidFriendlyOnly && styles.kidToggleActive,
+          ]}
+          onPress={() => setKidFriendlyOnly((v) => !v)}
+          accessibilityRole="switch"
+          accessibilityState={{ checked: kidFriendlyOnly }}
+        >
+          <Text
+            style={[
+              styles.kidToggleText,
+              kidFriendlyOnly && styles.kidToggleTextActive,
+            ]}
+          >
+            👶 Kid Friendly only
+          </Text>
+        </TouchableOpacity>
       </View>
 
       <FlatList
@@ -153,9 +186,11 @@ export default function SpecialEventsScreen() {
         ListEmptyComponent={
           <View style={styles.empty}>
             <Text style={styles.emptyText}>
-              {filter === 'thisWeek'
-                ? 'No special events this week.'
-                : 'No events to show.'}
+              {search || kidFriendlyOnly
+                ? 'No events match your search.'
+                : filter === 'thisWeek'
+                  ? 'No special events this week.'
+                  : 'No events to show.'}
             </Text>
           </View>
         }
@@ -184,6 +219,41 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 8,
     marginBottom: 8,
+  },
+  searchInput: {
+    backgroundColor: colors.card,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    fontSize: fonts.sizeBody,
+    color: colors.text,
+    marginTop: 4,
+    marginBottom: 8,
+  },
+  kidToggle: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginBottom: 4,
+  },
+  kidToggleActive: {
+    backgroundColor: colors.kidFriendlyBadge,
+    borderColor: colors.kidFriendlyBadgeDark,
+  },
+  kidToggleText: {
+    fontSize: fonts.sizeSmall,
+    color: colors.textLight,
+    fontWeight: '600',
+  },
+  kidToggleTextActive: {
+    color: colors.kidFriendlyBadgeText,
+    fontWeight: '700',
   },
   filterButton: {
     paddingHorizontal: 14,
