@@ -1,6 +1,8 @@
 import { load as yamlLoad } from 'js-yaml';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import { normalizeEventTags } from './tags.js';
+
 const SPECIAL_EVENTS_URL =
   'https://raw.githubusercontent.com/TerceiraEvents/Angraevents.github.io/main/_data/special_events.yml';
 const WEEKLY_EVENTS_URL =
@@ -130,13 +132,22 @@ export function matchesSearchQuery(event, query) {
   );
 }
 
-// Applies the optional kid-friendly toggle and search query to a list of
-// events. Pure function — no dependency on the current date, so callers
-// should pre-filter by thisWeek/upcoming/archive before calling this.
-export function applyEventFilters(events, { search = '', kidFriendlyOnly = false } = {}) {
+// Returns true when the event has the given tag slug. Handles both the
+// `tags: [...]` array form and the legacy `kid_friendly: true` boolean.
+// A falsy selectedTag matches every event.
+export function matchesTag(event, selectedTag) {
+  if (!selectedTag) return true;
+  const tags = normalizeEventTags(event);
+  return tags.indexOf(selectedTag) !== -1;
+}
+
+// Applies the optional tag picker and search query to a list of events.
+// Pure function — no dependency on the current date, so callers should
+// pre-filter by thisWeek/upcoming/archive before calling this.
+export function applyEventFilters(events, { search = '', selectedTag = '' } = {}) {
   let result = events;
-  if (kidFriendlyOnly) {
-    result = result.filter((e) => Boolean(e?.kid_friendly));
+  if (selectedTag) {
+    result = result.filter((e) => matchesTag(e, selectedTag));
   }
   if (search && String(search).trim()) {
     result = result.filter((e) => matchesSearchQuery(e, search));
