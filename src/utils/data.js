@@ -230,13 +230,13 @@ export const venues = [
   },
   {
     name: 'Praça de Toiros da Ilha Terceira',
-    address: 'Angra do Heroísmo',
+    address: 'Av. de Jácome de Bruges, 9700-102 Angra do Heroísmo',
     description: "Terceira's bullring, home to the Arraial Taurino and traditional bullfighting festivals during the season (May–October).",
-    mapQuery: 'Praça+de+Toiros+Angra+do+Heroísmo',
+    mapQuery: 'Praça+de+Toiros+Ilha+Terceira',
   },
   {
     name: 'Auditório AMIT',
-    address: 'Angra do Heroísmo',
+    address: 'Av. Tenente Coronel José Agostinho 6-A, 9700-108 Angra do Heroísmo',
     description: 'Auditorium of the Musical Academy of Terceira Island. Hosts concerts, recitals, jazz courses, and choral performances.',
     mapQuery: 'Academia+Musical+Ilha+Terceira+Angra+do+Heroísmo',
     instagram: 'https://www.instagram.com/auditorioamit/',
