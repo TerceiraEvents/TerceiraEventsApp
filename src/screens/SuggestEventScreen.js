@@ -23,6 +23,7 @@ const INITIAL_FORM = {
   time: '',
   venue: '',
   address: '',
+  mapUrl: '',
   description: '',
   instagramLink: '',
   imageUrl: '',
@@ -77,6 +78,7 @@ export default function SuggestEventScreen() {
           time: form.time.trim() || undefined,
           venue: form.venue.trim(),
           address: form.address.trim() || undefined,
+          map_url: form.mapUrl.trim() || undefined,
           description: form.description.trim() || undefined,
           instagram: form.instagramLink.trim() || undefined,
           image: form.imageUrl.trim() || undefined,
@@ -164,6 +166,19 @@ export default function SuggestEventScreen() {
             onChangeText={(v) => updateField('address', v)}
             placeholder="Street address or area"
           />
+
+          <View style={styles.divider} />
+          <FormField
+            label="Google Maps Link"
+            value={form.mapUrl}
+            onChangeText={(v) => updateField('mapUrl', v)}
+            placeholder="https://maps.app.goo.gl/..."
+            keyboardType="url"
+            autoCapitalize="none"
+          />
+          <Text style={styles.hint}>
+            Optional — paste a Google Maps share link to pin the exact location.
+          </Text>
 
           <View style={styles.divider} />
           <FormField

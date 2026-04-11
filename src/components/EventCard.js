@@ -191,15 +191,22 @@ export default function EventCard({ event, reminded, onToggleReminder }) {
             accessibilityLabel={`Image for ${event.name}`}
           />
         )}
-        {event.address && (
+        {event.address && <Text style={styles.address}>{event.address}</Text>}
+        {(event.map_url || event.address || event.venue) && (
           <TouchableOpacity
-            onPress={() =>
-              Linking.openURL(
-                `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.address)}`
-              )
-            }
+            onPress={() => {
+              const url =
+                event.map_url ||
+                `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                  event.address || event.venue
+                )}`;
+              Linking.openURL(url);
+            }}
+            style={styles.mapButton}
+            accessibilityRole="link"
+            accessibilityLabel="Open location in Google Maps"
           >
-            <Text style={styles.address}>{event.address}</Text>
+            <Text style={styles.mapButtonText}>📍 Open in Maps</Text>
           </TouchableOpacity>
         )}
         {event.instagram && (
@@ -375,9 +382,18 @@ const styles = StyleSheet.create({
   },
   address: {
     fontSize: fonts.sizeSmall,
-    color: colors.primary,
+    color: colors.textLight,
+    fontStyle: 'italic',
     marginTop: 4,
-    textDecorationLine: 'underline',
+  },
+  mapButton: {
+    marginTop: 6,
+    alignSelf: 'flex-start',
+  },
+  mapButtonText: {
+    fontSize: fonts.sizeSmall,
+    fontWeight: '600',
+    color: colors.primary,
   },
   linkButton: {
     marginTop: 8,
