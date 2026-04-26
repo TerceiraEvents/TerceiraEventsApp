@@ -23,7 +23,7 @@
       },
       "edgeToEdgeEnabled": true,
       "package": "com.terceiraevents.app",
-      "versionCode": 3
+      "versionCode": 4
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -38,6 +38,15 @@
         }
       ],
       "expo-calendar",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enableProguardInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true
+          }
+        }
+      ],
       [
         "react-native-android-widget",
         {
