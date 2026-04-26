@@ -37,4 +37,5 @@ jobs:
           node-version: "22"
           cache: "npm"
       - run: npm ci
-      - run: npx eas build --platform ${{ github.event.inputs.platform || 'all' }} --profile ${{ github.event.inputs.profile || 'preview' }} --non-interactive --no-wait
+      - run: npm install --global eas-cli
+      - run: eas build --platform ${{ github.event.inputs.platform || 'all' }} --profile ${{ github.event.inputs.profile || 'preview' }} --non-interactive --no-wait
