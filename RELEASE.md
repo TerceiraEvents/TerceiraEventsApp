@@ -40,13 +40,13 @@ EAS needs a Play Console service account to upload AABs without a human in the l
 1. In **Google Play Console → Setup → API access**, create a new service account (link to a Google Cloud project if prompted).
 2. Grant the account the **Release manager** role, scoped to this app.
 3. Download the JSON key file. Treat it like a password.
-4. From your laptop in this repo:
+4. From your laptop in this repo (logged into Expo via `eas login`):
    ```sh
    eas credentials configure --platform android
    ```
-   Choose "Google Service Account Key for Play Store submissions" and upload the JSON. EAS stores it on the project and references it from `eas.json`'s `submit.production.android.serviceAccountKeyPath`.
+   Choose **Google Service Account Key for Play Store submissions** → **Upload a Google Service Account Key** → point to the JSON file you downloaded. EAS stores the credential server-side, scoped to the project.
 
-   *(Alternative: place the JSON at `./google-play-service-account.json` in the repo root and add it to `.gitignore`. EAS will pick it up by path. The credentials-configure path is preferred since it survives across machines.)*
+   `eas.json`'s submit profile intentionally does **not** set `serviceAccountKeyPath` — that field would force eas-cli to look for a local file at submit-time, which fails in CI runners. With the field omitted, eas-cli falls back to the EAS cloud-stored credential you just uploaded. This is the canonical CI path.
 
 ### 2. Seed the remote `versionCode` counter
 
@@ -76,5 +76,6 @@ The release workflow needs an `EXPO_TOKEN` secret on the GitHub repo (the existi
 ## Troubleshooting
 
 - **"Release tag 'v1.3.0' does not match expo.version 'v1.2.0'"** — the version-bump PR didn't merge before you published the release. Either re-tag the existing commit at `v<actual app.json version>`, or merge the bump and re-create the release at the same tag.
+- **"File ./google-play-service-account.json doesn't exist"** — `eas.json`'s submit profile is pointing at a local file path. Remove `serviceAccountKeyPath` from the submit profile and run `eas credentials configure --platform android` to upload the JSON to EAS cloud creds instead. (This is the failure mode the v1.3.0 first run hit.)
 - **`eas submit` fails with `401`/`403`** — the Play service-account JSON is wrong or its Play Console role doesn't include "Release apps to production". Re-run `eas credentials configure --platform android`.
 - **Build succeeds but submit fails with "versionCode … already used"** — remote counter is out of sync with what's actually on Play. Re-run `eas build:version:set --platform android --build-version <next-free-int>`.

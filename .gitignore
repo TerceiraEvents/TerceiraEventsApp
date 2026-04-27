@@ -39,4 +39,9 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# Google Play service-account JSON if anyone ever drops it locally
+# (canonical storage is EAS cloud creds via `eas credentials configure`,
+# but ignore-by-default in case someone exports a copy)
 google-play-service-account.json
+*service-account*.json
