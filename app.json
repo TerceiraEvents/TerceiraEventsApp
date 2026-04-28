@@ -2,7 +2,7 @@
   "expo": {
     "name": "Terceira Events",
     "slug": "TerceiraEventsApp",
-    "version": "1.3.1",
+    "version": "1.3.2",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -38,15 +38,6 @@
         }
       ],
       "expo-calendar",
-      [
-        "expo-build-properties",
-        {
-          "android": {
-            "enableProguardInReleaseBuilds": true,
-            "enableShrinkResourcesInReleaseBuilds": true
-          }
-        }
-      ],
       [
         "react-native-android-widget",
         {
