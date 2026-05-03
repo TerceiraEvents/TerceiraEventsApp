@@ -19,6 +19,7 @@ import {
   isUpcoming,
   clearCache,
   applyEventFilters,
+  sortEventsByDate,
 } from '../utils/data';
 import { TAGS, getTagMeta } from '../utils/tags';
 import {
@@ -98,13 +99,15 @@ export default function SpecialEventsScreen() {
     [remindedKeys],
   );
 
+  const sortedEvents = useMemo(() => sortEventsByDate(events), [events]);
+
   const filtered = useMemo(() => {
     let base;
-    if (filter === 'thisWeek') base = events.filter(isThisWeek).reverse();
-    else if (filter === 'upcoming') base = events.filter(isUpcoming).reverse();
-    else base = events.filter((e) => !isUpcoming(e));
+    if (filter === 'thisWeek') base = sortedEvents.filter(isThisWeek);
+    else if (filter === 'upcoming') base = sortedEvents.filter(isUpcoming);
+    else base = sortedEvents.filter((e) => !isUpcoming(e)).reverse();
     return applyEventFilters(base, { search, selectedTag });
-  }, [events, filter, search, selectedTag]);
+  }, [sortedEvents, filter, search, selectedTag]);
 
   if (loading) return <LoadingView />;
 

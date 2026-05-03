@@ -3,7 +3,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { matchesSearchQuery, matchesTag, applyEventFilters } from './data.js';
+import {
+  matchesSearchQuery,
+  matchesTag,
+  applyEventFilters,
+  sortEventsByDate,
+} from './data.js';
 
 const sample = [
   {
@@ -141,6 +146,56 @@ test('applyEventFilters: unknown tag returns empty', () => {
 test('applyEventFilters: whitespace-only search is a no-op', () => {
   const result = applyEventFilters(sample, { search: '   ' });
   assert.equal(result.length, sample.length);
+});
+
+// ---------- sortEventsByDate ----------
+
+test('sortEventsByDate: ascending by date', () => {
+  const result = sortEventsByDate(sample);
+  const dates = result.map((e) => e.date);
+  assert.deepEqual(dates, [
+    '2026-04-11',
+    '2026-04-20',
+    '2026-04-25',
+    '2026-04-30',
+    '2026-05-09',
+  ]);
+});
+
+test('sortEventsByDate: does not mutate input', () => {
+  const before = sample.map((e) => e.date);
+  sortEventsByDate(sample);
+  const after = sample.map((e) => e.date);
+  assert.deepEqual(after, before);
+});
+
+test('sortEventsByDate: handles Date objects (from js-yaml) alongside strings', () => {
+  const mixed = [
+    { name: 'B', date: new Date('2026-06-01T00:00:00') },
+    { name: 'A', date: '2026-05-01' },
+    { name: 'C', date: new Date('2026-07-01T00:00:00') },
+  ];
+  const result = sortEventsByDate(mixed);
+  assert.deepEqual(result.map((e) => e.name), ['A', 'B', 'C']);
+});
+
+test('sortEventsByDate: events with missing/invalid dates sink to end', () => {
+  const messy = [
+    { name: 'NoDate' },
+    { name: 'Mid', date: '2026-05-01' },
+    { name: 'Bad', date: 'not-a-date' },
+    { name: 'Early', date: '2026-04-01' },
+  ];
+  const result = sortEventsByDate(messy);
+  assert.equal(result[0].name, 'Early');
+  assert.equal(result[1].name, 'Mid');
+  // NoDate and Bad both sink — order between them is not guaranteed
+  const tail = new Set([result[2].name, result[3].name]);
+  assert.deepEqual(tail, new Set(['NoDate', 'Bad']));
+});
+
+test('sortEventsByDate: empty input returns empty array', () => {
+  assert.deepEqual(sortEventsByDate([]), []);
 });
 
 test('applyEventFilters: original array is not mutated', () => {
