@@ -98,6 +98,17 @@ export function formatDate(date) {
   };
 }
 
+export function sortEventsByDate(events) {
+  return [...events].sort((a, b) => {
+    const da = parseEventDate(a?.date);
+    const db = parseEventDate(b?.date);
+    if (!da && !db) return 0;
+    if (!da) return 1;
+    if (!db) return -1;
+    return da - db;
+  });
+}
+
 export function isUpcoming(event) {
   const d = parseEventDate(event.date);
   if (!d) return false;
