@@ -10,6 +10,8 @@ import {
   sortEventsByDate,
   isInRange,
   VALID_RANGES,
+  formatPostDate,
+  formatEventDateShort,
 } from './data.js';
 
 const sample = [
@@ -264,6 +266,52 @@ test('isInRange: missing/invalid date returns false', () => {
 test('isInRange: unknown range falls back to upcoming-all', () => {
   assert.equal(isInRange({ date: dateOffset(10000) }, 'bogus'), true);
   assert.equal(isInRange({ date: dateOffset(-1) }, 'bogus'), false);
+});
+
+// ---------- formatPostDate ----------
+
+test('formatPostDate: ISO string → "30 Apr 2026"', () => {
+  assert.equal(formatPostDate('2026-04-30'), 'Apr 30, 2026');
+});
+
+test('formatPostDate: Date object → same format', () => {
+  const d = new Date('2026-04-30T00:00:00Z');
+  assert.equal(formatPostDate(d), 'Apr 30, 2026');
+});
+
+test('formatPostDate: empty / null / undefined → ""', () => {
+  assert.equal(formatPostDate(''), '');
+  assert.equal(formatPostDate(null), '');
+  assert.equal(formatPostDate(undefined), '');
+});
+
+test('formatPostDate: invalid string → input passed through', () => {
+  assert.equal(formatPostDate('not-a-date'), 'not-a-date');
+});
+
+test('formatPostDate: invalid Date object → ""', () => {
+  assert.equal(formatPostDate(new Date('not-a-date')), '');
+});
+
+// ---------- formatEventDateShort ----------
+
+test('formatEventDateShort: ISO string → "May 5" (no year)', () => {
+  assert.equal(formatEventDateShort('2026-05-05'), 'May 5');
+});
+
+test('formatEventDateShort: Date object accepted', () => {
+  // Construct date in local time so cross-host TZ doesn't shift the day
+  const d = new Date(2026, 4, 5);
+  assert.equal(formatEventDateShort(d), 'May 5');
+});
+
+test('formatEventDateShort: empty → ""', () => {
+  assert.equal(formatEventDateShort(''), '');
+  assert.equal(formatEventDateShort(null), '');
+});
+
+test('formatEventDateShort: invalid input → original string back', () => {
+  assert.equal(formatEventDateShort('garbage'), 'garbage');
 });
 
 test('applyEventFilters: original array is not mutated', () => {
