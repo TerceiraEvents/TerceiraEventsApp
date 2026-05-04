@@ -8,6 +8,7 @@ import {
   Linking,
 } from 'react-native';
 import Markdown from 'react-native-markdown-display';
+import { formatPostDate } from '../utils/data';
 import { colors, fonts } from '../utils/theme';
 
 const CATEGORY_COLORS = {
@@ -16,16 +17,7 @@ const CATEGORY_COLORS = {
   advice: { bg: '#e3eaff', text: '#2a3a6b' },
 };
 
-function formatDate(iso) {
-  if (!iso) return '';
-  const d = new Date(iso + 'T00:00:00');
-  if (isNaN(d.getTime())) return iso;
-  return d.toLocaleDateString('en-US', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  });
-}
+const formatDate = formatPostDate;
 
 export default function PostScreen({ route }) {
   const post = route?.params?.post;

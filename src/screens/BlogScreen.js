@@ -8,6 +8,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { fetchPosts, clearPostsCache } from '../utils/posts';
+import { formatPostDate } from '../utils/data';
 import { colors, fonts } from '../utils/theme';
 import LoadingView from '../components/LoadingView';
 
@@ -17,16 +18,7 @@ const CATEGORY_COLORS = {
   advice: { bg: '#e3eaff', text: '#2a3a6b' },
 };
 
-function formatDate(iso) {
-  if (!iso) return '';
-  const d = new Date(iso + 'T00:00:00');
-  if (isNaN(d.getTime())) return iso;
-  return d.toLocaleDateString('en-US', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  });
-}
+const formatDate = formatPostDate;
 
 function CategoryPill({ category }) {
   if (!category) return null;

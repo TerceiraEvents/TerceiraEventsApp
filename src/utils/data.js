@@ -85,6 +85,35 @@ export function parseEventDate(dateValue) {
   return isNaN(d.getTime()) ? null : d;
 }
 
+// "2026-04-30" → "30 Apr 2026". Used by blog post lists / details.
+// js-yaml-style Date objects are also accepted via toISOString().
+export function formatPostDate(value) {
+  if (!value) return '';
+  const iso = value instanceof Date
+    ? (isNaN(value.getTime()) ? null : value.toISOString().slice(0, 10))
+    : String(value);
+  if (!iso) return '';
+  const d = new Date(iso + 'T00:00:00');
+  if (isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString('en-US', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+}
+
+// "2026-05-05" → "5 May" (no year). Used in compact event lists like
+// the homepage "Upcoming special events" preview, where a year would
+// be redundant for events all in the next ~12 months.
+export function formatEventDateShort(value) {
+  if (!value) return '';
+  const d = value instanceof Date
+    ? value
+    : new Date(String(value) + 'T00:00:00');
+  if (isNaN(d.getTime())) return String(value);
+  return d.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+}
+
 export function formatDate(date) {
   const months = [
     'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',

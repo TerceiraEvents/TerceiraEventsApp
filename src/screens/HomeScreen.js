@@ -12,6 +12,8 @@ import {
   fetchSpecialEvents,
   sortEventsByDate,
   isInRange,
+  formatPostDate,
+  formatEventDateShort,
 } from '../utils/data';
 
 const buttons = [
@@ -29,23 +31,9 @@ const CATEGORY_COLORS = {
   advice: { bg: '#e3eaff', text: '#2a3a6b' },
 };
 
-function formatDate(iso) {
-  if (!iso) return '';
-  const d = new Date(iso + 'T00:00:00');
-  if (isNaN(d.getTime())) return iso;
-  return d.toLocaleDateString('en-US', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  });
-}
-
-function formatEventDate(value) {
-  if (!value) return '';
-  const d = value instanceof Date ? value : new Date(String(value) + 'T00:00:00');
-  if (isNaN(d.getTime())) return String(value);
-  return d.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
-}
+// Date formatters live in utils/data so they can be unit-tested.
+const formatDate = formatPostDate;
+const formatEventDate = formatEventDateShort;
 
 function CategoryPill({ category }) {
   if (!category) return null;
