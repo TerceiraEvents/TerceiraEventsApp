@@ -76,7 +76,7 @@ export default function HomeScreen({ navigation }) {
 
       <View style={styles.intro}>
         <Text style={styles.introText}>
-          {"Terceira is known as \"the amusement park\" of the Azores — famous for its bullfights on a rope, vibrant festivals, live music, and cultural events year-round."}
+          {"Terceira is known as \"the amusement park\" of the Azores, famous for its bullfights on a rope, vibrant festivals, live music, and cultural events year-round."}
         </Text>
         <Text style={styles.introText}>
           {"This app helps you discover what's happening across Terceira, from weekly karaoke nights to special concerts and festivals."}
