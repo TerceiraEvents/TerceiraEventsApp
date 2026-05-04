@@ -19,6 +19,25 @@ jobs:
       - run: npm ci
       - run: npx expo lint
 
+  unit-tests:
+    name: Unit tests
+    # Runs the node:test suite (`npm test` → `node --test "src/**/*.test.js"`).
+    # 64 assertions across data.js, posts.js, and tags.js. Was missing
+    # from CI for the entire conversation that built out the date range
+    # filter, the blog feature, the WeeklyScreen parity, and the date
+    # formatters — none of those landed regressions because the tests
+    # were green locally, but a test that doesn't run on every PR is
+    # one bad merge away from silent.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+      - run: npm ci
+      - run: npm test
+
   test-export:
     name: Test Export
     runs-on: ubuntu-latest
