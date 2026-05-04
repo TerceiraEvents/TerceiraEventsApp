@@ -15,6 +15,7 @@ import VenuesScreen from './src/screens/VenuesScreen';
 import ResourcesScreen from './src/screens/ResourcesScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 import SuggestEventScreen from './src/screens/SuggestEventScreen';
+import BlogStack from './src/navigation/BlogStack';
 
 const Tab = createBottomTabNavigator();
 
@@ -141,6 +142,15 @@ export default function App() {
           component={SuggestEventScreen}
           options={{
             title: 'Suggest Event',
+            tabBarButton: () => null,
+          }}
+        />
+        <Tab.Screen
+          name="Blog"
+          component={BlogStack}
+          options={{
+            title: 'Blog',
+            headerShown: false,
             tabBarButton: () => null,
           }}
         />
