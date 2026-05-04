@@ -8,6 +8,11 @@ import {
 } from 'react-native';
 import { colors, fonts } from '../utils/theme';
 import { fetchPosts } from '../utils/posts';
+import {
+  fetchSpecialEvents,
+  sortEventsByDate,
+  isInRange,
+} from '../utils/data';
 
 const buttons = [
   { title: 'Weekly Events', subtitle: 'Recurring entertainment', screen: 'Weekly' },
@@ -35,6 +40,13 @@ function formatDate(iso) {
   });
 }
 
+function formatEventDate(value) {
+  if (!value) return '';
+  const d = value instanceof Date ? value : new Date(String(value) + 'T00:00:00');
+  if (isNaN(d.getTime())) return String(value);
+  return d.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+}
+
 function CategoryPill({ category }) {
   if (!category) return null;
   const meta =
@@ -50,6 +62,7 @@ function CategoryPill({ category }) {
 
 export default function HomeScreen({ navigation }) {
   const [posts, setPosts] = useState([]);
+  const [events, setEvents] = useState([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -60,12 +73,22 @@ export default function HomeScreen({ navigation }) {
       .catch(() => {
         // Best-effort — if it fails, the section just stays hidden.
       });
+    fetchSpecialEvents()
+      .then((all) => {
+        if (!cancelled) setEvents(all || []);
+      })
+      .catch(() => {
+        // Best-effort — if it fails, the section just stays hidden.
+      });
     return () => {
       cancelled = true;
     };
   }, []);
 
   const previewPosts = posts.slice(0, 3);
+  const previewEvents = sortEventsByDate(events)
+    .filter((e) => isInRange(e, 'all'))
+    .slice(0, 3);
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -96,6 +119,37 @@ export default function HomeScreen({ navigation }) {
           </TouchableOpacity>
         ))}
       </View>
+
+      {previewEvents.length > 0 ? (
+        <View style={styles.eventsSection}>
+          <Text style={styles.eventsHeading}>Upcoming special events</Text>
+          {previewEvents.map((event, idx) => (
+            <TouchableOpacity
+              key={`${event.date}-${event.name}-${idx}`}
+              style={styles.eventItem}
+              activeOpacity={0.7}
+              onPress={() => navigation.navigate('Events')}
+            >
+              <View style={styles.eventMetaRow}>
+                <Text style={styles.eventDate}>{formatEventDate(event.date)}</Text>
+                {event.time ? (
+                  <Text style={styles.eventTime}>· {event.time}</Text>
+                ) : null}
+              </View>
+              <Text style={styles.eventItemTitle}>{event.name}</Text>
+              {event.venue ? (
+                <Text style={styles.eventVenue}>{event.venue}</Text>
+              ) : null}
+            </TouchableOpacity>
+          ))}
+          <TouchableOpacity
+            onPress={() => navigation.navigate('Events')}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.eventsAll}>All upcoming →</Text>
+          </TouchableOpacity>
+        </View>
+      ) : null}
 
       {previewPosts.length > 0 ? (
         <View style={styles.blogSection}>
@@ -190,6 +244,58 @@ const styles = StyleSheet.create({
   buttonSubtitle: {
     fontSize: fonts.sizeBody,
     color: colors.textLight,
+  },
+  eventsSection: {
+    paddingHorizontal: 16,
+    paddingTop: 28,
+  },
+  eventsHeading: {
+    fontSize: fonts.sizeLarge,
+    fontWeight: '700',
+    color: colors.primary,
+    marginBottom: 10,
+  },
+  eventItem: {
+    backgroundColor: colors.card,
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.accent,
+  },
+  eventMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 4,
+  },
+  eventDate: {
+    color: colors.textMuted,
+    fontSize: fonts.sizeSmall,
+    fontWeight: '600',
+  },
+  eventTime: {
+    color: colors.textLight,
+    fontSize: fonts.sizeSmall,
+  },
+  eventItemTitle: {
+    fontSize: fonts.sizeBody + 1,
+    fontWeight: '600',
+    color: colors.primary,
+    lineHeight: 20,
+  },
+  eventVenue: {
+    color: colors.textLight,
+    fontSize: fonts.sizeSmall,
+    marginTop: 2,
+  },
+  eventsAll: {
+    color: colors.primary,
+    fontWeight: '600',
+    fontSize: fonts.sizeBody,
+    paddingTop: 4,
   },
   blogSection: {
     paddingHorizontal: 16,
