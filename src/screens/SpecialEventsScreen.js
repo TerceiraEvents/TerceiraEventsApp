@@ -15,11 +15,10 @@ import { colors, fonts } from '../utils/theme';
 import {
   fetchSpecialEvents,
   fetchWeeklyEvents,
-  isThisWeek,
-  isUpcoming,
   clearCache,
   applyEventFilters,
   sortEventsByDate,
+  isInRange,
 } from '../utils/data';
 import { TAGS, getTagMeta } from '../utils/tags';
 import {
@@ -36,15 +35,25 @@ import {
 import EventCard from '../components/EventCard';
 import LoadingView from '../components/LoadingView';
 
+const RANGES = [
+  { key: 'week', label: 'This Week', emoji: '📅' },
+  { key: 'month', label: 'This Month', emoji: '📆' },
+  { key: 'year', label: 'This Year', emoji: '🗓️' },
+  { key: 'all', label: 'All Upcoming', emoji: '∞' },
+  { key: 'archive', label: 'Archive', emoji: '📚' },
+];
+const RANGE_BY_KEY = Object.fromEntries(RANGES.map((r) => [r.key, r]));
+
 export default function SpecialEventsScreen() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [filter, setFilter] = useState('thisWeek');
+  const [range, setRange] = useState('week');
   const [remindedKeys, setRemindedKeys] = useState(new Set());
   const [search, setSearch] = useState('');
   const [selectedTag, setSelectedTag] = useState('');
   const [tagPickerOpen, setTagPickerOpen] = useState(false);
+  const [rangePickerOpen, setRangePickerOpen] = useState(false);
 
   const loadEvents = useCallback(async (forceRefresh = false) => {
     if (forceRefresh) clearCache();
@@ -102,58 +111,33 @@ export default function SpecialEventsScreen() {
   const sortedEvents = useMemo(() => sortEventsByDate(events), [events]);
 
   const filtered = useMemo(() => {
-    let base;
-    if (filter === 'thisWeek') base = sortedEvents.filter(isThisWeek);
-    else if (filter === 'upcoming') base = sortedEvents.filter(isUpcoming);
-    else base = sortedEvents.filter((e) => !isUpcoming(e)).reverse();
+    let base = sortedEvents.filter((e) => isInRange(e, range));
+    if (range === 'archive') base = base.reverse();
     return applyEventFilters(base, { search, selectedTag });
-  }, [sortedEvents, filter, search, selectedTag]);
+  }, [sortedEvents, range, search, selectedTag]);
 
   if (loading) return <LoadingView />;
 
-  const showReminder = filter !== 'archive';
+  const showReminder = range !== 'archive';
   const activeTag = selectedTag ? getTagMeta(selectedTag) : null;
+  const activeRange = RANGE_BY_KEY[range] || RANGES[0];
 
   return (
     <View style={styles.container}>
       <View style={styles.headerArea}>
         <Text style={styles.header}>Special Events</Text>
-        <View style={styles.filters}>
-          {[
-            { key: 'thisWeek', label: 'This Week' },
-            { key: 'upcoming', label: 'All Upcoming' },
-            { key: 'archive', label: 'Archive' },
-          ].map((f) => (
-            <TouchableOpacity
-              key={f.key}
-              style={[
-                styles.filterButton,
-                filter === f.key && styles.filterActive,
-              ]}
-              onPress={() => setFilter(f.key)}
-            >
-              <Text
-                style={[
-                  styles.filterText,
-                  filter === f.key && styles.filterTextActive,
-                ]}
-              >
-                {f.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-        <View style={styles.searchRow}>
-          <TextInput
-            style={styles.searchInput}
-            value={search}
-            onChangeText={setSearch}
-            placeholder="Search by name, venue, or description…"
-            placeholderTextColor={colors.textMuted}
-            returnKeyType="search"
-            clearButtonMode="while-editing"
-            autoCorrect={false}
-          />
+        <View style={styles.dropdownRow}>
+          <TouchableOpacity
+            style={styles.rangeDropdown}
+            onPress={() => setRangePickerOpen(true)}
+            accessibilityRole="button"
+            accessibilityLabel="Select date range"
+          >
+            <Text style={styles.rangeDropdownText} numberOfLines={1}>
+              {activeRange.emoji}  {activeRange.label}
+            </Text>
+            <Text style={styles.rangeDropdownChevron}>▾</Text>
+          </TouchableOpacity>
           <TouchableOpacity
             style={[styles.tagDropdown, activeTag && styles.tagDropdownActive]}
             onPress={() => setTagPickerOpen(true)}
@@ -181,6 +165,16 @@ export default function SpecialEventsScreen() {
             </Text>
           </TouchableOpacity>
         </View>
+        <TextInput
+          style={styles.searchInput}
+          value={search}
+          onChangeText={setSearch}
+          placeholder="Search by name, venue, or description…"
+          placeholderTextColor={colors.textMuted}
+          returnKeyType="search"
+          clearButtonMode="while-editing"
+          autoCorrect={false}
+        />
       </View>
 
       <FlatList
@@ -206,14 +200,60 @@ export default function SpecialEventsScreen() {
           <View style={styles.empty}>
             <Text style={styles.emptyText}>
               {search || selectedTag
-                ? 'No events match your search.'
-                : filter === 'thisWeek'
-                  ? 'No special events this week.'
-                  : 'No events to show.'}
+                ? 'No events match your filters.'
+                : range === 'archive'
+                  ? 'No past events yet.'
+                  : range === 'week'
+                    ? 'No special events this week.'
+                    : 'No events to show.'}
             </Text>
           </View>
         }
       />
+
+      <Modal
+        visible={rangePickerOpen}
+        animationType="fade"
+        transparent
+        onRequestClose={() => setRangePickerOpen(false)}
+      >
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setRangePickerOpen(false)}
+        >
+          <Pressable style={styles.modalSheet} onPress={() => {}}>
+            <View style={styles.modalHandle} />
+            <Text style={styles.modalTitle}>Date range</Text>
+            <ScrollView style={styles.modalList}>
+              {RANGES.map((r) => {
+                const active = range === r.key;
+                return (
+                  <TouchableOpacity
+                    key={r.key}
+                    style={[
+                      styles.tagOption,
+                      active && styles.tagOptionActive,
+                    ]}
+                    onPress={() => {
+                      setRange(r.key);
+                      setRangePickerOpen(false);
+                    }}
+                  >
+                    <Text
+                      style={[
+                        styles.tagOptionText,
+                        active && styles.tagOptionTextActive,
+                      ]}
+                    >
+                      {r.emoji}  {r.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          </Pressable>
+        </Pressable>
+      </Modal>
 
       <Modal
         visible={tagPickerOpen}
@@ -297,20 +337,13 @@ const styles = StyleSheet.create({
     color: colors.primary,
     marginBottom: 12,
   },
-  filters: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 8,
-  },
-  searchRow: {
+  dropdownRow: {
     flexDirection: 'row',
     gap: 8,
     alignItems: 'center',
-    marginTop: 4,
-    marginBottom: 4,
+    marginBottom: 8,
   },
   searchInput: {
-    flex: 1,
     backgroundColor: colors.card,
     borderRadius: 10,
     borderWidth: 1,
@@ -319,10 +352,36 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     fontSize: fonts.sizeBody,
     color: colors.text,
+    marginBottom: 4,
   },
-  tagDropdown: {
+  rangeDropdown: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    borderRadius: 10,
+    backgroundColor: colors.primary,
+    borderWidth: 1,
+    borderColor: colors.primary,
+  },
+  rangeDropdownText: {
+    fontSize: fonts.sizeSmall,
+    color: colors.white,
+    fontWeight: '700',
+    flexShrink: 1,
+  },
+  rangeDropdownChevron: {
+    fontSize: fonts.sizeSmall,
+    color: colors.white,
+  },
+  tagDropdown: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     gap: 4,
     paddingHorizontal: 12,
     paddingVertical: 9,
@@ -330,7 +389,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.card,
     borderWidth: 1,
     borderColor: colors.border,
-    maxWidth: 170,
   },
   tagDropdownActive: {
     backgroundColor: colors.kidFriendlyBadge,
@@ -348,26 +406,6 @@ const styles = StyleSheet.create({
   tagDropdownChevron: {
     fontSize: fonts.sizeSmall,
     color: colors.textLight,
-  },
-  filterButton: {
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 20,
-    backgroundColor: colors.card,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  filterActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  filterText: {
-    fontSize: fonts.sizeSmall,
-    color: colors.textLight,
-    fontWeight: '600',
-  },
-  filterTextActive: {
-    color: colors.white,
   },
   list: {
     paddingBottom: 24,

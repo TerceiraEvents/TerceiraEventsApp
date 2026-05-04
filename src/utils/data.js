@@ -127,6 +127,27 @@ export function isThisWeek(event) {
   return d >= today && d < weekFromNow;
 }
 
+const RANGE_DAYS = { week: 7, month: 31, year: 365 };
+export const VALID_RANGES = new Set(['week', 'month', 'year', 'all', 'archive']);
+
+// Test whether an event falls inside a given date range. Mirrors the
+// website's range filter (rolling windows of 7 / 31 / 365 days from today).
+// `archive` is past-only; everything else is upcoming-only.
+export function isInRange(event, range) {
+  const d = parseEventDate(event?.date);
+  if (!d) return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  if (range === 'archive') return d < today;
+  if (d < today) return false;
+  if (range === 'all') return true;
+  const days = RANGE_DAYS[range];
+  if (!days) return true;
+  const end = new Date(today);
+  end.setDate(end.getDate() + days);
+  return d < end;
+}
+
 // Returns true when the event matches a free-text query against its name,
 // venue, and description. An empty or whitespace-only query always matches.
 export function matchesSearchQuery(event, query) {

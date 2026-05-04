@@ -8,6 +8,8 @@ import {
   matchesTag,
   applyEventFilters,
   sortEventsByDate,
+  isInRange,
+  VALID_RANGES,
 } from './data.js';
 
 const sample = [
@@ -196,6 +198,72 @@ test('sortEventsByDate: events with missing/invalid dates sink to end', () => {
 
 test('sortEventsByDate: empty input returns empty array', () => {
   assert.deepEqual(sortEventsByDate([]), []);
+});
+
+// ---------- isInRange ----------
+
+// Build a date string offset from today by `days` calendar days, in YYYY-MM-DD.
+function dateOffset(days) {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() + days);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${dd}`;
+}
+
+test('VALID_RANGES contains the five expected keys', () => {
+  assert.deepEqual(
+    [...VALID_RANGES].sort(),
+    ['all', 'archive', 'month', 'week', 'year'],
+  );
+});
+
+test('isInRange: today is in week / month / year / all but not archive', () => {
+  const e = { date: dateOffset(0) };
+  assert.equal(isInRange(e, 'week'), true);
+  assert.equal(isInRange(e, 'month'), true);
+  assert.equal(isInRange(e, 'year'), true);
+  assert.equal(isInRange(e, 'all'), true);
+  assert.equal(isInRange(e, 'archive'), false);
+});
+
+test('isInRange: yesterday is archive only', () => {
+  const e = { date: dateOffset(-1) };
+  assert.equal(isInRange(e, 'archive'), true);
+  assert.equal(isInRange(e, 'week'), false);
+  assert.equal(isInRange(e, 'all'), false);
+});
+
+test('isInRange: week boundary — day 6 in, day 7 out', () => {
+  assert.equal(isInRange({ date: dateOffset(6) }, 'week'), true);
+  assert.equal(isInRange({ date: dateOffset(7) }, 'week'), false);
+});
+
+test('isInRange: month boundary — day 30 in, day 31 out', () => {
+  assert.equal(isInRange({ date: dateOffset(30) }, 'month'), true);
+  assert.equal(isInRange({ date: dateOffset(31) }, 'month'), false);
+});
+
+test('isInRange: year boundary — day 364 in, day 365 out', () => {
+  assert.equal(isInRange({ date: dateOffset(364) }, 'year'), true);
+  assert.equal(isInRange({ date: dateOffset(365) }, 'year'), false);
+});
+
+test('isInRange: all accepts far future', () => {
+  assert.equal(isInRange({ date: dateOffset(10000) }, 'all'), true);
+});
+
+test('isInRange: missing/invalid date returns false', () => {
+  assert.equal(isInRange({}, 'week'), false);
+  assert.equal(isInRange({ date: 'not-a-date' }, 'week'), false);
+  assert.equal(isInRange(null, 'week'), false);
+});
+
+test('isInRange: unknown range falls back to upcoming-all', () => {
+  assert.equal(isInRange({ date: dateOffset(10000) }, 'bogus'), true);
+  assert.equal(isInRange({ date: dateOffset(-1) }, 'bogus'), false);
 });
 
 test('applyEventFilters: original array is not mutated', () => {
