@@ -18,7 +18,12 @@ import { parseEventDate, formatDate } from '../utils/data';
 const FLAG_URL =
   'https://event-submit-worker.terceriaevents.workers.dev/flag-event';
 
-export default function FlagEventModal({ visible, event, onClose }) {
+export default function FlagEventModal({
+  visible,
+  event,
+  onClose,
+  eventDateOverride,
+}) {
   const [reason, setReason] = useState('');
   const [submitterName, setSubmitterName] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -27,9 +32,11 @@ export default function FlagEventModal({ visible, event, onClose }) {
 
   const date = parseEventDate(event.date);
   const formatted = date ? formatDate(date) : null;
-  const dateStr = formatted
-    ? `${formatted.month} ${formatted.day}, ${formatted.year}`
-    : '';
+  const dateStr = eventDateOverride
+    ? eventDateOverride
+    : formatted
+      ? `${formatted.month} ${formatted.day}, ${formatted.year}`
+      : '';
 
   const reset = () => {
     setReason('');
@@ -55,12 +62,13 @@ export default function FlagEventModal({ visible, event, onClose }) {
     try {
       const eventDateIso =
         date ? date.toISOString().slice(0, 10) : undefined;
+      const eventDateValue = eventDateOverride || eventDateIso;
       const response = await fetch(FLAG_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           eventName: event.name,
-          eventDate: eventDateIso,
+          eventDate: eventDateValue,
           eventVenue: event.venue,
           reason: reason.trim(),
           submitterName: submitterName.trim() || undefined,
