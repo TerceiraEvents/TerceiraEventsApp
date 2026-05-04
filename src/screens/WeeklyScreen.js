@@ -10,10 +10,12 @@ import {
 import { colors, fonts } from '../utils/theme';
 import { fetchWeeklyEvents } from '../utils/data';
 import LoadingView from '../components/LoadingView';
+import FlagEventModal from '../components/FlagEventModal';
 
 export default function WeeklyScreen() {
   const [days, setDays] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [flagTarget, setFlagTarget] = useState(null);
 
   useEffect(() => {
     fetchWeeklyEvents()
@@ -37,7 +39,22 @@ export default function WeeklyScreen() {
           </View>
           {dayGroup.events.map((event, idx) => (
             <View key={idx} style={styles.eventCard}>
-              <Text style={styles.eventName}>{event.name}</Text>
+              <View style={styles.titleRow}>
+                <Text style={[styles.eventName, styles.eventNameWithButton]}>
+                  {event.name}
+                </Text>
+                <TouchableOpacity
+                  onPress={() =>
+                    setFlagTarget({ event, day: dayGroup.day })
+                  }
+                  style={styles.flagButton}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  accessibilityRole="button"
+                  accessibilityLabel="Suggest an edit"
+                >
+                  <Text style={styles.flagIcon}>{'\u{1F6A9}'}</Text>
+                </TouchableOpacity>
+              </View>
               <Text style={styles.eventVenue}>{event.venue}</Text>
               {event.time && (
                 <Text style={styles.eventTime}>{event.time}</Text>
@@ -53,14 +70,31 @@ export default function WeeklyScreen() {
                 </View>
               )}
               {event.address && (
+                <Text style={styles.address}>{event.address}</Text>
+              )}
+              {(event.map_url || event.address || event.venue) && (
                 <TouchableOpacity
-                  onPress={() =>
-                    Linking.openURL(
-                      `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.address)}`
-                    )
-                  }
+                  onPress={() => {
+                    const url =
+                      event.map_url ||
+                      `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                        event.address || event.venue
+                      )}`;
+                    Linking.openURL(url);
+                  }}
+                  style={styles.mapButton}
+                  accessibilityRole="link"
+                  accessibilityLabel="Open location in Google Maps"
                 >
-                  <Text style={styles.address}>{event.address}</Text>
+                  <Text style={styles.mapButtonText}>📍 Open in Maps</Text>
+                </TouchableOpacity>
+              )}
+              {event.instagram && (
+                <TouchableOpacity
+                  onPress={() => Linking.openURL(event.instagram)}
+                  style={styles.linkButton}
+                >
+                  <Text style={styles.linkText}>📸 View on Instagram</Text>
                 </TouchableOpacity>
               )}
               {event.url && (
@@ -68,13 +102,22 @@ export default function WeeklyScreen() {
                   onPress={() => Linking.openURL(event.url)}
                   style={styles.linkButton}
                 >
-                  <Text style={styles.linkText}>Website</Text>
+                  <Text style={styles.linkText}>🌐 Website</Text>
                 </TouchableOpacity>
               )}
             </View>
           ))}
         </View>
       ))}
+
+      <FlagEventModal
+        visible={flagTarget !== null}
+        event={flagTarget?.event}
+        eventDateOverride={
+          flagTarget ? `${flagTarget.day} (weekly)` : undefined
+        }
+        onClose={() => setFlagTarget(null)}
+      />
     </ScrollView>
   );
 }
@@ -126,10 +169,26 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 1,
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+  },
   eventName: {
     fontSize: fonts.sizeMedium,
     fontWeight: '700',
     color: colors.text,
+    flex: 1,
+  },
+  eventNameWithButton: {
+    marginRight: 8,
+  },
+  flagButton: {
+    padding: 4,
+    borderRadius: 16,
+  },
+  flagIcon: {
+    fontSize: 18,
   },
   eventVenue: {
     fontSize: fonts.sizeBody,
@@ -164,9 +223,18 @@ const styles = StyleSheet.create({
   },
   address: {
     fontSize: fonts.sizeSmall,
-    color: colors.primary,
+    color: colors.textLight,
+    fontStyle: 'italic',
     marginTop: 6,
-    textDecorationLine: 'underline',
+  },
+  mapButton: {
+    marginTop: 6,
+    alignSelf: 'flex-start',
+  },
+  mapButtonText: {
+    fontSize: fonts.sizeSmall,
+    fontWeight: '600',
+    color: colors.primary,
   },
   linkButton: {
     marginTop: 8,
