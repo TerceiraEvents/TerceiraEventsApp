@@ -2,7 +2,7 @@ import { load as yamlLoad } from 'js-yaml';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const REPO_OWNER = 'TerceiraEvents';
-const REPO_NAME = 'EventosTerceira';
+const REPO_NAME = 'EventosTerceira.pt';
 const POSTS_LIST_URL =
   `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/_posts`;
 const POST_RAW_BASE =

@@ -7,7 +7,7 @@ import { normalizeEventTags, getTagMeta } from '../utils/tags';
 import FlagEventModal from './FlagEventModal';
 
 const BASE_URL =
-  'https://raw.githubusercontent.com/TerceiraEvents/EventosTerceira/main';
+  'https://raw.githubusercontent.com/TerceiraEvents/EventosTerceira.pt/main';
 
 function getImageUrl(imagePath) {
   // Full URL (e.g. from R2 uploads): use as-is

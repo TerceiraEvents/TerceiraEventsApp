@@ -12,15 +12,15 @@ import { readFileSync } from 'node:fs';
 // Mirror the URLs the production code uses. If they change in
 // src/utils/data.js or src/utils/posts.js, update both here and there.
 const TAGS_VOCAB_URL =
-  'https://raw.githubusercontent.com/TerceiraEvents/EventosTerceira/main/_data/event_tags.yml';
+  'https://raw.githubusercontent.com/TerceiraEvents/EventosTerceira.pt/main/_data/event_tags.yml';
 const SPECIAL_EVENTS_URL =
-  'https://raw.githubusercontent.com/TerceiraEvents/EventosTerceira/main/_data/special_events.yml';
+  'https://raw.githubusercontent.com/TerceiraEvents/EventosTerceira.pt/main/_data/special_events.yml';
 const WEEKLY_EVENTS_URL =
-  'https://raw.githubusercontent.com/TerceiraEvents/EventosTerceira/main/_data/weekly.yml';
+  'https://raw.githubusercontent.com/TerceiraEvents/EventosTerceira.pt/main/_data/weekly.yml';
 const POSTS_LIST_URL =
-  'https://api.github.com/repos/TerceiraEvents/EventosTerceira/contents/_posts';
+  'https://api.github.com/repos/TerceiraEvents/EventosTerceira.pt/contents/_posts';
 const POST_RAW_BASE =
-  'https://raw.githubusercontent.com/TerceiraEvents/EventosTerceira/main/_posts/';
+  'https://raw.githubusercontent.com/TerceiraEvents/EventosTerceira.pt/main/_posts/';
 
 const errors = [];
 
