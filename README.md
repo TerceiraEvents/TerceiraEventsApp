@@ -2,7 +2,7 @@
 
 A mobile app (Android / iOS) for discovering events on Terceira Island, Azores.
 
-Built with [React Native](https://reactnative.dev/) and [Expo](https://expo.dev/), this app pulls event data directly from the [Terceira Events website](https://terceiraevents.github.io) repository.
+Built with [React Native](https://reactnative.dev/) and [Expo](https://expo.dev/), this app pulls event data directly from the [Terceira Events website](https://eventosterceira.pt) repository.
 
 ## Features
 
@@ -29,7 +29,7 @@ npm run web
 
 ## Data Source
 
-Event data is fetched from the YAML files in the [Terceira Events website repo](https://github.com/TerceiraEvents/Angraevents.github.io):
+Event data is fetched from the YAML files in the [Terceira Events website repo](https://github.com/TerceiraEvents/EventosTerceira):
 
 - `_data/special_events.yml` — Special events (concerts, festivals, etc.)
 - `_data/weekly.yml` — Recurring weekly events
