@@ -11,8 +11,23 @@ import { colors, fonts } from '../utils/theme';
 import { fetchWeeklyEvents } from '../utils/data';
 import LoadingView from '../components/LoadingView';
 import FlagEventModal from '../components/FlagEventModal';
+import { useLocale } from '../i18n';
+import { localizedField } from '../utils/i18nFields';
+
+// YAML keys weekly events on the English day name; map to the i18n key
+// so we can render in the active locale without changing the data shape.
+const DAY_I18N_KEYS = {
+  Monday: 'monday',
+  Tuesday: 'tuesday',
+  Wednesday: 'wednesday',
+  Thursday: 'thursday',
+  Friday: 'friday',
+  Saturday: 'saturday',
+  Sunday: 'sunday',
+};
 
 export default function WeeklyScreen() {
+  const { t, locale } = useLocale();
   const [days, setDays] = useState([]);
   const [loading, setLoading] = useState(true);
   const [flagTarget, setFlagTarget] = useState(null);
@@ -27,94 +42,113 @@ export default function WeeklyScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.header}>Weekly Events</Text>
-      <Text style={styles.intro}>
-        Recurring entertainment you can count on every week.
-      </Text>
+      <Text style={styles.header}>{t('weekly.title')}</Text>
+      <Text style={styles.intro}>{t('weekly.intro')}</Text>
 
-      {days.map((dayGroup) => (
-        <View key={dayGroup.day} style={styles.daySection}>
-          <View style={styles.dayHeader}>
-            <Text style={styles.dayName}>{dayGroup.day}</Text>
-          </View>
-          {dayGroup.events.map((event, idx) => (
-            <View key={idx} style={styles.eventCard}>
-              <View style={styles.titleRow}>
-                <Text style={[styles.eventName, styles.eventNameWithButton]}>
-                  {event.name}
-                </Text>
-                <TouchableOpacity
-                  onPress={() =>
-                    setFlagTarget({ event, day: dayGroup.day })
-                  }
-                  style={styles.flagButton}
-                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                  accessibilityRole="button"
-                  accessibilityLabel="Suggest an edit"
-                >
-                  <Text style={styles.flagIcon}>{'\u{1F6A9}'}</Text>
-                </TouchableOpacity>
-              </View>
-              <Text style={styles.eventVenue}>{event.venue}</Text>
-              {event.time && (
-                <Text style={styles.eventTime}>{event.time}</Text>
-              )}
-              {event.description && (
-                <Text style={styles.eventDescription}>
-                  {event.description}
-                </Text>
-              )}
-              {event.note && (
-                <View style={styles.noteBox}>
-                  <Text style={styles.noteText}>{event.note}</Text>
-                </View>
-              )}
-              {event.address && (
-                <Text style={styles.address}>{event.address}</Text>
-              )}
-              {(event.map_url || event.address || event.venue) && (
-                <TouchableOpacity
-                  onPress={() => {
-                    const url =
-                      event.map_url ||
-                      `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                        event.address || event.venue
-                      )}`;
-                    Linking.openURL(url);
-                  }}
-                  style={styles.mapButton}
-                  accessibilityRole="link"
-                  accessibilityLabel="Open location in Google Maps"
-                >
-                  <Text style={styles.mapButtonText}>📍 Open in Maps</Text>
-                </TouchableOpacity>
-              )}
-              {event.instagram && (
-                <TouchableOpacity
-                  onPress={() => Linking.openURL(event.instagram)}
-                  style={styles.linkButton}
-                >
-                  <Text style={styles.linkText}>📸 View on Instagram</Text>
-                </TouchableOpacity>
-              )}
-              {event.url && (
-                <TouchableOpacity
-                  onPress={() => Linking.openURL(event.url)}
-                  style={styles.linkButton}
-                >
-                  <Text style={styles.linkText}>🌐 Website</Text>
-                </TouchableOpacity>
-              )}
+      {days.map((dayGroup) => {
+        const dayKey = DAY_I18N_KEYS[dayGroup.day];
+        const dayLabel = dayKey ? t(`weekly.days.${dayKey}`) : dayGroup.day;
+        return (
+          <View key={dayGroup.day} style={styles.daySection}>
+            <View style={styles.dayHeader}>
+              <Text style={styles.dayName}>{dayLabel}</Text>
             </View>
-          ))}
-        </View>
-      ))}
+            {dayGroup.events.map((event, idx) => {
+              const evName = localizedField(event, 'name', locale);
+              const evVenue = localizedField(event, 'venue', locale);
+              const evDescription = localizedField(event, 'description', locale);
+              const evNote = localizedField(event, 'note', locale);
+              const evAddress = localizedField(event, 'address', locale);
+              return (
+                <View key={idx} style={styles.eventCard}>
+                  <View style={styles.titleRow}>
+                    <Text style={[styles.eventName, styles.eventNameWithButton]}>
+                      {evName}
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() =>
+                        setFlagTarget({ event, day: dayGroup.day })
+                      }
+                      style={styles.flagButton}
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                      accessibilityRole="button"
+                      accessibilityLabel={t('weekly.suggestEdit')}
+                    >
+                      <Text style={styles.flagIcon}>{'\u{1F6A9}'}</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <Text style={styles.eventVenue}>{evVenue}</Text>
+                  {event.time && (
+                    <Text style={styles.eventTime}>{event.time}</Text>
+                  )}
+                  {evDescription && (
+                    <Text style={styles.eventDescription}>{evDescription}</Text>
+                  )}
+                  {evNote && (
+                    <View style={styles.noteBox}>
+                      <Text style={styles.noteText}>{evNote}</Text>
+                    </View>
+                  )}
+                  {evAddress && (
+                    <Text style={styles.address}>{evAddress}</Text>
+                  )}
+                  {(event.map_url || evAddress || evVenue) && (
+                    <TouchableOpacity
+                      onPress={() => {
+                        const url =
+                          event.map_url ||
+                          `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                            evAddress || evVenue
+                          )}`;
+                        Linking.openURL(url);
+                      }}
+                      style={styles.mapButton}
+                      accessibilityRole="link"
+                      accessibilityLabel={t('eventCard.openMapsAccessibility')}
+                    >
+                      <Text style={styles.mapButtonText}>
+                        {t('eventCard.openMaps')}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                  {event.instagram && (
+                    <TouchableOpacity
+                      onPress={() => Linking.openURL(event.instagram)}
+                      style={styles.linkButton}
+                    >
+                      <Text style={styles.linkText}>
+                        📸 {t('eventCard.viewInstagram')}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                  {event.url && (
+                    <TouchableOpacity
+                      onPress={() => Linking.openURL(event.url)}
+                      style={styles.linkButton}
+                    >
+                      <Text style={styles.linkText}>
+                        🌐 {t('venues.links.website')}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              );
+            })}
+          </View>
+        );
+      })}
 
       <FlagEventModal
         visible={flagTarget !== null}
         event={flagTarget?.event}
         eventDateOverride={
-          flagTarget ? `${flagTarget.day} (weekly)` : undefined
+          flagTarget
+            ? `${
+                DAY_I18N_KEYS[flagTarget.day]
+                  ? t(`weekly.days.${DAY_I18N_KEYS[flagTarget.day]}`)
+                  : flagTarget.day
+              } (${t('tabs.weekly').toLowerCase()})`
+            : undefined
         }
         onClose={() => setFlagTarget(null)}
       />

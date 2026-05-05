@@ -10,6 +10,8 @@ import {
 import Markdown from 'react-native-markdown-display';
 import { formatPostDate } from '../utils/data';
 import { colors, fonts } from '../utils/theme';
+import { useLocale } from '../i18n';
+import { localizedField } from '../utils/i18nFields';
 
 const CATEGORY_COLORS = {
   news: { bg: '#fce8c8', text: '#6b4a0a' },
@@ -20,11 +22,12 @@ const CATEGORY_COLORS = {
 const formatDate = formatPostDate;
 
 export default function PostScreen({ route }) {
+  const { t, locale } = useLocale();
   const post = route?.params?.post;
   if (!post) {
     return (
       <View style={styles.empty}>
-        <Text style={styles.emptyText}>Post not found.</Text>
+        <Text style={styles.emptyText}>{t('post.notFound')}</Text>
       </View>
     );
   }
@@ -43,16 +46,20 @@ export default function PostScreen({ route }) {
             </Text>
           </View>
         ) : null}
-        <Text style={styles.dateText}>{formatDate(post.date)}</Text>
+        <Text style={styles.dateText}>{formatDate(post.date, locale)}</Text>
       </View>
-      <Text style={styles.title}>{post.title}</Text>
-      {post.subtitle ? (
-        <Text style={styles.subtitle}>{post.subtitle}</Text>
+      <Text style={styles.title}>{localizedField(post, 'title', locale)}</Text>
+      {localizedField(post, 'subtitle', locale) ? (
+        <Text style={styles.subtitle}>
+          {localizedField(post, 'subtitle', locale)}
+        </Text>
       ) : null}
-      <Markdown style={mdStyles}>{post.body || ''}</Markdown>
+      <Markdown style={mdStyles}>
+        {localizedField(post, 'body', locale) || ''}
+      </Markdown>
       {post.source_url ? (
         <View style={styles.sourceRow}>
-          <Text style={styles.sourceLabel}>Source: </Text>
+          <Text style={styles.sourceLabel}>{t('post.source')}</Text>
           <TouchableOpacity
             onPress={() => Linking.openURL(post.source_url)}
             accessibilityRole="link"

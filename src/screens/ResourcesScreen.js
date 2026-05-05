@@ -9,14 +9,15 @@ import {
 } from 'react-native';
 import { colors, fonts } from '../utils/theme';
 import { resources, instagramAccounts, facebookPages } from '../utils/data';
+import { useLocale } from '../i18n';
+import { localizedField } from '../utils/i18nFields';
 
 export default function ResourcesScreen() {
+  const { t, locale } = useLocale();
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.header}>Other Resources</Text>
-      <Text style={styles.intro}>
-        {"We're not the only game in town. Here are other great ways to find out what's happening on Terceira."}
-      </Text>
+      <Text style={styles.header}>{t('resources.title')}</Text>
+      <Text style={styles.intro}>{t('resources.intro')}</Text>
 
       {resources.map((r) => (
         <TouchableOpacity
@@ -26,13 +27,15 @@ export default function ResourcesScreen() {
           activeOpacity={0.7}
         >
           <Text style={styles.resourceName}>{r.name}</Text>
-          <Text style={styles.resourceDesc}>{r.description}</Text>
+          <Text style={styles.resourceDesc}>
+            {localizedField(r, 'description', locale)}
+          </Text>
           {r.appStore && (
             <TouchableOpacity
               onPress={() => Linking.openURL(r.appStore)}
               style={styles.appStoreButton}
             >
-              <Text style={styles.appStoreText}>Download on App Store</Text>
+              <Text style={styles.appStoreText}>{t('resources.appStore')}</Text>
             </TouchableOpacity>
           )}
           {r.playStore && (
@@ -40,16 +43,16 @@ export default function ResourcesScreen() {
               onPress={() => Linking.openURL(r.playStore)}
               style={styles.appStoreButton}
             >
-              <Text style={styles.appStoreText}>Download on Google Play</Text>
+              <Text style={styles.appStoreText}>
+                {t('resources.playStore')}
+              </Text>
             </TouchableOpacity>
           )}
         </TouchableOpacity>
       ))}
 
-      <Text style={styles.sectionTitle}>Instagram Accounts to Follow</Text>
-      <Text style={styles.sectionIntro}>
-        {"Follow these for event announcements, flyers, and what's happening around Angra."}
-      </Text>
+      <Text style={styles.sectionTitle}>{t('resources.instagramTitle')}</Text>
+      <Text style={styles.sectionIntro}>{t('resources.instagramIntro')}</Text>
       <View style={styles.socialList}>
         {instagramAccounts.map((a) => (
           <TouchableOpacity
@@ -58,15 +61,15 @@ export default function ResourcesScreen() {
             onPress={() => Linking.openURL(a.url)}
           >
             <Text style={styles.socialHandle}>{a.handle}</Text>
-            <Text style={styles.socialLabel}>{a.label}</Text>
+            <Text style={styles.socialLabel}>
+              {localizedField(a, 'label', locale)}
+            </Text>
           </TouchableOpacity>
         ))}
       </View>
 
-      <Text style={styles.sectionTitle}>Facebook Pages</Text>
-      <Text style={styles.sectionIntro}>
-        Some venues and organizations post events primarily on Facebook.
-      </Text>
+      <Text style={styles.sectionTitle}>{t('resources.facebookTitle')}</Text>
+      <Text style={styles.sectionIntro}>{t('resources.facebookIntro')}</Text>
       <View style={styles.socialList}>
         {facebookPages.map((p) => (
           <TouchableOpacity
@@ -75,7 +78,9 @@ export default function ResourcesScreen() {
             onPress={() => Linking.openURL(p.url)}
           >
             <Text style={styles.socialHandle}>{p.name}</Text>
-            <Text style={styles.socialLabel}>{p.label}</Text>
+            <Text style={styles.socialLabel}>
+              {localizedField(p, 'label', locale)}
+            </Text>
           </TouchableOpacity>
         ))}
       </View>

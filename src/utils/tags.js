@@ -1,24 +1,30 @@
 // Shared tag vocabulary for special events.
 //
-// Keep this list in sync with:
+// Keep slugs in sync with:
 //   - EventosTerceira.pt   _data/event_tags.yml
 //   - event-submit-worker        src/tags.js
+//
+// Labels are NOT stored here anymore — they're resolved from
+// `tags.<slug>` in the i18n string catalogs (src/i18n/strings.*.json).
+// `getTagMeta(slug, locale)` returns the localized label.
+
+import { t as translate } from '../i18n/core.js';
 
 export const TAGS = [
-  { slug: 'kid-friendly', label: 'Kid Friendly', emoji: '👶' },
-  { slug: 'live-music', label: 'Live Music', emoji: '🎵' },
-  { slug: 'cinema', label: 'Cinema', emoji: '🎬' },
-  { slug: 'theater', label: 'Theater', emoji: '🎭' },
-  { slug: 'dance', label: 'Dance', emoji: '💃' },
-  { slug: 'nightlife', label: 'Nightlife', emoji: '🌙' },
-  { slug: 'karaoke', label: 'Karaoke', emoji: '🎤' },
-  { slug: 'food-drink', label: 'Food & Drink', emoji: '🍽️' },
-  { slug: 'exhibition', label: 'Exhibition', emoji: '🖼️' },
-  { slug: 'literature', label: 'Literature', emoji: '📖' },
-  { slug: 'workshop', label: 'Workshop', emoji: '📚' },
-  { slug: 'free', label: 'Free', emoji: '🆓' },
-  { slug: 'outdoor', label: 'Outdoor', emoji: '🌳' },
-  { slug: 'bullfighting', label: 'Bullfighting', emoji: '🐂' },
+  { slug: 'kid-friendly', emoji: '👶' },
+  { slug: 'live-music', emoji: '🎵' },
+  { slug: 'cinema', emoji: '🎬' },
+  { slug: 'theater', emoji: '🎭' },
+  { slug: 'dance', emoji: '💃' },
+  { slug: 'nightlife', emoji: '🌙' },
+  { slug: 'karaoke', emoji: '🎤' },
+  { slug: 'food-drink', emoji: '🍽️' },
+  { slug: 'exhibition', emoji: '🖼️' },
+  { slug: 'literature', emoji: '📖' },
+  { slug: 'workshop', emoji: '📚' },
+  { slug: 'free', emoji: '🆓' },
+  { slug: 'outdoor', emoji: '🌳' },
+  { slug: 'bullfighting', emoji: '🐂' },
 ];
 
 export const TAGS_BY_SLUG = Object.fromEntries(TAGS.map((t) => [t.slug, t]));
@@ -50,14 +56,28 @@ export function normalizeEventTags(event) {
 }
 
 export function getTagMeta(slug) {
-  return (
-    TAGS_BY_SLUG[slug] || {
+  const known = TAGS_BY_SLUG[slug];
+  // For known slugs the label comes from the active i18n catalog; for
+  // unknown ones we synthesize a Title Case label from the slug.
+  if (known) {
+    return {
       slug,
-      label: slug
-        .split('-')
-        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-        .join(' '),
-      emoji: '🏷️',
-    }
-  );
+      emoji: known.emoji,
+      label: translate(`tags.${slug}`, {
+        defaultValue: titleCase(slug),
+      }),
+    };
+  }
+  return {
+    slug,
+    emoji: '🏷️',
+    label: titleCase(slug),
+  };
+}
+
+function titleCase(slug) {
+  return String(slug)
+    .split('-')
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ');
 }

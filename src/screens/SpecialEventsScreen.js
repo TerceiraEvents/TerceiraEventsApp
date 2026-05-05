@@ -34,17 +34,19 @@ import {
 } from '../utils/notifications';
 import EventCard from '../components/EventCard';
 import LoadingView from '../components/LoadingView';
+import { useLocale } from '../i18n';
 
-const RANGES = [
-  { key: 'week', label: 'This Week', emoji: '📅' },
-  { key: 'month', label: 'This Month', emoji: '📆' },
-  { key: 'year', label: 'This Year', emoji: '🗓️' },
-  { key: 'all', label: 'All Upcoming', emoji: '∞' },
-  { key: 'archive', label: 'Archive', emoji: '📚' },
+const RANGE_DEFS = [
+  { key: 'week', i18nKey: 'thisWeek', emoji: '📅' },
+  { key: 'month', i18nKey: 'thisMonth', emoji: '📆' },
+  { key: 'year', i18nKey: 'thisYear', emoji: '🗓️' },
+  { key: 'all', i18nKey: 'allUpcoming', emoji: '∞' },
+  { key: 'archive', i18nKey: 'archive', emoji: '📚' },
 ];
-const RANGE_BY_KEY = Object.fromEntries(RANGES.map((r) => [r.key, r]));
+const RANGE_BY_KEY = Object.fromEntries(RANGE_DEFS.map((r) => [r.key, r]));
 
 export default function SpecialEventsScreen() {
+  const { t } = useLocale();
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -120,21 +122,22 @@ export default function SpecialEventsScreen() {
 
   const showReminder = range !== 'archive';
   const activeTag = selectedTag ? getTagMeta(selectedTag) : null;
-  const activeRange = RANGE_BY_KEY[range] || RANGES[0];
+  const activeRange = RANGE_BY_KEY[range] || RANGE_DEFS[0];
+  const activeRangeLabel = t(`specialEvents.ranges.${activeRange.i18nKey}`);
 
   return (
     <View style={styles.container}>
       <View style={styles.headerArea}>
-        <Text style={styles.header}>Special Events</Text>
+        <Text style={styles.header}>{t('specialEvents.title')}</Text>
         <View style={styles.dropdownRow}>
           <TouchableOpacity
             style={styles.rangeDropdown}
             onPress={() => setRangePickerOpen(true)}
             accessibilityRole="button"
-            accessibilityLabel="Select date range"
+            accessibilityLabel={t('specialEvents.selectDateRange')}
           >
             <Text style={styles.rangeDropdownText} numberOfLines={1}>
-              {activeRange.emoji}  {activeRange.label}
+              {activeRange.emoji}  {activeRangeLabel}
             </Text>
             <Text style={styles.rangeDropdownChevron}>▾</Text>
           </TouchableOpacity>
@@ -142,7 +145,7 @@ export default function SpecialEventsScreen() {
             style={[styles.tagDropdown, activeTag && styles.tagDropdownActive]}
             onPress={() => setTagPickerOpen(true)}
             accessibilityRole="button"
-            accessibilityLabel="Filter by tag"
+            accessibilityLabel={t('specialEvents.filterByTag')}
           >
             <Text
               style={[
@@ -153,7 +156,7 @@ export default function SpecialEventsScreen() {
             >
               {activeTag
                 ? `${activeTag.emoji} ${activeTag.label}`
-                : '🏷️ All tags'}
+                : t('specialEvents.allTags')}
             </Text>
             <Text
               style={[
@@ -169,7 +172,7 @@ export default function SpecialEventsScreen() {
           style={styles.searchInput}
           value={search}
           onChangeText={setSearch}
-          placeholder="Search by name, venue, or description…"
+          placeholder={t('specialEvents.search')}
           placeholderTextColor={colors.textMuted}
           returnKeyType="search"
           clearButtonMode="while-editing"
@@ -200,12 +203,12 @@ export default function SpecialEventsScreen() {
           <View style={styles.empty}>
             <Text style={styles.emptyText}>
               {search || selectedTag
-                ? 'No events match your filters.'
+                ? t('specialEvents.empty.filtered')
                 : range === 'archive'
-                  ? 'No past events yet.'
+                  ? t('specialEvents.empty.archive')
                   : range === 'week'
-                    ? 'No special events this week.'
-                    : 'No events to show.'}
+                    ? t('specialEvents.empty.thisWeek')
+                    : t('specialEvents.empty.default')}
             </Text>
           </View>
         }
@@ -223,9 +226,11 @@ export default function SpecialEventsScreen() {
         >
           <Pressable style={styles.modalSheet} onPress={() => {}}>
             <View style={styles.modalHandle} />
-            <Text style={styles.modalTitle}>Date range</Text>
+            <Text style={styles.modalTitle}>
+              {t('specialEvents.modals.dateRange')}
+            </Text>
             <ScrollView style={styles.modalList}>
-              {RANGES.map((r) => {
+              {RANGE_DEFS.map((r) => {
                 const active = range === r.key;
                 return (
                   <TouchableOpacity
@@ -245,7 +250,7 @@ export default function SpecialEventsScreen() {
                         active && styles.tagOptionTextActive,
                       ]}
                     >
-                      {r.emoji}  {r.label}
+                      {r.emoji}  {t(`specialEvents.ranges.${r.i18nKey}`)}
                     </Text>
                   </TouchableOpacity>
                 );
@@ -267,7 +272,9 @@ export default function SpecialEventsScreen() {
         >
           <Pressable style={styles.modalSheet} onPress={() => {}}>
             <View style={styles.modalHandle} />
-            <Text style={styles.modalTitle}>Filter by tag</Text>
+            <Text style={styles.modalTitle}>
+              {t('specialEvents.modals.filterByTag')}
+            </Text>
             <ScrollView style={styles.modalList}>
               <TouchableOpacity
                 style={[
@@ -285,20 +292,21 @@ export default function SpecialEventsScreen() {
                     !selectedTag && styles.tagOptionTextActive,
                   ]}
                 >
-                  🏷️ All tags
+                  {t('specialEvents.allTags')}
                 </Text>
               </TouchableOpacity>
-              {TAGS.map((t) => {
-                const active = selectedTag === t.slug;
+              {TAGS.map((tag) => {
+                const meta = getTagMeta(tag.slug);
+                const active = selectedTag === tag.slug;
                 return (
                   <TouchableOpacity
-                    key={t.slug}
+                    key={tag.slug}
                     style={[
                       styles.tagOption,
                       active && styles.tagOptionActive,
                     ]}
                     onPress={() => {
-                      setSelectedTag(t.slug);
+                      setSelectedTag(tag.slug);
                       setTagPickerOpen(false);
                     }}
                   >
@@ -308,7 +316,7 @@ export default function SpecialEventsScreen() {
                         active && styles.tagOptionTextActive,
                       ]}
                     >
-                      {t.emoji}  {t.label}
+                      {tag.emoji}  {meta.label}
                     </Text>
                   </TouchableOpacity>
                 );

@@ -58,7 +58,8 @@
             }
           ]
         }
-      ]
+      ],
+      "expo-localization"
     ],
     "owner": "chrisrackauckas",
     "locales": {

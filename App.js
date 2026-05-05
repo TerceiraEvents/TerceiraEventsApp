@@ -7,6 +7,7 @@ import * as Notifications from 'expo-notifications';
 import { colors } from './src/utils/theme';
 import { fetchSpecialEvents, fetchWeeklyEvents } from './src/utils/data';
 import { rescheduleAllNotifications } from './src/utils/notifications';
+import { LocaleProvider, t, useLocale } from './src/i18n';
 
 import HomeScreen from './src/screens/HomeScreen';
 import WeeklyScreen from './src/screens/WeeklyScreen';
@@ -20,12 +21,12 @@ import BlogStack from './src/navigation/BlogStack';
 const Tab = createBottomTabNavigator();
 
 const tabIcons = {
-  Home: { focused: '\u2302', unfocused: '\u2302' },
+  Home: { focused: '⌂', unfocused: '⌂' },
   Weekly: { focused: '\u{1F504}', unfocused: '\u{1F504}' },
-  Events: { focused: '\u2605', unfocused: '\u2606' },
+  Events: { focused: '★', unfocused: '☆' },
   Venues: { focused: '\u{1F4CD}', unfocused: '\u{1F4CD}' },
   Resources: { focused: '\u{1F517}', unfocused: '\u{1F517}' },
-  Settings: { focused: '\u2699\uFE0F', unfocused: '\u2699' },
+  Settings: { focused: '⚙️', unfocused: '⚙' },
 };
 
 function handleNotificationNavigation(navigation, data) {
@@ -35,11 +36,15 @@ function handleNotificationNavigation(navigation, data) {
   }
 }
 
-export default function App() {
+// Inner component so it re-renders when the locale changes; this is
+// what makes tab labels and screen titles flip without an app restart.
+function AppShell() {
   const navigationRef = useRef(null);
+  // Subscribe to locale changes — value isn't used directly, but the
+  // hook keeps this subtree in sync with the provider.
+  useLocale();
 
   useEffect(() => {
-    // Reschedule notifications on app start
     (async () => {
       try {
         const [special, weekly] = await Promise.all([
@@ -52,7 +57,6 @@ export default function App() {
       }
     })();
 
-    // Handle notification tapped while app is running
     const responseSubscription =
       Notifications.addNotificationResponseReceivedListener((response) => {
         const data = response.notification.request.content.data;
@@ -61,11 +65,9 @@ export default function App() {
         }
       });
 
-    // Handle notification that opened the app from killed state
     Notifications.getLastNotificationResponseAsync().then((response) => {
       if (response) {
         const data = response.notification.request.content.data;
-        // Small delay to ensure navigation is ready
         setTimeout(() => {
           if (navigationRef.current) {
             handleNotificationNavigation(navigationRef.current, data);
@@ -110,38 +112,38 @@ export default function App() {
         <Tab.Screen
           name="Home"
           component={HomeScreen}
-          options={{ title: 'Terceira Events', headerShown: false }}
+          options={{ title: t('app.name'), headerShown: false }}
         />
         <Tab.Screen
           name="Weekly"
           component={WeeklyScreen}
-          options={{ title: 'Weekly' }}
+          options={{ title: t('tabs.weekly') }}
         />
         <Tab.Screen
           name="Events"
           component={SpecialEventsScreen}
-          options={{ title: 'Events' }}
+          options={{ title: t('tabs.events') }}
         />
         <Tab.Screen
           name="Venues"
           component={VenuesScreen}
-          options={{ title: 'Venues' }}
+          options={{ title: t('tabs.venues') }}
         />
         <Tab.Screen
           name="Resources"
           component={ResourcesScreen}
-          options={{ title: 'More' }}
+          options={{ title: t('tabs.resources') }}
         />
         <Tab.Screen
           name="Settings"
           component={SettingsScreen}
-          options={{ title: 'Settings' }}
+          options={{ title: t('tabs.settings') }}
         />
         <Tab.Screen
           name="SuggestEvent"
           component={SuggestEventScreen}
           options={{
-            title: 'Suggest Event',
+            title: t('tabs.suggestEvent'),
             tabBarButton: () => null,
           }}
         />
@@ -149,12 +151,20 @@ export default function App() {
           name="Blog"
           component={BlogStack}
           options={{
-            title: 'Blog',
+            title: t('tabs.blog'),
             headerShown: false,
             tabBarButton: () => null,
           }}
         />
       </Tab.Navigator>
     </NavigationContainer>
+  );
+}
+
+export default function App() {
+  return (
+    <LocaleProvider>
+      <AppShell />
+    </LocaleProvider>
   );
 }
