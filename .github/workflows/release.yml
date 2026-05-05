@@ -1,20 +1,47 @@
 name: Production Release
 
 # Triggers when a GitHub release is published. The release tag (e.g. `v1.3.0`)
-# must match `expo.version` in `app.json`. Builds an Android production AAB
-# on EAS and queues an auto-submit to the Google Play production track.
+# must match `expo.version` in `app.json`. Builds production artifacts on EAS
+# in parallel for Android (AAB) and iOS (IPA) and queues an auto-submit to
+# the Google Play production track and App Store Connect respectively.
 #
-# `versionCode` is auto-incremented by EAS via `cli.appVersionSource = "remote"`
-# in `eas.json` — do NOT bump it manually in `app.json`.
+# `versionCode` (Android) and `buildNumber` (iOS) are auto-incremented by EAS
+# via `cli.appVersionSource = "remote"` in `eas.json` — do NOT bump them
+# manually in `app.json`.
+#
+# Android and iOS run as independent matrix jobs with `fail-fast: false`, so
+# a failure on one platform does not abort the other. This matters while iOS
+# is still being onboarded to App Store Connect — Android will keep shipping
+# even if iOS submit fails.
 
 on:
   release:
     types: [published]
 
 jobs:
-  release:
-    name: Build and submit Android to Google Play
+  verify:
+    name: Verify release tag matches app.json version
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify tag
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          APP_VERSION=$(jq -r '.expo.version' app.json)
+          if [ "v${APP_VERSION}" != "$TAG" ]; then
+            echo "::error::Release tag '$TAG' does not match expo.version 'v${APP_VERSION}' in app.json. Bump expo.version (and merge to main) before publishing the release."
+            exit 1
+          fi
+          echo "Tag $TAG matches app.json expo.version $APP_VERSION ✓"
+
+  release:
+    name: Build and submit (${{ matrix.platform }})
+    needs: verify
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [android, ios]
     env:
       EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
     steps:
@@ -28,15 +55,5 @@ jobs:
       - run: npm ci
       - run: npm install --global eas-cli
 
-      - name: Verify release tag matches app.json version
-        run: |
-          TAG="${GITHUB_REF#refs/tags/}"
-          APP_VERSION=$(node -p "require('./app.json').expo.version")
-          if [ "v${APP_VERSION}" != "$TAG" ]; then
-            echo "::error::Release tag '$TAG' does not match expo.version 'v${APP_VERSION}' in app.json. Bump expo.version (and merge to main) before publishing the release."
-            exit 1
-          fi
-          echo "Tag $TAG matches app.json expo.version $APP_VERSION ✓"
-
-      - name: Build Android (production) and auto-submit to Play Store
-        run: eas build --platform android --profile production --auto-submit --non-interactive --no-wait
+      - name: Build ${{ matrix.platform }} (production) and auto-submit
+        run: eas build --platform ${{ matrix.platform }} --profile production --auto-submit --non-interactive --no-wait
