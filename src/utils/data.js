@@ -4,9 +4,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { normalizeEventTags } from './tags.js';
 
 const SPECIAL_EVENTS_URL =
-  'https://raw.githubusercontent.com/TerceiraEvents/Angraevents.github.io/main/_data/special_events.yml';
+  'https://raw.githubusercontent.com/TerceiraEvents/EventosTerceira/main/_data/special_events.yml';
 const WEEKLY_EVENTS_URL =
-  'https://raw.githubusercontent.com/TerceiraEvents/Angraevents.github.io/main/_data/weekly.yml';
+  'https://raw.githubusercontent.com/TerceiraEvents/EventosTerceira/main/_data/weekly.yml';
 
 const STORAGE_KEY_SPECIAL = 'terceiraevents_cache_special';
 const STORAGE_KEY_WEEKLY = 'terceiraevents_cache_weekly';

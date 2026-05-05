@@ -2,9 +2,9 @@ import React from 'react';
 import { TodayEventsWidget } from './TodayEventsWidget';
 
 const SPECIAL_EVENTS_URL =
-  'https://raw.githubusercontent.com/TerceiraEvents/Angraevents.github.io/main/_data/special_events.yml';
+  'https://raw.githubusercontent.com/TerceiraEvents/EventosTerceira/main/_data/special_events.yml';
 const WEEKLY_EVENTS_URL =
-  'https://raw.githubusercontent.com/TerceiraEvents/Angraevents.github.io/main/_data/weekly.yml';
+  'https://raw.githubusercontent.com/TerceiraEvents/EventosTerceira/main/_data/weekly.yml';
 
 // Lightweight YAML date parser for widget context (no heavy js-yaml dependency).
 // Special events YAML has entries like:
