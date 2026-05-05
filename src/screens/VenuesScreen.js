@@ -9,8 +9,12 @@ import {
 } from 'react-native';
 import { colors, fonts } from '../utils/theme';
 import { venues } from '../utils/data';
+import { useLocale } from '../i18n';
+import { localizedField } from '../utils/i18nFields';
 
-function VenueCard({ venue }) {
+function VenueCard({ venue, t, locale }) {
+  const description = localizedField(venue, 'description', locale);
+  const address = localizedField(venue, 'address', locale);
   return (
     <View style={styles.card}>
       <Text style={styles.venueName}>{venue.name}</Text>
@@ -21,16 +25,16 @@ function VenueCard({ venue }) {
           )
         }
       >
-        <Text style={styles.address}>{venue.address}</Text>
+        <Text style={styles.address}>{address}</Text>
       </TouchableOpacity>
-      <Text style={styles.description}>{venue.description}</Text>
+      <Text style={styles.description}>{description}</Text>
       <View style={styles.links}>
         {venue.website && (
           <TouchableOpacity
             onPress={() => Linking.openURL(venue.website)}
             style={styles.linkChip}
           >
-            <Text style={styles.linkChipText}>Website</Text>
+            <Text style={styles.linkChipText}>{t('venues.links.website')}</Text>
           </TouchableOpacity>
         )}
         {venue.instagram && (
@@ -38,7 +42,9 @@ function VenueCard({ venue }) {
             onPress={() => Linking.openURL(venue.instagram)}
             style={styles.linkChip}
           >
-            <Text style={styles.linkChipText}>Instagram</Text>
+            <Text style={styles.linkChipText}>
+              {t('venues.links.instagram')}
+            </Text>
           </TouchableOpacity>
         )}
         {venue.facebook && (
@@ -46,7 +52,9 @@ function VenueCard({ venue }) {
             onPress={() => Linking.openURL(venue.facebook)}
             style={styles.linkChip}
           >
-            <Text style={styles.linkChipText}>Facebook</Text>
+            <Text style={styles.linkChipText}>
+              {t('venues.links.facebook')}
+            </Text>
           </TouchableOpacity>
         )}
         {venue.tickets && (
@@ -54,7 +62,7 @@ function VenueCard({ venue }) {
             onPress={() => Linking.openURL(venue.tickets)}
             style={styles.linkChip}
           >
-            <Text style={styles.linkChipText}>Tickets</Text>
+            <Text style={styles.linkChipText}>{t('venues.links.tickets')}</Text>
           </TouchableOpacity>
         )}
         {venue.reservation && (
@@ -62,7 +70,9 @@ function VenueCard({ venue }) {
             onPress={() => Linking.openURL(venue.reservation)}
             style={[styles.linkChip, styles.reserveChip]}
           >
-            <Text style={styles.reserveChipText}>Reserve</Text>
+            <Text style={styles.reserveChipText}>
+              {t('venues.links.reserve')}
+            </Text>
           </TouchableOpacity>
         )}
         {venue.phone && (
@@ -81,15 +91,13 @@ function VenueCard({ venue }) {
 }
 
 export default function VenuesScreen() {
+  const { t, locale } = useLocale();
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.header}>Venues</Text>
-      <Text style={styles.intro}>
-        Bars, restaurants, cultural spaces, and other venues hosting events in
-        Angra do Heroísmo.
-      </Text>
+      <Text style={styles.header}>{t('venues.title')}</Text>
+      <Text style={styles.intro}>{t('venues.intro')}</Text>
       {venues.map((venue) => (
-        <VenueCard key={venue.name} venue={venue} />
+        <VenueCard key={venue.name} venue={venue} t={t} locale={locale} />
       ))}
     </ScrollView>
   );

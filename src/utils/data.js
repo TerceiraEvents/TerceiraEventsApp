@@ -85,9 +85,17 @@ export function parseEventDate(dateValue) {
   return isNaN(d.getTime()) ? null : d;
 }
 
-// "2026-04-30" → "30 Apr 2026". Used by blog post lists / details.
-// js-yaml-style Date objects are also accepted via toISOString().
-export function formatPostDate(value) {
+// Map an app locale code to the BCP-47 string we hand to
+// `toLocaleDateString` / `Intl.DateTimeFormat`. We deliberately use
+// `pt-PT` for Portuguese (the Azores variant), not `pt-BR`.
+function intlLocale(locale) {
+  if (locale === 'pt') return 'pt-PT';
+  return 'en-US';
+}
+
+// "2026-04-30" → "30 Apr 2026" (en) or "30 abr. 2026" (pt). Used by
+// blog post lists / details. js-yaml Date objects are also accepted.
+export function formatPostDate(value, locale) {
   if (!value) return '';
   const iso = value instanceof Date
     ? (isNaN(value.getTime()) ? null : value.toISOString().slice(0, 10))
@@ -95,7 +103,7 @@ export function formatPostDate(value) {
   if (!iso) return '';
   const d = new Date(iso + 'T00:00:00');
   if (isNaN(d.getTime())) return iso;
-  return d.toLocaleDateString('en-US', {
+  return d.toLocaleDateString(intlLocale(locale), {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
@@ -105,25 +113,32 @@ export function formatPostDate(value) {
 // "2026-05-05" → "5 May" (no year). Used in compact event lists like
 // the homepage "Upcoming special events" preview, where a year would
 // be redundant for events all in the next ~12 months.
-export function formatEventDateShort(value) {
+export function formatEventDateShort(value, locale) {
   if (!value) return '';
   const d = value instanceof Date
     ? value
     : new Date(String(value) + 'T00:00:00');
   if (isNaN(d.getTime())) return String(value);
-  return d.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+  return d.toLocaleDateString(intlLocale(locale), {
+    day: 'numeric',
+    month: 'short',
+  });
 }
 
-export function formatDate(date) {
-  const months = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-  ];
+const MONTH_NAMES = {
+  en: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+  pt: ['jan', 'fev', 'mar', 'abr', 'mai', 'jun',
+       'jul', 'ago', 'set', 'out', 'nov', 'dez'],
+};
+
+export function formatDate(date, locale) {
+  const months = MONTH_NAMES[locale === 'pt' ? 'pt' : 'en'];
   return {
     month: months[date.getMonth()],
     day: date.getDate(),
     year: date.getFullYear(),
-    weekday: date.toLocaleDateString('en-US', { weekday: 'long' }),
+    weekday: date.toLocaleDateString(intlLocale(locale), { weekday: 'long' }),
   };
 }
 

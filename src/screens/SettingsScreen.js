@@ -12,26 +12,28 @@ import { colors, fonts } from '../utils/theme';
 import { getSettings, saveSettings } from '../utils/storage';
 import { requestPermissions, rescheduleAllNotifications } from '../utils/notifications';
 import { fetchSpecialEvents, fetchWeeklyEvents } from '../utils/data';
+import { useLocale, LOCALE_CHOICES } from '../i18n';
 
 const LEAD_TIME_OPTIONS = [
-  { label: '15 minutes', value: 15 },
-  { label: '30 minutes', value: 30 },
-  { label: '1 hour', value: 60 },
-  { label: '2 hours', value: 120 },
-  { label: '4 hours', value: 240 },
-  { label: '1 day', value: 1440 },
+  { key: '15min', value: 15 },
+  { key: '30min', value: 30 },
+  { key: '1h', value: 60 },
+  { key: '2h', value: 120 },
+  { key: '4h', value: 240 },
+  { key: '1d', value: 1440 },
 ];
 
 const SUMMARY_TIME_OPTIONS = [
-  { label: '7:00 AM', hour: 7, minute: 0 },
-  { label: '8:00 AM', hour: 8, minute: 0 },
-  { label: '9:00 AM', hour: 9, minute: 0 },
-  { label: '10:00 AM', hour: 10, minute: 0 },
-  { label: '11:00 AM', hour: 11, minute: 0 },
-  { label: '12:00 PM', hour: 12, minute: 0 },
+  { key: '0700', hour: 7, minute: 0 },
+  { key: '0800', hour: 8, minute: 0 },
+  { key: '0900', hour: 9, minute: 0 },
+  { key: '1000', hour: 10, minute: 0 },
+  { key: '1100', hour: 11, minute: 0 },
+  { key: '1200', hour: 12, minute: 0 },
 ];
 
 export default function SettingsScreen() {
+  const { t, choice, setChoice } = useLocale();
   const [settings, setSettings] = useState(null);
   useEffect(() => {
     getSettings().then(setSettings);
@@ -43,13 +45,12 @@ export default function SettingsScreen() {
       setSettings(updated);
       await saveSettings(updated);
 
-      // If toggling notifications on, request permissions
       if (key === 'dailySummaryEnabled' && value) {
         const granted = await requestPermissions();
         if (!granted) {
           Alert.alert(
-            'Notifications Disabled',
-            'Please enable notifications in your device settings to receive daily summaries.',
+            t('settings.notifications.disabledTitle'),
+            t('settings.notifications.disabledBody'),
           );
           const reverted = { ...updated, dailySummaryEnabled: false };
           setSettings(reverted);
@@ -58,30 +59,58 @@ export default function SettingsScreen() {
         }
       }
 
-      // Reschedule notifications with new settings
       const [special, weekly] = await Promise.all([
         fetchSpecialEvents(),
         fetchWeeklyEvents(),
       ]);
       await rescheduleAllNotifications(special, weekly);
     },
-    [settings],
+    [settings, t],
   );
 
   if (!settings) return null;
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.header}>Settings</Text>
+      <Text style={styles.header}>{t('settings.title')}</Text>
 
-      {/* Daily Summary Section */}
-      <Text style={styles.sectionTitle}>Daily Summary</Text>
+      {/* Language */}
+      <Text style={styles.sectionTitle}>{t('settings.language.section')}</Text>
+      <View style={styles.card}>
+        <Text style={styles.label}>{t('settings.language.label')}</Text>
+        <Text style={styles.sublabel}>{t('settings.language.description')}</Text>
+        <View style={styles.chips}>
+          {LOCALE_CHOICES.map((c) => {
+            const active = choice === c;
+            return (
+              <TouchableOpacity
+                key={c}
+                style={[styles.chip, active && styles.chipActive]}
+                onPress={() => setChoice(c)}
+                accessibilityRole="button"
+                accessibilityState={{ selected: active }}
+              >
+                <Text
+                  style={[styles.chipText, active && styles.chipTextActive]}
+                >
+                  {t(`settings.language.${c}`)}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </View>
+
+      {/* Daily Summary */}
+      <Text style={styles.sectionTitle}>
+        {t('settings.dailySummary.section')}
+      </Text>
       <View style={styles.card}>
         <View style={styles.row}>
           <View style={styles.rowText}>
-            <Text style={styles.label}>Daily Summary</Text>
+            <Text style={styles.label}>{t('settings.dailySummary.toggle')}</Text>
             <Text style={styles.sublabel}>
-              Get a notification each morning with the day{"'"}s events
+              {t('settings.dailySummary.description')}
             </Text>
           </View>
           <Switch
@@ -95,7 +124,9 @@ export default function SettingsScreen() {
         {settings.dailySummaryEnabled && (
           <>
             <View style={styles.divider} />
-            <Text style={styles.pickerLabel}>Summary Time</Text>
+            <Text style={styles.pickerLabel}>
+              {t('settings.dailySummary.time')}
+            </Text>
             <View style={styles.chips}>
               {SUMMARY_TIME_OPTIONS.map((opt) => {
                 const active =
@@ -103,7 +134,7 @@ export default function SettingsScreen() {
                   settings.dailySummaryMinute === opt.minute;
                 return (
                   <TouchableOpacity
-                    key={opt.label}
+                    key={opt.key}
                     style={[styles.chip, active && styles.chipActive]}
                     onPress={() => {
                       const updated = {
@@ -127,7 +158,7 @@ export default function SettingsScreen() {
                         active && styles.chipTextActive,
                       ]}
                     >
-                      {opt.label}
+                      {t(`settings.times.${opt.key}`)}
                     </Text>
                   </TouchableOpacity>
                 );
@@ -137,9 +168,11 @@ export default function SettingsScreen() {
             <View style={styles.divider} />
             <View style={styles.row}>
               <View style={styles.rowText}>
-                <Text style={styles.label}>Include Weekly Events</Text>
+                <Text style={styles.label}>
+                  {t('settings.dailySummary.includeWeekly')}
+                </Text>
                 <Text style={styles.sublabel}>
-                  Show recurring weekly events in the daily summary
+                  {t('settings.dailySummary.includeWeeklyDescription')}
                 </Text>
               </View>
               <Switch
@@ -155,10 +188,11 @@ export default function SettingsScreen() {
             <View style={styles.divider} />
             <View style={styles.row}>
               <View style={styles.rowText}>
-                <Text style={styles.label}>Only Reminded Weekly Events</Text>
+                <Text style={styles.label}>
+                  {t('settings.dailySummary.onlyReminded')}
+                </Text>
                 <Text style={styles.sublabel}>
-                  When weekly events are included, only show ones you set a
-                  reminder for
+                  {t('settings.dailySummary.onlyRemindedDescription')}
                 </Text>
               </View>
               <Switch
@@ -175,12 +209,16 @@ export default function SettingsScreen() {
         )}
       </View>
 
-      {/* Event Reminders Section */}
-      <Text style={styles.sectionTitle}>Event Reminders</Text>
+      {/* Event Reminders */}
+      <Text style={styles.sectionTitle}>
+        {t('settings.reminders.section')}
+      </Text>
       <View style={styles.card}>
-        <Text style={styles.pickerLabel}>Remind Me Before Event</Text>
+        <Text style={styles.pickerLabel}>
+          {t('settings.reminders.leadTime')}
+        </Text>
         <Text style={styles.sublabel}>
-          How long before an event to send the reminder notification
+          {t('settings.reminders.leadTimeDescription')}
         </Text>
         <View style={styles.chips}>
           {LEAD_TIME_OPTIONS.map((opt) => {
@@ -194,7 +232,7 @@ export default function SettingsScreen() {
                 <Text
                   style={[styles.chipText, active && styles.chipTextActive]}
                 >
-                  {opt.label}
+                  {t(`settings.leadTimes.${opt.key}`)}
                 </Text>
               </TouchableOpacity>
             );
@@ -203,10 +241,7 @@ export default function SettingsScreen() {
       </View>
 
       <View style={styles.infoBox}>
-        <Text style={styles.infoText}>
-          Tap the bell icon on any special event to set a reminder. You{"'"}ll
-          get a notification before the event starts.
-        </Text>
+        <Text style={styles.infoText}>{t('settings.reminders.info')}</Text>
       </View>
     </ScrollView>
   );

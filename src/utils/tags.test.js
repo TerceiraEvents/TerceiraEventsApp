@@ -16,14 +16,13 @@ test('TAGS are unique and well-formed', () => {
   assert.equal(new Set(slugs).size, slugs.length, 'slugs are unique');
   for (const t of TAGS) {
     assert.ok(t.slug, `tag has slug: ${JSON.stringify(t)}`);
-    assert.ok(t.label, `tag has label: ${JSON.stringify(t)}`);
     assert.ok(t.emoji, `tag has emoji: ${JSON.stringify(t)}`);
   }
 });
 
 test('TAGS_BY_SLUG matches TAGS', () => {
   assert.equal(Object.keys(TAGS_BY_SLUG).length, TAGS.length);
-  assert.equal(TAGS_BY_SLUG['kid-friendly'].label, 'Kid Friendly');
+  assert.equal(TAGS_BY_SLUG['kid-friendly'].emoji, '👶');
 });
 
 test('VALID_TAG_SLUGS contains all declared slugs', () => {

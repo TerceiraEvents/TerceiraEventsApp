@@ -7,26 +7,14 @@ import {
   cleanupPastReminders,
 } from './storage';
 import { parseEventDate, formatDate } from './data';
+import { t, getLocale } from '../i18n/core.js';
 
-const DAILY_GREETINGS = [
-  "Good Moo-rning! Here's today's lineup:",
-  "Udderly exciting day ahead on Terceira:",
-  "Holy cow! Look what's happening today:",
-  "No bull \u2014 here's what's on today:",
-  "Herd it here first! Today's events:",
-  "Moo-ve over, boring days! Today's packed:",
-  "Don't have a cow, but today is stacked:",
-  "The steaks are high today:",
-  "Legen-dairy day ahead:",
-  "Pasture bedtime? Not with today's events:",
-  "Cud you believe today's lineup?",
-  "Terceira-sly good lineup today:",
-  "Island vibes and good times \u2014 today on Terceira:",
-  "The bull's on the rope and the night is young:",
-  "From Angra to Praia, today's got it all:",
-  "Grab the rope! Today's events are charging:",
-  "Today's lineup is on the loose:",
-];
+// Greetings live in the i18n catalog so they translate with locale.
+// Reading lazily (per call) ensures a runtime locale change is picked
+// up by the next scheduled summary without needing a module reload.
+function getGreetings() {
+  return t('notifications.greetings');
+}
 
 // Configure how notifications appear when app is in foreground
 Notifications.setNotificationHandler({
@@ -70,6 +58,9 @@ async function scheduleDailySummaries(
   weeklyEvents,
   settings,
 ) {
+  // Day name lookup for weekly-event matching. The website's YAML keys
+  // every weekly group on the English day name, so this stays in
+  // English regardless of UI locale — it's a data key, not user copy.
   const dayNames = [
     'Sunday',
     'Monday',
@@ -79,6 +70,8 @@ async function scheduleDailySummaries(
     'Friday',
     'Saturday',
   ];
+
+  const greetings = getGreetings();
 
   for (let dayOffset = 0; dayOffset < 14; dayOffset++) {
     const targetDate = new Date();
@@ -110,18 +103,20 @@ async function scheduleDailySummaries(
     // Build notification body
     const lines = [];
     for (const e of daySpecialEvents) {
-      const timeStr = e.time ? ` at ${e.time}` : '';
+      const timeStr = e.time ? ` ${t('notifications.atTime', { time: e.time })}` : '';
       lines.push(`${e.name}${timeStr} - ${e.venue}`);
     }
     for (const e of dayWeeklyEvents) {
-      const timeStr = e.time ? ` at ${e.time}` : '';
+      const timeStr = e.time ? ` ${t('notifications.atTime', { time: e.time })}` : '';
       lines.push(`${e.name}${timeStr} - ${e.venue}`);
     }
 
     const body =
       lines.length <= 3
         ? lines.join('\n')
-        : lines.slice(0, 3).join('\n') + `\n...and ${lines.length - 3} more`;
+        : lines.slice(0, 3).join('\n') +
+          '\n' +
+          t('notifications.andMore', { count: lines.length - 3 });
 
     // Schedule at the configured summary time
     const triggerDate = new Date(targetDate);
@@ -132,8 +127,8 @@ async function scheduleDailySummaries(
 
     // Pick a deterministic-but-varied greeting based on the date
     const greetingIndex =
-      (targetDate.getDate() + targetDate.getMonth() * 31) % DAILY_GREETINGS.length;
-    const greeting = DAILY_GREETINGS[greetingIndex];
+      (targetDate.getDate() + targetDate.getMonth() * 31) % greetings.length;
+    const greeting = greetings[greetingIndex];
 
     await Notifications.scheduleNotificationAsync({
       content: {
@@ -149,6 +144,7 @@ async function scheduleDailySummaries(
 // Schedule reminder notifications for reminded events
 async function scheduleEventReminders(specialEvents, settings, remindedKeys) {
   const leadMs = settings.reminderLeadMinutes * 60 * 1000;
+  const locale = getLocale();
 
   for (const event of specialEvents) {
     const key = makeEventKey(event);
@@ -178,12 +174,14 @@ async function scheduleEventReminders(specialEvents, settings, remindedKeys) {
     // Don't schedule if already passed
     if (notifyAt <= new Date()) continue;
 
-    const formatted = formatDate(eventDate);
-    const timeStr = event.time ? ` at ${event.time}` : '';
+    const formatted = formatDate(eventDate, locale);
+    const timeStr = event.time
+      ? ` ${t('notifications.atTime', { time: event.time })}`
+      : '';
 
     await Notifications.scheduleNotificationAsync({
       content: {
-        title: `Reminder: ${event.name}`,
+        title: t('notifications.reminderTitle', { name: event.name }),
         body: `${event.venue}${timeStr}\n${formatted.weekday}, ${formatted.month} ${formatted.day}`,
         data: { type: 'event_reminder', eventKey: key },
       },
@@ -216,12 +214,15 @@ export async function scheduleOneReminder(event) {
   const notifyAt = new Date(triggerDate.getTime() - leadMs);
   if (notifyAt <= new Date()) return;
 
-  const formatted = formatDate(eventDate);
-  const timeStr = event.time ? ` at ${event.time}` : '';
+  const locale = getLocale();
+  const formatted = formatDate(eventDate, locale);
+  const timeStr = event.time
+    ? ` ${t('notifications.atTime', { time: event.time })}`
+    : '';
 
   await Notifications.scheduleNotificationAsync({
     content: {
-      title: `Reminder: ${event.name}`,
+      title: t('notifications.reminderTitle', { name: event.name }),
       body: `${event.venue}${timeStr}\n${formatted.weekday}, ${formatted.month} ${formatted.day}`,
       data: { type: 'event_reminder', eventKey: makeEventKey(event) },
     },

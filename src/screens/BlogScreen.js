@@ -11,6 +11,8 @@ import { fetchPosts, clearPostsCache } from '../utils/posts';
 import { formatPostDate } from '../utils/data';
 import { colors, fonts } from '../utils/theme';
 import LoadingView from '../components/LoadingView';
+import { useLocale } from '../i18n';
+import { localizedField } from '../utils/i18nFields';
 
 const CATEGORY_COLORS = {
   news: { bg: '#fce8c8', text: '#6b4a0a' },
@@ -34,6 +36,7 @@ function CategoryPill({ category }) {
 }
 
 export default function BlogScreen({ navigation }) {
+  const { t, locale } = useLocale();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -72,10 +75,8 @@ export default function BlogScreen({ navigation }) {
       }
       ListHeaderComponent={
         <View style={styles.headerArea}>
-          <Text style={styles.header}>Blog</Text>
-          <Text style={styles.intro}>
-            News, guides, and stories about life on Terceira.
-          </Text>
+          <Text style={styles.header}>{t('blog.title')}</Text>
+          <Text style={styles.intro}>{t('blog.intro')}</Text>
         </View>
       }
       renderItem={({ item }) => (
@@ -88,20 +89,22 @@ export default function BlogScreen({ navigation }) {
         >
           <View style={styles.metaRow}>
             <CategoryPill category={item.category} />
-            <Text style={styles.dateText}>{formatDate(item.date)}</Text>
+            <Text style={styles.dateText}>{formatDate(item.date, locale)}</Text>
           </View>
-          <Text style={styles.title}>{item.title}</Text>
-          {item.excerpt ? (
-            <Text style={styles.excerpt}>{item.excerpt}</Text>
+          <Text style={styles.title}>
+            {localizedField(item, 'title', locale)}
+          </Text>
+          {localizedField(item, 'excerpt', locale) ? (
+            <Text style={styles.excerpt}>
+              {localizedField(item, 'excerpt', locale)}
+            </Text>
           ) : null}
-          <Text style={styles.readMore}>Read more →</Text>
+          <Text style={styles.readMore}>{t('blog.readMore')}</Text>
         </TouchableOpacity>
       )}
       ListEmptyComponent={
         <View style={styles.empty}>
-          <Text style={styles.emptyText}>
-            No posts yet. Check back soon.
-          </Text>
+          <Text style={styles.emptyText}>{t('blog.empty')}</Text>
         </View>
       }
     />

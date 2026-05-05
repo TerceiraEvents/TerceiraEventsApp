@@ -14,6 +14,8 @@ import {
 } from 'react-native';
 import { colors, fonts } from '../utils/theme';
 import { parseEventDate, formatDate } from '../utils/data';
+import { useLocale } from '../i18n';
+import { localizedField } from '../utils/i18nFields';
 
 const FLAG_URL =
   'https://event-submit-worker.terceriaevents.workers.dev/flag-event';
@@ -24,6 +26,7 @@ export default function FlagEventModal({
   onClose,
   eventDateOverride,
 }) {
+  const { t, locale } = useLocale();
   const [reason, setReason] = useState('');
   const [submitterName, setSubmitterName] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -31,7 +34,7 @@ export default function FlagEventModal({
   if (!event) return null;
 
   const date = parseEventDate(event.date);
-  const formatted = date ? formatDate(date) : null;
+  const formatted = date ? formatDate(date, locale) : null;
   const dateStr = eventDateOverride
     ? eventDateOverride
     : formatted
@@ -52,8 +55,8 @@ export default function FlagEventModal({
   const handleSubmit = async () => {
     if (!reason.trim()) {
       Alert.alert(
-        'Missing Details',
-        'Please describe what needs to change about this event.',
+        t('flagModal.alerts.missingTitle'),
+        t('flagModal.alerts.missingBody'),
       );
       return;
     }
@@ -78,19 +81,22 @@ export default function FlagEventModal({
         throw new Error(`Server responded with ${response.status}`);
       }
       Alert.alert(
-        'Thank You!',
-        'Your edit suggestion has been submitted for review.',
+        t('flagModal.alerts.successTitle'),
+        t('flagModal.alerts.successBody'),
       );
       reset();
       onClose();
     } catch {
       Alert.alert(
-        'Submission Failed',
-        'Could not submit your suggestion. Please check your connection and try again.',
+        t('flagModal.alerts.failTitle'),
+        t('flagModal.alerts.failBody'),
       );
       setSubmitting(false);
     }
   };
+
+  const displayName = localizedField(event, 'name', locale);
+  const displayVenue = localizedField(event, 'venue', locale);
 
   return (
     <Modal
@@ -109,39 +115,43 @@ export default function FlagEventModal({
             keyboardShouldPersistTaps="handled"
           >
             <View style={styles.header}>
-              <Text style={styles.title}>Suggest an Edit</Text>
+              <Text style={styles.title}>{t('flagModal.title')}</Text>
               <TouchableOpacity onPress={handleClose} hitSlop={8}>
-                <Text style={styles.closeX}>{'\u2715'}</Text>
+                <Text style={styles.closeX}>{'✕'}</Text>
               </TouchableOpacity>
             </View>
 
             <View style={styles.eventBox}>
-              <Text style={styles.eventName}>{event.name}</Text>
+              <Text style={styles.eventName}>{displayName}</Text>
               {dateStr ? <Text style={styles.eventMeta}>{dateStr}</Text> : null}
-              {event.venue ? <Text style={styles.eventMeta}>{event.venue}</Text> : null}
+              {displayVenue ? (
+                <Text style={styles.eventMeta}>{displayVenue}</Text>
+              ) : null}
             </View>
 
             <Text style={styles.label}>
-              What needs to change?
-              <Text style={styles.required}> *</Text>
+              {t('flagModal.label')}
+              <Text style={styles.required}>{t('flagModal.required')}</Text>
             </Text>
             <TextInput
               style={styles.textarea}
               value={reason}
               onChangeText={setReason}
-              placeholder="Wrong time, wrong venue, cancelled, typo, missing details, etc."
+              placeholder={t('flagModal.placeholder')}
               placeholderTextColor={colors.textMuted}
               multiline
               numberOfLines={5}
               textAlignVertical="top"
             />
 
-            <Text style={[styles.label, styles.labelSpaced]}>Your Name</Text>
+            <Text style={[styles.label, styles.labelSpaced]}>
+              {t('flagModal.yourName')}
+            </Text>
             <TextInput
               style={styles.input}
               value={submitterName}
               onChangeText={setSubmitterName}
-              placeholder="Optional"
+              placeholder={t('flagModal.yourNamePlaceholder')}
               placeholderTextColor={colors.textMuted}
             />
 
@@ -154,7 +164,7 @@ export default function FlagEventModal({
               {submitting ? (
                 <ActivityIndicator color={colors.white} />
               ) : (
-                <Text style={styles.submitText}>Submit</Text>
+                <Text style={styles.submitText}>{t('flagModal.submit')}</Text>
               )}
             </TouchableOpacity>
           </ScrollView>

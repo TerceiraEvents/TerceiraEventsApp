@@ -15,14 +15,16 @@ import {
   formatPostDate,
   formatEventDateShort,
 } from '../utils/data';
+import { useLocale } from '../i18n';
+import { localizedField } from '../utils/i18nFields';
 
-const buttons = [
-  { title: 'Weekly Events', subtitle: 'Recurring entertainment', screen: 'Weekly' },
-  { title: 'Special Events', subtitle: "What's on this week", screen: 'Events' },
-  { title: 'Venues', subtitle: 'Where to go', screen: 'Venues' },
-  { title: 'Blog', subtitle: 'News, guides, and stories', screen: 'Blog' },
-  { title: 'Resources', subtitle: 'Other ways to find events', screen: 'Resources' },
-  { title: 'Suggest Event', subtitle: 'Submit an event for review', screen: 'SuggestEvent' },
+const buttonScreens = [
+  { key: 'weekly', screen: 'Weekly' },
+  { key: 'specialEvents', screen: 'Events' },
+  { key: 'venues', screen: 'Venues' },
+  { key: 'blog', screen: 'Blog' },
+  { key: 'resources', screen: 'Resources' },
+  { key: 'suggest', screen: 'SuggestEvent' },
 ];
 
 const CATEGORY_COLORS = {
@@ -49,6 +51,7 @@ function CategoryPill({ category }) {
 }
 
 export default function HomeScreen({ navigation }) {
+  const { t, locale } = useLocale();
   const [posts, setPosts] = useState([]);
   const [events, setEvents] = useState([]);
 
@@ -81,36 +84,36 @@ export default function HomeScreen({ navigation }) {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.hero}>
-        <Text style={styles.title}>Terceira Events</Text>
-        <Text style={styles.subtitle}>{"What's happening on Terceira Island"}</Text>
+        <Text style={styles.title}>{t('home.title')}</Text>
+        <Text style={styles.subtitle}>{t('home.subtitle')}</Text>
       </View>
 
       <View style={styles.intro}>
-        <Text style={styles.introText}>
-          {"Terceira is known as \"the amusement park\" of the Azores, famous for its bullfights on a rope, vibrant festivals, live music, and cultural events year-round."}
-        </Text>
-        <Text style={styles.introText}>
-          {"This app helps you discover what's happening across Terceira, from weekly karaoke nights to special concerts and festivals."}
-        </Text>
+        <Text style={styles.introText}>{t('home.intro.p1')}</Text>
+        <Text style={styles.introText}>{t('home.intro.p2')}</Text>
       </View>
 
       <View style={styles.buttonsContainer}>
-        {buttons.map((btn) => (
+        {buttonScreens.map((btn) => (
           <TouchableOpacity
             key={btn.screen}
             style={styles.navButton}
             onPress={() => navigation.navigate(btn.screen)}
             activeOpacity={0.7}
           >
-            <Text style={styles.buttonTitle}>{btn.title}</Text>
-            <Text style={styles.buttonSubtitle}>{btn.subtitle}</Text>
+            <Text style={styles.buttonTitle}>{t(`home.buttons.${btn.key}`)}</Text>
+            <Text style={styles.buttonSubtitle}>
+              {t(`home.buttons.${btn.key}Subtitle`)}
+            </Text>
           </TouchableOpacity>
         ))}
       </View>
 
       {previewEvents.length > 0 ? (
         <View style={styles.eventsSection}>
-          <Text style={styles.eventsHeading}>Upcoming special events</Text>
+          <Text style={styles.eventsHeading}>
+            {t('home.sections.specialEvents')}
+          </Text>
           {previewEvents.map((event, idx) => (
             <TouchableOpacity
               key={`${event.date}-${event.name}-${idx}`}
@@ -119,14 +122,20 @@ export default function HomeScreen({ navigation }) {
               onPress={() => navigation.navigate('Events')}
             >
               <View style={styles.eventMetaRow}>
-                <Text style={styles.eventDate}>{formatEventDate(event.date)}</Text>
+                <Text style={styles.eventDate}>
+                  {formatEventDate(event.date, locale)}
+                </Text>
                 {event.time ? (
                   <Text style={styles.eventTime}>· {event.time}</Text>
                 ) : null}
               </View>
-              <Text style={styles.eventItemTitle}>{event.name}</Text>
+              <Text style={styles.eventItemTitle}>
+                {localizedField(event, 'name', locale)}
+              </Text>
               {event.venue ? (
-                <Text style={styles.eventVenue}>{event.venue}</Text>
+                <Text style={styles.eventVenue}>
+                  {localizedField(event, 'venue', locale)}
+                </Text>
               ) : null}
             </TouchableOpacity>
           ))}
@@ -134,14 +143,14 @@ export default function HomeScreen({ navigation }) {
             onPress={() => navigation.navigate('Events')}
             activeOpacity={0.7}
           >
-            <Text style={styles.eventsAll}>All upcoming →</Text>
+            <Text style={styles.eventsAll}>{t('home.links.allUpcoming')}</Text>
           </TouchableOpacity>
         </View>
       ) : null}
 
       {previewPosts.length > 0 ? (
         <View style={styles.blogSection}>
-          <Text style={styles.blogHeading}>From the blog</Text>
+          <Text style={styles.blogHeading}>{t('home.sections.blog')}</Text>
           {previewPosts.map((post) => (
             <TouchableOpacity
               key={post.slug || post.filename}
@@ -156,16 +165,20 @@ export default function HomeScreen({ navigation }) {
             >
               <View style={styles.blogMetaRow}>
                 <CategoryPill category={post.category} />
-                <Text style={styles.blogDate}>{formatDate(post.date)}</Text>
+                <Text style={styles.blogDate}>
+                  {formatDate(post.date, locale)}
+                </Text>
               </View>
-              <Text style={styles.blogItemTitle}>{post.title}</Text>
+              <Text style={styles.blogItemTitle}>
+                {localizedField(post, 'title', locale)}
+              </Text>
             </TouchableOpacity>
           ))}
           <TouchableOpacity
             onPress={() => navigation.navigate('Blog')}
             activeOpacity={0.7}
           >
-            <Text style={styles.blogAll}>All posts →</Text>
+            <Text style={styles.blogAll}>{t('home.links.allPosts')}</Text>
           </TouchableOpacity>
         </View>
       ) : null}

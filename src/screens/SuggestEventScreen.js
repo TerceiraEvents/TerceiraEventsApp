@@ -12,7 +12,8 @@ import {
   Platform,
 } from 'react-native';
 import { colors, fonts } from '../utils/theme';
-import { TAGS } from '../utils/tags';
+import { TAGS, getTagMeta } from '../utils/tags';
+import { useLocale } from '../i18n';
 
 const SUBMIT_URL =
   'https://event-submit-worker.terceriaevents.workers.dev/submit-event';
@@ -32,6 +33,7 @@ const INITIAL_FORM = {
 };
 
 export default function SuggestEventScreen() {
+  const { t } = useLocale();
   const [form, setForm] = useState(INITIAL_FORM);
   const [submitting, setSubmitting] = useState(false);
 
@@ -44,20 +46,22 @@ export default function SuggestEventScreen() {
       const has = prev.tags.includes(slug);
       return {
         ...prev,
-        tags: has ? prev.tags.filter((t) => t !== slug) : [...prev.tags, slug],
+        tags: has
+          ? prev.tags.filter((s) => s !== slug)
+          : [...prev.tags, slug],
       };
     });
   };
 
   const validate = () => {
     const missing = [];
-    if (!form.eventName.trim()) missing.push('Event Name');
-    if (!form.date.trim()) missing.push('Date');
-    if (!form.venue.trim()) missing.push('Venue');
+    if (!form.eventName.trim()) missing.push(t('suggest.fields.name'));
+    if (!form.date.trim()) missing.push(t('suggest.fields.date'));
+    if (!form.venue.trim()) missing.push(t('suggest.fields.venue'));
     if (missing.length > 0) {
       Alert.alert(
-        'Required Fields',
-        `Please fill in: ${missing.join(', ')}`,
+        t('suggest.alerts.requiredTitle'),
+        t('suggest.alerts.requiredBody', { missing: missing.join(', ') }),
       );
       return false;
     }
@@ -92,14 +96,14 @@ export default function SuggestEventScreen() {
       }
 
       Alert.alert(
-        'Thank You!',
-        'Your event suggestion has been submitted for review.',
+        t('suggest.alerts.successTitle'),
+        t('suggest.alerts.successBody'),
       );
       setForm(INITIAL_FORM);
     } catch {
       Alert.alert(
-        'Submission Failed',
-        'Could not submit your event suggestion. Please check your internet connection and try again.',
+        t('suggest.alerts.failTitle'),
+        t('suggest.alerts.failBody'),
       );
     } finally {
       setSubmitting(false);
@@ -116,82 +120,77 @@ export default function SuggestEventScreen() {
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
       >
-        <Text style={styles.header}>Suggest an Event</Text>
-        <Text style={styles.intro}>
-          Know about an event happening on Terceira? Submit it here and we will
-          review it for inclusion in the app.
-        </Text>
+        <Text style={styles.header}>{t('suggest.title')}</Text>
+        <Text style={styles.intro}>{t('suggest.intro')}</Text>
 
         <View style={styles.card}>
           <FormField
-            label="Event Name"
+            label={t('suggest.fields.name')}
             required
             value={form.eventName}
             onChangeText={(v) => updateField('eventName', v)}
-            placeholder="e.g. Summer Jazz Festival"
+            placeholder={t('suggest.fields.namePlaceholder')}
           />
 
           <View style={styles.divider} />
           <FormField
-            label="Date"
+            label={t('suggest.fields.date')}
             required
             value={form.date}
             onChangeText={(v) => updateField('date', v)}
-            placeholder="YYYY-MM-DD"
+            placeholder={t('suggest.fields.datePlaceholder')}
             keyboardType="numbers-and-punctuation"
           />
 
           <View style={styles.divider} />
           <FormField
-            label="Time"
+            label={t('suggest.fields.time')}
             value={form.time}
             onChangeText={(v) => updateField('time', v)}
-            placeholder="HH:MM"
+            placeholder={t('suggest.fields.timePlaceholder')}
             keyboardType="numbers-and-punctuation"
           />
 
           <View style={styles.divider} />
           <FormField
-            label="Venue"
+            label={t('suggest.fields.venue')}
             required
             value={form.venue}
             onChangeText={(v) => updateField('venue', v)}
-            placeholder="e.g. Praca de Toiros"
+            placeholder={t('suggest.fields.venuePlaceholder')}
           />
 
           <View style={styles.divider} />
           <FormField
-            label="Address"
+            label={t('suggest.fields.address')}
             value={form.address}
             onChangeText={(v) => updateField('address', v)}
-            placeholder="Street address or area"
+            placeholder={t('suggest.fields.addressPlaceholder')}
           />
 
           <View style={styles.divider} />
           <FormField
-            label="Google Maps Link"
+            label={t('suggest.fields.mapsLink')}
             value={form.mapUrl}
             onChangeText={(v) => updateField('mapUrl', v)}
             placeholder="https://maps.app.goo.gl/..."
             keyboardType="url"
             autoCapitalize="none"
           />
-          <Text style={styles.hint}>
-            Optional — paste a Google Maps share link to pin the exact location.
-          </Text>
+          <Text style={styles.hint}>{t('suggest.fields.mapsHint')}</Text>
 
           <View style={styles.divider} />
           <FormField
-            label="Description"
+            label={t('suggest.fields.description')}
             value={form.description}
             onChangeText={(v) => updateField('description', v)}
-            placeholder="Tell us about the event..."
+            placeholder={t('suggest.fields.descriptionPlaceholder')}
             multiline
           />
 
           <View style={styles.divider} />
           <FormField
-            label="Instagram Link"
+            label={t('suggest.fields.instagram')}
             value={form.instagramLink}
             onChangeText={(v) => updateField('instagramLink', v)}
             placeholder="https://instagram.com/..."
@@ -201,31 +200,28 @@ export default function SuggestEventScreen() {
 
           <View style={styles.divider} />
           <FormField
-            label="Image URL"
+            label={t('suggest.fields.imageUrl')}
             value={form.imageUrl}
             onChangeText={(v) => updateField('imageUrl', v)}
             placeholder="https://..."
             keyboardType="url"
             autoCapitalize="none"
           />
-          <Text style={styles.hint}>
-            Link to a flyer or poster image. Include whenever possible!
-          </Text>
+          <Text style={styles.hint}>{t('suggest.fields.imageUrlHint')}</Text>
 
           <View style={styles.divider} />
           <View>
-            <Text style={styles.label}>Tags</Text>
-            <Text style={styles.hint}>
-              Pick all that apply. These help visitors filter the calendar.
-            </Text>
+            <Text style={styles.label}>{t('suggest.fields.tags')}</Text>
+            <Text style={styles.hint}>{t('suggest.fields.tagsHint')}</Text>
             <View style={styles.tagChipsRow}>
-              {TAGS.map((t) => {
-                const active = form.tags.includes(t.slug);
+              {TAGS.map((tag) => {
+                const meta = getTagMeta(tag.slug);
+                const active = form.tags.includes(tag.slug);
                 return (
                   <TouchableOpacity
-                    key={t.slug}
+                    key={tag.slug}
                     style={[styles.tagChip, active && styles.tagChipActive]}
-                    onPress={() => toggleTag(t.slug)}
+                    onPress={() => toggleTag(tag.slug)}
                     activeOpacity={0.7}
                     accessibilityRole="button"
                     accessibilityState={{ selected: active }}
@@ -236,7 +232,7 @@ export default function SuggestEventScreen() {
                         active && styles.tagChipTextActive,
                       ]}
                     >
-                      {t.emoji} {t.label}
+                      {tag.emoji} {meta.label}
                     </Text>
                   </TouchableOpacity>
                 );
@@ -246,10 +242,10 @@ export default function SuggestEventScreen() {
 
           <View style={styles.divider} />
           <FormField
-            label="Your Name"
+            label={t('suggest.fields.yourName')}
             value={form.submitterName}
             onChangeText={(v) => updateField('submitterName', v)}
-            placeholder="For credit (optional)"
+            placeholder={t('suggest.fields.yourNamePlaceholder')}
           />
         </View>
 
@@ -262,14 +258,11 @@ export default function SuggestEventScreen() {
           {submitting ? (
             <ActivityIndicator color={colors.white} />
           ) : (
-            <Text style={styles.submitButtonText}>Submit Event Suggestion</Text>
+            <Text style={styles.submitButtonText}>{t('suggest.submit')}</Text>
           )}
         </TouchableOpacity>
 
-        <Text style={styles.disclaimer}>
-          All submissions are reviewed before being published. We may edit
-          details for clarity.
-        </Text>
+        <Text style={styles.disclaimer}>{t('suggest.disclaimer')}</Text>
       </ScrollView>
     </KeyboardAvoidingView>
   );

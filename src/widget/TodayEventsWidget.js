@@ -5,6 +5,9 @@ import {
   ListWidget,
 } from 'react-native-android-widget';
 
+import { t, getLocale } from '../i18n/core.js';
+import { localizedField } from '../utils/i18nFields.js';
+
 const BRAND_GREEN = '#2d5016';
 const BRAND_GREEN_LIGHT = '#4a7a2e';
 const ACCENT_GOLD = '#c8a84e';
@@ -14,12 +17,15 @@ const TEXT_LIGHT = '#666666';
 function formatTodayDate() {
   const now = new Date();
   const options = { weekday: 'long', month: 'long', day: 'numeric' };
-  return now.toLocaleDateString('en-US', options);
+  const tag = getLocale() === 'pt' ? 'pt-PT' : 'en-US';
+  return now.toLocaleDateString(tag, options);
 }
 
 function EventRow({ event, isLast }) {
+  const locale = getLocale();
+  const name = localizedField(event, 'name', locale) || '';
+  const venueText = localizedField(event, 'venue', locale) || '';
   const timeText = event.time || '';
-  const venueText = event.venue || '';
   const detailParts = [timeText, venueText].filter(Boolean).join(' \u2022 ');
 
   return (
@@ -34,7 +40,7 @@ function EventRow({ event, isLast }) {
       clickAction="OPEN_APP"
     >
       <TextWidget
-        text={event.name}
+        text={name}
         style={{
           fontSize: 14,
           fontWeight: 'bold',
@@ -68,14 +74,14 @@ function NoEventsMessage() {
       }}
     >
       <TextWidget
-        text="No events today"
+        text={t('widget.noEvents')}
         style={{
           fontSize: 14,
           color: TEXT_LIGHT,
         }}
       />
       <TextWidget
-        text="Tap to check upcoming events"
+        text={t('widget.noEventsHint')}
         style={{
           fontSize: 12,
           color: BRAND_GREEN_LIGHT,
@@ -116,7 +122,7 @@ export function TodayEventsWidget({ events = [] }) {
         }}
       >
         <TextWidget
-          text="Terceira Events"
+          text={t('widget.title')}
           style={{
             fontSize: 18,
             fontWeight: 'bold',
@@ -159,7 +165,7 @@ export function TodayEventsWidget({ events = [] }) {
               clickAction="OPEN_APP"
             >
               <TextWidget
-                text={`+${events.length - 5} more events`}
+                text={t('widget.moreEvents', { count: events.length - 5 })}
                 style={{
                   fontSize: 12,
                   color: ACCENT_GOLD,
@@ -184,7 +190,7 @@ export function TodayEventsWidget({ events = [] }) {
         clickAction="OPEN_APP"
       >
         <TextWidget
-          text="Open Terceira Events"
+          text={t('widget.open')}
           style={{
             fontSize: 12,
             fontWeight: 'bold',

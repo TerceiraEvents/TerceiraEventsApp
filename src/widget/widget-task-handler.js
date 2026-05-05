@@ -1,5 +1,6 @@
 import React from 'react';
 import { TodayEventsWidget } from './TodayEventsWidget';
+import { bootstrapLocale } from '../i18n';
 
 const SPECIAL_EVENTS_URL =
   'https://raw.githubusercontent.com/TerceiraEvents/EventosTerceira.pt/main/_data/special_events.yml';
@@ -207,6 +208,11 @@ const nameToWidget = {
 };
 
 export async function widgetTaskHandler(props) {
+  // Sync the active locale with the user's stored override before
+  // rendering — without this, the widget always renders in 'en' (the
+  // module-level default) on cold-boot of the headless JS context.
+  await bootstrapLocale().catch(() => {});
+
   const widgetInfo = props.widgetInfo;
   const Widget = nameToWidget[widgetInfo.widgetName];
 

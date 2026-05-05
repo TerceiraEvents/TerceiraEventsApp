@@ -4,6 +4,8 @@ import * as Calendar from 'expo-calendar';
 import { colors, fonts } from '../utils/theme';
 import { parseEventDate, formatDate } from '../utils/data';
 import { normalizeEventTags, getTagMeta } from '../utils/tags';
+import { useLocale } from '../i18n';
+import { localizedField } from '../utils/i18nFields';
 import FlagEventModal from './FlagEventModal';
 
 const BASE_URL =
@@ -17,10 +19,17 @@ function getImageUrl(imagePath) {
 }
 
 export default function EventCard({ event, reminded, onToggleReminder }) {
+  const { t, locale } = useLocale();
   const [flagVisible, setFlagVisible] = useState(false);
   const date = parseEventDate(event.date);
-  const formatted = date ? formatDate(date) : null;
+  const formatted = date ? formatDate(date, locale) : null;
   const tagSlugs = normalizeEventTags(event);
+
+  const displayName = localizedField(event, 'name', locale);
+  const displayVenue = localizedField(event, 'venue', locale);
+  const displayDescription = localizedField(event, 'description', locale);
+  const displayAddress = localizedField(event, 'address', locale);
+  const displayFestival = localizedField(event, 'festival', locale);
 
   const openInstagram = () => {
     if (event.instagram) {
@@ -32,7 +41,10 @@ export default function EventCard({ event, reminded, onToggleReminder }) {
     try {
       const { status } = await Calendar.requestCalendarPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('Permission denied', 'Calendar access is required to add events.');
+        Alert.alert(
+          t('eventCard.calendarPermissionTitle'),
+          t('eventCard.calendarPermissionBody'),
+        );
         return;
       }
 
@@ -48,7 +60,10 @@ export default function EventCard({ event, reminded, onToggleReminder }) {
       }
 
       if (!targetCalendar) {
-        Alert.alert('Error', 'No writable calendar found on this device.');
+        Alert.alert(
+          t('eventCard.calendarErrorTitle'),
+          t('eventCard.calendarNoWritable'),
+        );
         return;
       }
 
@@ -63,19 +78,25 @@ export default function EventCard({ event, reminded, onToggleReminder }) {
 
       const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
 
-      const location = [event.venue, event.address].filter(Boolean).join(', ');
+      const location = [displayVenue, displayAddress].filter(Boolean).join(', ');
 
       await Calendar.createEventAsync(targetCalendar.id, {
-        title: event.name,
+        title: displayName,
         startDate,
         endDate,
         location,
-        notes: event.description || '',
+        notes: displayDescription || '',
       });
 
-      Alert.alert('Added to calendar!', `"${event.name}" has been added to your calendar.`);
+      Alert.alert(
+        t('eventCard.calendarAddedTitle'),
+        t('eventCard.calendarAddedBody', { name: displayName }),
+      );
     } catch (error) {
-      Alert.alert('Error', 'Could not add event to calendar. ' + error.message);
+      Alert.alert(
+        t('eventCard.calendarErrorTitle'),
+        t('eventCard.calendarAddFailed', { error: error.message }),
+      );
     }
   };
 
@@ -83,14 +104,16 @@ export default function EventCard({ event, reminded, onToggleReminder }) {
     const dateLine = formatted
       ? `${formatted.month} ${formatted.day}, ${formatted.year}`
       : '';
-    const timePart = event.time ? ` at ${event.time}` : '';
-    const venueLine = [event.venue, event.address].filter(Boolean).join(', ');
+    const timePart = event.time
+      ? ` ${t('notifications.atTime', { time: event.time })}`
+      : '';
+    const venueLine = [displayVenue, displayAddress].filter(Boolean).join(', ');
 
-    const lines = [event.name];
+    const lines = [displayName];
     if (dateLine) lines.push(`${dateLine}${timePart}`);
     if (venueLine) lines.push(venueLine);
     lines.push('');
-    lines.push('Shared from Terceira Events');
+    lines.push(t('eventCard.shareFooter'));
 
     try {
       await Share.share({ message: lines.join('\n') });
@@ -111,7 +134,7 @@ export default function EventCard({ event, reminded, onToggleReminder }) {
       <View style={styles.content}>
         <View style={styles.titleRow}>
           <Text style={[styles.name, styles.nameWithButtons]}>
-            {event.name}
+            {displayName}
           </Text>
           <TouchableOpacity
             onPress={shareEvent}
@@ -146,11 +169,11 @@ export default function EventCard({ event, reminded, onToggleReminder }) {
             </TouchableOpacity>
           )}
         </View>
-        {(event.festival || tagSlugs.length > 0) && (
+        {(displayFestival || tagSlugs.length > 0) && (
           <View style={styles.badgeRow}>
-            {event.festival && (
+            {displayFestival && (
               <View style={styles.festivalBadge}>
-                <Text style={styles.festivalText}>{event.festival}</Text>
+                <Text style={styles.festivalText}>{displayFestival}</Text>
               </View>
             )}
             {tagSlugs.map((slug) => {
@@ -163,7 +186,9 @@ export default function EventCard({ event, reminded, onToggleReminder }) {
                     styles.tagBadge,
                     isKid && styles.kidFriendlyBadge,
                   ]}
-                  accessibilityLabel={`${meta.label} tag`}
+                  accessibilityLabel={t('eventCard.tagAccessibility', {
+                    label: meta.label,
+                  })}
                 >
                   <Text
                     style={[
@@ -178,40 +203,40 @@ export default function EventCard({ event, reminded, onToggleReminder }) {
             })}
           </View>
         )}
-        <Text style={styles.venue}>{event.venue}</Text>
+        <Text style={styles.venue}>{displayVenue}</Text>
         {event.time && <Text style={styles.time}>{event.time}</Text>}
-        {event.description && (
-          <Text style={styles.description}>{event.description}</Text>
+        {displayDescription && (
+          <Text style={styles.description}>{displayDescription}</Text>
         )}
         {event.image && (
           <Image
             source={{ uri: getImageUrl(event.image) }}
             style={styles.eventImage}
             resizeMode="cover"
-            accessibilityLabel={`Image for ${event.name}`}
+            accessibilityLabel={`${displayName}`}
           />
         )}
-        {event.address && <Text style={styles.address}>{event.address}</Text>}
-        {(event.map_url || event.address || event.venue) && (
+        {displayAddress && <Text style={styles.address}>{displayAddress}</Text>}
+        {(event.map_url || displayAddress || displayVenue) && (
           <TouchableOpacity
             onPress={() => {
               const url =
                 event.map_url ||
                 `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                  event.address || event.venue
+                  displayAddress || displayVenue
                 )}`;
               Linking.openURL(url);
             }}
             style={styles.mapButton}
             accessibilityRole="link"
-            accessibilityLabel="Open location in Google Maps"
+            accessibilityLabel={t('eventCard.openMapsAccessibility')}
           >
-            <Text style={styles.mapButtonText}>📍 Open in Maps</Text>
+            <Text style={styles.mapButtonText}>{t('eventCard.openMaps')}</Text>
           </TouchableOpacity>
         )}
         {event.instagram && (
           <TouchableOpacity onPress={openInstagram} style={styles.linkButton}>
-            <Text style={styles.linkText}>View on Instagram</Text>
+            <Text style={styles.linkText}>{t('eventCard.viewInstagram')}</Text>
           </TouchableOpacity>
         )}
       </View>
