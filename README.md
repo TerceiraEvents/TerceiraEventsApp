@@ -29,7 +29,7 @@ npm run web
 
 ## Data Source
 
-Event data is fetched from the YAML files in the [Terceira Events website repo](https://github.com/TerceiraEvents/EventosTerceira):
+Event data is fetched from the YAML files in the [Terceira Events website repo](https://github.com/TerceiraEvents/EventosTerceira.pt):
 
 - `_data/special_events.yml` — Special events (concerts, festivals, etc.)
 - `_data/weekly.yml` — Recurring weekly events
