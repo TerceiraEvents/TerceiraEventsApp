@@ -1,0 +1,8 @@
+{
+  "ios": {
+    "CFBundleDisplayName": "Eventos da Terceira"
+  },
+  "android": {
+    "app_name": "Eventos da Terceira"
+  }
+}
