@@ -17,7 +17,8 @@
       "bundleIdentifier": "com.terceiraevents.app",
       "buildNumber": "1",
       "infoPlist": {
-        "CFBundleAllowMixedLocalizations": true
+        "CFBundleAllowMixedLocalizations": true,
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
