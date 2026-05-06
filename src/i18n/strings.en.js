@@ -85,7 +85,12 @@ export default
     "title": "Blog",
     "intro": "News, guides, and stories about life on Terceira.",
     "readMore": "Read more →",
-    "empty": "No posts yet. Check back soon."
+    "empty": "No posts yet. Check back soon.",
+    "categories": {
+      "news": "News",
+      "guide": "Guide",
+      "advice": "Advice"
+    }
   },
   "post": {
     "notFound": "Post not found.",

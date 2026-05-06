@@ -17,6 +17,7 @@ import {
 } from '../utils/data';
 import { useLocale } from '../i18n';
 import { localizedField } from '../utils/i18nFields';
+import CategoryPill from '../components/CategoryPill';
 
 const buttonScreens = [
   { key: 'weekly', screen: 'Weekly' },
@@ -27,28 +28,9 @@ const buttonScreens = [
   { key: 'suggest', screen: 'SuggestEvent' },
 ];
 
-const CATEGORY_COLORS = {
-  news: { bg: '#fce8c8', text: '#6b4a0a' },
-  guide: { bg: '#d8f3dc', text: '#1a3a2a' },
-  advice: { bg: '#e3eaff', text: '#2a3a6b' },
-};
-
 // Date formatters live in utils/data so they can be unit-tested.
 const formatDate = formatPostDate;
 const formatEventDate = formatEventDateShort;
-
-function CategoryPill({ category }) {
-  if (!category) return null;
-  const meta =
-    CATEGORY_COLORS[category] || { bg: colors.border, text: colors.text };
-  return (
-    <View style={[styles.pill, { backgroundColor: meta.bg }]}>
-      <Text style={[styles.pillText, { color: meta.text }]}>
-        {String(category).toUpperCase()}
-      </Text>
-    </View>
-  );
-}
 
 export default function HomeScreen({ navigation }) {
   const { t, locale } = useLocale();
@@ -327,16 +309,6 @@ const styles = StyleSheet.create({
   blogDate: {
     color: colors.textMuted,
     fontSize: fonts.sizeSmall,
-  },
-  pill: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 999,
-  },
-  pillText: {
-    fontSize: fonts.sizeSmall - 2,
-    fontWeight: '700',
-    letterSpacing: 0.5,
   },
   blogItemTitle: {
     fontSize: fonts.sizeBody + 1,

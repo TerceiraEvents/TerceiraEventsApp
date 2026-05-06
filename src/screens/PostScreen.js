@@ -12,12 +12,7 @@ import { formatPostDate } from '../utils/data';
 import { colors, fonts } from '../utils/theme';
 import { useLocale } from '../i18n';
 import { localizedField } from '../utils/i18nFields';
-
-const CATEGORY_COLORS = {
-  news: { bg: '#fce8c8', text: '#6b4a0a' },
-  guide: { bg: '#d8f3dc', text: '#1a3a2a' },
-  advice: { bg: '#e3eaff', text: '#2a3a6b' },
-};
+import CategoryPill from '../components/CategoryPill';
 
 const formatDate = formatPostDate;
 
@@ -31,21 +26,13 @@ export default function PostScreen({ route }) {
       </View>
     );
   }
-  const cat =
-    CATEGORY_COLORS[post.category] || { bg: colors.border, text: colors.text };
   return (
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
     >
       <View style={styles.metaRow}>
-        {post.category ? (
-          <View style={[styles.pill, { backgroundColor: cat.bg }]}>
-            <Text style={[styles.pillText, { color: cat.text }]}>
-              {String(post.category).toUpperCase()}
-            </Text>
-          </View>
-        ) : null}
+        <CategoryPill category={post.category} />
         <Text style={styles.dateText}>{formatDate(post.date, locale)}</Text>
       </View>
       <Text style={styles.title}>{localizedField(post, 'title', locale)}</Text>
@@ -134,12 +121,6 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   dateText: { color: colors.textMuted, fontSize: fonts.sizeSmall },
-  pill: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 999 },
-  pillText: {
-    fontSize: fonts.sizeSmall - 2,
-    fontWeight: '700',
-    letterSpacing: 0.5,
-  },
   title: {
     fontSize: fonts.sizeHeader - 4,
     fontWeight: '700',

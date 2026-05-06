@@ -85,7 +85,12 @@ export default
     "title": "Blog",
     "intro": "Notícias, guias e histórias sobre a vida na Terceira.",
     "readMore": "Ler mais →",
-    "empty": "Ainda não há publicações. Volta em breve."
+    "empty": "Ainda não há publicações. Volta em breve.",
+    "categories": {
+      "news": "Notícias",
+      "guide": "Guia",
+      "advice": "Conselhos"
+    }
   },
   "post": {
     "notFound": "Publicação não encontrada.",
