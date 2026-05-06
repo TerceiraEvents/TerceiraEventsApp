@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Linking,
+  Platform,
 } from 'react-native';
 import { colors, fonts } from '../utils/theme';
 import { resources, instagramAccounts, facebookPages } from '../utils/data';
@@ -30,7 +31,7 @@ export default function ResourcesScreen() {
           <Text style={styles.resourceDesc}>
             {localizedField(r, 'description', locale)}
           </Text>
-          {r.appStore && (
+          {Platform.OS === 'ios' && r.appStore && (
             <TouchableOpacity
               onPress={() => Linking.openURL(r.appStore)}
               style={styles.appStoreButton}
@@ -38,7 +39,7 @@ export default function ResourcesScreen() {
               <Text style={styles.appStoreText}>{t('resources.appStore')}</Text>
             </TouchableOpacity>
           )}
-          {r.playStore && (
+          {Platform.OS === 'android' && r.playStore && (
             <TouchableOpacity
               onPress={() => Linking.openURL(r.playStore)}
               style={styles.appStoreButton}
