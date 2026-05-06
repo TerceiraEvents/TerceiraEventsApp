@@ -25,6 +25,7 @@ const tabIcons = {
   Weekly: { focused: '\u{1F504}', unfocused: '\u{1F504}' },
   Events: { focused: '★', unfocused: '☆' },
   Venues: { focused: '\u{1F4CD}', unfocused: '\u{1F4CD}' },
+  Blog: { focused: '\u{1F4F0}', unfocused: '\u{1F4F0}' },
   Resources: { focused: '\u{1F517}', unfocused: '\u{1F517}' },
   Settings: { focused: '⚙️', unfocused: '⚙' },
 };
@@ -130,6 +131,11 @@ function AppShell() {
           options={{ title: t('tabs.venues') }}
         />
         <Tab.Screen
+          name="Blog"
+          component={BlogStack}
+          options={{ title: t('tabs.blog'), headerShown: false }}
+        />
+        <Tab.Screen
           name="Resources"
           component={ResourcesScreen}
           options={{ title: t('tabs.resources') }}
@@ -144,15 +150,6 @@ function AppShell() {
           component={SuggestEventScreen}
           options={{
             title: t('tabs.suggestEvent'),
-            tabBarButton: () => null,
-          }}
-        />
-        <Tab.Screen
-          name="Blog"
-          component={BlogStack}
-          options={{
-            title: t('tabs.blog'),
-            headerShown: false,
             tabBarButton: () => null,
           }}
         />
