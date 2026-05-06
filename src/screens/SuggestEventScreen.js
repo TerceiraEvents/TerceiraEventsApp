@@ -20,12 +20,14 @@ const SUBMIT_URL =
 
 const INITIAL_FORM = {
   eventName: '',
+  eventNameOther: '',
   date: '',
   time: '',
   venue: '',
   address: '',
   mapUrl: '',
   description: '',
+  descriptionOther: '',
   instagramLink: '',
   imageUrl: '',
   submitterName: '',
@@ -33,7 +35,7 @@ const INITIAL_FORM = {
 };
 
 export default function SuggestEventScreen() {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const [form, setForm] = useState(INITIAL_FORM);
   const [submitting, setSubmitting] = useState(false);
 
@@ -78,16 +80,22 @@ export default function SuggestEventScreen() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: form.eventName.trim(),
+          name_other: form.eventNameOther.trim() || undefined,
           date: form.date.trim(),
           time: form.time.trim() || undefined,
           venue: form.venue.trim(),
           address: form.address.trim() || undefined,
           map_url: form.mapUrl.trim() || undefined,
           description: form.description.trim() || undefined,
+          description_other: form.descriptionOther.trim() || undefined,
           instagram: form.instagramLink.trim() || undefined,
           image: form.imageUrl.trim() || undefined,
           tags: form.tags.length ? form.tags : undefined,
           submitterName: form.submitterName.trim() || undefined,
+          // The worker writes name_<lang> / description_<lang> based on this.
+          // Without it, the entry lands as bare-field-only and the wrong-
+          // language text bleeds across locales on the website.
+          lang: locale === 'pt' ? 'pt' : 'en',
         }),
       });
 
@@ -131,6 +139,15 @@ export default function SuggestEventScreen() {
             onChangeText={(v) => updateField('eventName', v)}
             placeholder={t('suggest.fields.namePlaceholder')}
           />
+
+          <View style={styles.divider} />
+          <FormField
+            label={t('suggest.fields.nameOther')}
+            value={form.eventNameOther}
+            onChangeText={(v) => updateField('eventNameOther', v)}
+            placeholder={t('suggest.fields.nameOtherPlaceholder')}
+          />
+          <Text style={styles.hint}>{t('suggest.fields.nameOtherHint')}</Text>
 
           <View style={styles.divider} />
           <FormField
@@ -187,6 +204,16 @@ export default function SuggestEventScreen() {
             placeholder={t('suggest.fields.descriptionPlaceholder')}
             multiline
           />
+
+          <View style={styles.divider} />
+          <FormField
+            label={t('suggest.fields.descriptionOther')}
+            value={form.descriptionOther}
+            onChangeText={(v) => updateField('descriptionOther', v)}
+            placeholder={t('suggest.fields.descriptionOtherPlaceholder')}
+            multiline
+          />
+          <Text style={styles.hint}>{t('suggest.fields.descriptionOtherHint')}</Text>
 
           <View style={styles.divider} />
           <FormField
