@@ -11,29 +11,11 @@ import { fetchPosts, clearPostsCache } from '../utils/posts';
 import { formatPostDate } from '../utils/data';
 import { colors, fonts } from '../utils/theme';
 import LoadingView from '../components/LoadingView';
+import CategoryPill from '../components/CategoryPill';
 import { useLocale } from '../i18n';
 import { localizedField } from '../utils/i18nFields';
 
-const CATEGORY_COLORS = {
-  news: { bg: '#fce8c8', text: '#6b4a0a' },
-  guide: { bg: '#d8f3dc', text: '#1a3a2a' },
-  advice: { bg: '#e3eaff', text: '#2a3a6b' },
-};
-
 const formatDate = formatPostDate;
-
-function CategoryPill({ category }) {
-  if (!category) return null;
-  const meta =
-    CATEGORY_COLORS[category] || { bg: colors.border, text: colors.text };
-  return (
-    <View style={[styles.pill, { backgroundColor: meta.bg }]}>
-      <Text style={[styles.pillText, { color: meta.text }]}>
-        {String(category).toUpperCase()}
-      </Text>
-    </View>
-  );
-}
 
 export default function BlogScreen({ navigation }) {
   const { t, locale } = useLocale();
@@ -150,16 +132,6 @@ const styles = StyleSheet.create({
   dateText: {
     color: colors.textMuted,
     fontSize: fonts.sizeSmall,
-  },
-  pill: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 999,
-  },
-  pillText: {
-    fontSize: fonts.sizeSmall - 2,
-    fontWeight: '700',
-    letterSpacing: 0.5,
   },
   title: {
     fontSize: fonts.sizeLarge,
