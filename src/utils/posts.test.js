@@ -1,5 +1,5 @@
 // Pure-helper tests for utils/posts. Network-fetching is not exercised here.
-import { test } from 'node:test';
+import { test, mock } from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
@@ -58,6 +58,66 @@ test('parsePostFile: returns null for non-string input', () => {
   assert.equal(parsePostFile(null), null);
   assert.equal(parsePostFile(undefined), null);
   assert.equal(parsePostFile(42), null);
+});
+
+test('parsePostFile: warns with filename context on YAML parse error', () => {
+  const warn = mock.method(console, 'warn', () => {});
+  try {
+    const bad = '---\ntitle: "unterminated\n---\nbody';
+    assert.equal(parsePostFile(bad, '2026-05-06-broken-post.md'), null);
+    assert.equal(warn.mock.callCount(), 1);
+    const message = String(warn.mock.calls[0].arguments[0]);
+    assert.match(message, /YAML parse error/);
+    assert.match(message, /2026-05-06-broken-post\.md/);
+  } finally {
+    warn.mock.restore();
+  }
+});
+
+test('parsePostFile: warns when front matter is not a YAML mapping', () => {
+  const warn = mock.method(console, 'warn', () => {});
+  try {
+    // A bare scalar in front matter parses to a string, not an object.
+    const scalar = '---\njust-a-string\n---\nbody';
+    assert.equal(parsePostFile(scalar, 'weird.md'), null);
+    assert.equal(warn.mock.callCount(), 1);
+    assert.match(
+      String(warn.mock.calls[0].arguments[0]),
+      /not a YAML mapping/,
+    );
+  } finally {
+    warn.mock.restore();
+  }
+});
+
+test('parsePostFile: silent on shapes that aren\'t Jekyll posts', () => {
+  // Files without a `---` front-matter block aren't malformed posts —
+  // they're just not posts. No warn should fire.
+  const warn = mock.method(console, 'warn', () => {});
+  try {
+    assert.equal(parsePostFile('plain text', 'README.md'), null);
+    assert.equal(parsePostFile(null, 'foo'), null);
+    assert.equal(warn.mock.callCount(), 0);
+  } finally {
+    warn.mock.restore();
+  }
+});
+
+test('postFromFile: threads filename through to parsePostFile warnings', () => {
+  const warn = mock.method(console, 'warn', () => {});
+  try {
+    assert.equal(
+      postFromFile('2026-05-06-bad.md', '---\ntitle: "oops\n---\nbody'),
+      null,
+    );
+    assert.equal(warn.mock.callCount(), 1);
+    assert.match(
+      String(warn.mock.calls[0].arguments[0]),
+      /2026-05-06-bad\.md/,
+    );
+  } finally {
+    warn.mock.restore();
+  }
 });
 
 test('slugFromFilename: parses Jekyll-style filename', () => {
