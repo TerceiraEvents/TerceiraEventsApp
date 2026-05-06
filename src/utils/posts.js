@@ -13,17 +13,28 @@ let cachedPosts = null;
 
 // Parse front matter + body from a markdown file's raw text.
 // Returns { meta, body } or null if the file isn't a Jekyll-style post.
-export function parsePostFile(text) {
+// `filename` is optional context used in console warnings — silently
+// dropped files (malformed front matter, non-object metadata) are
+// hard to debug otherwise: a post just disappears from the blog list.
+export function parsePostFile(text, filename) {
   if (typeof text !== 'string') return null;
   const m = text.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/);
   if (!m) return null;
   let meta;
   try {
     meta = yamlLoad(m[1]) || {};
-  } catch {
+  } catch (err) {
+    console.warn(
+      `parsePostFile: YAML parse error in ${filename || '<unknown>'}: ${err?.message || err}`,
+    );
     return null;
   }
-  if (typeof meta !== 'object') return null;
+  if (typeof meta !== 'object') {
+    console.warn(
+      `parsePostFile: front matter in ${filename || '<unknown>'} is not a YAML mapping (got ${typeof meta})`,
+    );
+    return null;
+  }
   return { meta, body: m[2] };
 }
 
@@ -146,7 +157,7 @@ function isoDate(value) {
 
 // Convert one fetched markdown file into the post shape the UI expects.
 export function postFromFile(filename, rawText) {
-  const parsed = parsePostFile(rawText);
+  const parsed = parsePostFile(rawText, filename);
   if (!parsed) return null;
   const slug = slugFromFilename(filename);
   const date = isoDate(parsed.meta.date);
