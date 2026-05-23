@@ -28,6 +28,7 @@ const tabIcons = {
   Blog: { focused: '\u{1F4F0}', unfocused: '\u{1F4F0}' },
   Resources: { focused: '\u{1F517}', unfocused: '\u{1F517}' },
   Settings: { focused: '⚙️', unfocused: '⚙' },
+  SuggestEvent: { focused: '\u{2795}', unfocused: '\u{2795}' },
 };
 
 function handleNotificationNavigation(navigation, data) {
@@ -150,7 +151,7 @@ function AppShell() {
           component={SuggestEventScreen}
           options={{
             title: t('tabs.suggestEvent'),
-            tabBarButton: () => null,
+            tabBarLabel: t('tabs.suggestEventShort'),
           }}
         />
       </Tab.Navigator>

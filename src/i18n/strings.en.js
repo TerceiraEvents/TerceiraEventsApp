@@ -11,6 +11,7 @@ export default
     "resources": "More",
     "settings": "Settings",
     "suggestEvent": "Suggest Event",
+    "suggestEventShort": "Suggest",
     "blog": "Blog"
   },
   "home": {
