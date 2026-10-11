@@ -1,7 +1,7 @@
 import { load as yamlLoad } from 'js-yaml';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { validateEventDataset } from './feedState.js';
+import { validateEventDataset, validateWeeklyDataset } from './feedState.js';
 import { normalizeEventTags } from './tags.js';
 
 const SPECIAL_EVENTS_URL =
@@ -17,11 +17,11 @@ let specialFeedState = { status: 'loading', fetchedAt: null };
 export function getSpecialFeedState() { return { ...specialFeedState }; }
 let cachedWeeklyEvents = null;
 
-async function loadFromStorage(key) {
+async function loadFromStorage(key, validate = validateEventDataset) {
   try {
     const yamlText = await AsyncStorage.getItem(key);
     if (yamlText !== null) {
-      return validateEventDataset(yamlLoad(yamlText));
+      return validate(yamlLoad(yamlText));
     }
   } catch (e) {
     console.error('Failed to read from AsyncStorage:', e);
@@ -65,12 +65,12 @@ export async function fetchWeeklyEvents() {
     const response = await fetch(WEEKLY_EVENTS_URL);
     const text = await response.text();
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    cachedWeeklyEvents = validateEventDataset(yamlLoad(text));
+    cachedWeeklyEvents = validateWeeklyDataset(yamlLoad(text));
     await saveToStorage(STORAGE_KEY_WEEKLY, text);
     return cachedWeeklyEvents;
   } catch (error) {
     console.error('Failed to fetch weekly events:', error);
-    const stored = await loadFromStorage(STORAGE_KEY_WEEKLY);
+    const stored = await loadFromStorage(STORAGE_KEY_WEEKLY, validateWeeklyDataset);
     if (stored) {
       cachedWeeklyEvents = stored;
       return cachedWeeklyEvents;
