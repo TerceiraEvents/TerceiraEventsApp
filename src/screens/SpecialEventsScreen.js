@@ -107,7 +107,7 @@ export default function SpecialEventsScreen({ navigation }) {
     <View style={styles.container}>
       <View style={styles.headerArea}>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-          {['event', 'exhibition'].map((value) => <TouchableOpacity key={value} accessibilityRole="button" accessibilityState={{ selected: kind === value }} style={{ padding: 16 }} onPress={() => setKind(value)}><Text>{t(value === 'event' ? 'discovery.dated' : 'discovery.onView')}</Text></TouchableOpacity>)}
+          {['event', 'exhibition'].map((value) => <TouchableOpacity key={value} accessibilityRole="button" accessibilityState={{ selected: kind === value }} style={{ padding: 16, backgroundColor: kind === value ? colors.border : colors.card }} onPress={() => setKind(value)}><Text>{t(value === 'event' ? 'discovery.dated' : 'discovery.onView')}</Text></TouchableOpacity>)}
           <TouchableOpacity accessibilityRole="button" style={{ padding: 16 }} onPress={() => navigation.navigate('Weekly')}><Text>{t('discovery.weekly')}</Text></TouchableOpacity>
         </View>
         <Text style={styles.header}>{t('specialEvents.title')}</Text>
@@ -154,9 +154,9 @@ export default function SpecialEventsScreen({ navigation }) {
           </TouchableOpacity>
         </View>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-          {['', 'angra', 'praia', 'other'].map((value) => <TouchableOpacity key={value} accessibilityRole="button" accessibilityState={{ selected: locality === value }} style={{ padding: 12 }} onPress={() => setLocality(value)}><Text>{t(`discovery.${value || 'allPlaces'}`)}</Text></TouchableOpacity>)}
-          <TouchableOpacity accessibilityRole="button" accessibilityState={{ selected: free }} style={{ padding: 12 }} onPress={() => setFree(!free)}><Text>{t('discovery.free')}</Text></TouchableOpacity>
-          <TouchableOpacity accessibilityRole="button" accessibilityState={{ selected: family }} style={{ padding: 12 }} onPress={() => setFamily(!family)}><Text>{t('discovery.family')}</Text></TouchableOpacity>
+          {['', 'angra', 'praia', 'other'].map((value) => <TouchableOpacity key={value} accessibilityRole="button" accessibilityState={{ selected: locality === value }} style={{ padding: 12, backgroundColor: locality === value ? colors.border : colors.card }} onPress={() => setLocality(value)}><Text>{t(`discovery.${value || 'allPlaces'}`)}</Text></TouchableOpacity>)}
+          <TouchableOpacity accessibilityRole="button" accessibilityState={{ selected: free }} style={{ padding: 12, backgroundColor: free ? colors.border : colors.card }} onPress={() => setFree(!free)}><Text>{t('discovery.free')}</Text></TouchableOpacity>
+          <TouchableOpacity accessibilityRole="button" accessibilityState={{ selected: family }} style={{ padding: 12, backgroundColor: family ? colors.border : colors.card }} onPress={() => setFamily(!family)}><Text>{t('discovery.family')}</Text></TouchableOpacity>
           <TouchableOpacity accessibilityRole="button" style={{ padding: 12 }} onPress={() => { setSearch(''); setSelectedTag(''); setLocality(''); setFree(false); setFamily(false); setRange('all'); }}><Text>{t('discovery.reset')}</Text></TouchableOpacity>
         </View>
         <TextInput
