@@ -16,3 +16,10 @@ test('discovery combines locality, free and family with AND semantics', async ()
   assert.equal(matchesDiscoveryOptions({ locality: 'angra', tags: ['free'], kid_friendly: true }, options), true);
   assert.equal(matchesDiscoveryOptions({}), true);
 });
+
+test('discovery applies the shared normalized tags and strict legacy family boolean', async () => {
+  const { matchesDiscoveryOptions } = await import('./discovery.js');
+  assert.equal(matchesDiscoveryOptions({ tags: ['Free', 'Kid-Friendly'] }, { free: true, family: true }), true);
+  assert.equal(matchesDiscoveryOptions({ tags: 'free', kid_friendly: true }, { free: true, family: true }), true);
+  assert.equal(matchesDiscoveryOptions({ kid_friendly: 'false' }, { family: true }), false);
+});

@@ -48,6 +48,8 @@ export function normalizeEventTags(event) {
   };
   if (Array.isArray(event.tags)) {
     event.tags.forEach(push);
+  } else if (typeof event.tags === 'string') {
+    push(event.tags);
   }
   if (event.kid_friendly === true) {
     push('kid-friendly');

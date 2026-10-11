@@ -3,6 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import { getPathFromState, getStateFromPath, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import * as Linking from 'expo-linking';
+import { handleNotificationNavigation } from './src/utils/navigation';
 import { eventIdFromUrl } from './src/utils/eventLinks';
 import EventDetailScreen from './src/screens/EventDetailScreen';
 import SavedScreen from './src/screens/SavedScreen';
@@ -36,13 +37,6 @@ function PrimaryTabs() {
     <Tab.Screen name="Saved" component={SavedScreen} options={{ title: t('discovery.saved') }} />
     <Tab.Screen name="More" component={MoreScreen} options={{ title: t('discovery.more') }} />
   </Tab.Navigator>;
-}
-
-function handleNotificationNavigation(navigation, data) {
-  if (!data) return;
-  if (data.type === 'daily_summary' || data.type === 'event_reminder') {
-    navigation.navigate('Events');
-  }
 }
 
 // Inner component so it re-renders when the locale changes; this is
@@ -91,7 +85,7 @@ function AppShell() {
   }, []);
 
   return (
-    <NavigationContainer ref={navigationRef} linking={{ getPathFromState: (state, options) => { const clean = (value) => ({ ...value, routes: value.routes.map((route) => ({ ...route, ...(route.name === 'EventDetail' ? { params: route.params?.id ? { id: route.params.id } : {} } : {}), ...(route.state ? { state: clean(route.state) } : {}) })) }); return getPathFromState(clean(state), options); }, getStateFromPath: (path, options) => { const id = eventIdFromUrl(`https://eventosterceira.pt/${path.replace(/^\//, '')}`); return id ? { routes: [{ name: 'Main' }, { name: 'EventDetail', params: { id } }] } : getStateFromPath(path, options); }, prefixes: [Linking.createURL('/'), 'terceiraevents://', 'https://eventosterceira.pt'], config: { screens: { EventDetail: 'events/', Main: { screens: { Home: '', Events: 'special/', Saved: 'saved/' } } } } }}>
+    <NavigationContainer ref={navigationRef} linking={{ getPathFromState: (state, options) => { const clean = (value) => ({ ...value, routes: value.routes.map((route) => ({ ...route, ...(route.name === 'EventDetail' ? { params: route.params?.id ? { id: route.params.id } : {} } : {}), ...(route.state ? { state: clean(route.state) } : {}) })) }); return getPathFromState(clean(state), options); }, getStateFromPath: (path, options) => { const id = eventIdFromUrl(`https://eventosterceira.pt/${path.replace(/^\//, '')}`); return id ? { routes: [{ name: 'Main' }, { name: 'EventDetail', params: { id } }] } : getStateFromPath(path, options); }, prefixes: [Linking.createURL('/'), 'terceiraevents://', 'https://eventosterceira.pt', 'https://www.eventosterceira.pt'], config: { screens: { EventDetail: 'events/', Main: { screens: { Home: '', Events: 'special/', Saved: 'saved/' } } } } }}>
       <StatusBar style="dark" />
       <Stack.Navigator>
         <Stack.Screen name="Main" component={PrimaryTabs} options={{ headerShown: false }} />

@@ -71,3 +71,7 @@ test('getTagMeta: synthesizes unknown tag', () => {
   assert.equal(m.label, 'Some Unknown Tag');
   assert.equal(m.emoji, '🏷️');
 });
+
+test('normalizeEventTags accepts a scalar tag with the same trimming and case rules', () => {
+  assert.deepEqual(normalizeEventTags({ tags: ' Free ' }), ['free']);
+});

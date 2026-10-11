@@ -11,3 +11,8 @@ test('shared website and PT links resolve exactly the same stable ID', () => {
   assert.equal(eventIdFromUrl('https://eventosterceira.pt/events/'), null);
   assert.equal(eventIdFromUrl('https://eventosterceira.pt/events/?id=../other'), null);
 });
+
+test('missing and empty event identifiers return null', () => {
+  assert.equal(eventIdFromUrl('https://eventosterceira.pt/events/?id='), null);
+  assert.equal(eventIdFromUrl('https://www.eventosterceira.pt/events/?id=a-123'), 'a-123');
+});

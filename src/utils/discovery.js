@@ -1,3 +1,4 @@
+import { normalizeEventTags } from './tags.js';
 export function shortcutWindow(key, today) {
   const date = new Date(`${today}T00:00:00Z`);
   const iso = (offset) => {
@@ -15,7 +16,6 @@ export function shortcutWindow(key, today) {
 }
 
 export function matchesDiscoveryOptions(event, { locality = '', free = false, family = false } = {}) {
-  const tags = new Set(event.tags || []);
-  if (event.kid_friendly) tags.add('kid-friendly');
+  const tags = new Set(normalizeEventTags(event));
   return (!locality || event.locality === locality) && (!free || tags.has('free')) && (!family || tags.has('kid-friendly'));
 }
