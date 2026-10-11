@@ -77,12 +77,56 @@ export function clearCache() {
   cachedWeeklyEvents = null;
 }
 
+function isoCalendarDate(value) {
+  if (value instanceof Date) {
+    if (Number.isNaN(value.getTime())) return null;
+    return `${value.getUTCFullYear()}-${String(value.getUTCMonth() + 1).padStart(2, '0')}-${String(value.getUTCDate()).padStart(2, '0')}`;
+  }
+  if (value == null) return null;
+  const iso = String(value).slice(0, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return null;
+  const parsed = new Date(`${iso}T00:00:00Z`);
+  return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === iso
+    ? iso
+    : null;
+}
+
 export function parseEventDate(dateValue) {
-  if (!dateValue) return null;
-  // js-yaml auto-parses YAML dates into Date objects
-  if (dateValue instanceof Date) return dateValue;
-  const d = new Date(dateValue + 'T00:00:00');
-  return isNaN(d.getTime()) ? null : d;
+  const iso = isoCalendarDate(dateValue);
+  if (!iso) return null;
+  const [year, month, day] = iso.split('-').map(Number);
+  return new Date(year, month - 1, day);
+}
+
+function lastSundayUTC(year, month) {
+  const lastDay = new Date(Date.UTC(year, month + 1, 0));
+  return lastDay.getUTCDate() - lastDay.getUTCDay();
+}
+
+function todayAzoresFallback(now) {
+  const year = now.getUTCFullYear();
+  const summerStart = Date.UTC(year, 2, lastSundayUTC(year, 2), 1);
+  const summerEnd = Date.UTC(year, 9, lastSundayUTC(year, 9), 1);
+  const instant = now.getTime();
+  const offsetHours = instant >= summerStart && instant < summerEnd ? 0 : -1;
+  return new Date(instant + offsetHours * 60 * 60 * 1000).toISOString().slice(0, 10);
+}
+
+export function todayAzores(now = new Date()) {
+  try {
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Atlantic/Azores',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).formatToParts(now);
+    const values = Object.fromEntries(parts.map(({ type, value }) => [type, value]));
+    const iso = `${values.year}-${values.month}-${values.day}`;
+    if (isoCalendarDate(iso)) return iso;
+  } catch {
+    return todayAzoresFallback(now);
+  }
+  return todayAzoresFallback(now);
 }
 
 // Map an app locale code to the BCP-47 string we hand to
@@ -115,10 +159,8 @@ export function formatPostDate(value, locale) {
 // be redundant for events all in the next ~12 months.
 export function formatEventDateShort(value, locale) {
   if (!value) return '';
-  const d = value instanceof Date
-    ? value
-    : new Date(String(value) + 'T00:00:00');
-  if (isNaN(d.getTime())) return String(value);
+  const d = parseEventDate(value);
+  if (!d) return String(value);
   return d.toLocaleDateString(intlLocale(locale), {
     day: 'numeric',
     month: 'short',
@@ -144,52 +186,128 @@ export function formatDate(date, locale) {
 
 export function sortEventsByDate(events) {
   return [...events].sort((a, b) => {
-    const da = parseEventDate(a?.date);
-    const db = parseEventDate(b?.date);
+    const da = isoCalendarDate(a?.date);
+    const db = isoCalendarDate(b?.date);
     if (!da && !db) return 0;
     if (!da) return 1;
     if (!db) return -1;
-    return da - db;
+    return da.localeCompare(db);
   });
 }
 
-export function isUpcoming(event) {
-  const d = parseEventDate(event.date);
-  if (!d) return false;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  return d >= today;
+function endDateOf(event) {
+  return isoCalendarDate(event?.end_date) || isoCalendarDate(event?.date);
 }
 
-export function isThisWeek(event) {
-  const d = parseEventDate(event.date);
-  if (!d) return false;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const weekFromNow = new Date(today);
-  weekFromNow.setDate(weekFromNow.getDate() + 7);
-  return d >= today && d < weekFromNow;
+function addDays(iso, days) {
+  const date = new Date(`${iso}T00:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
 }
 
 const RANGE_DAYS = { week: 7, month: 31, year: 365 };
 export const VALID_RANGES = new Set(['week', 'month', 'year', 'all', 'archive']);
 
+export function eventKind(event) {
+  return event?.kind === 'exhibition' ? 'exhibition' : 'event';
+}
+
+export function isEnded(event, today = todayAzores()) {
+  const end = endDateOf(event);
+  return !end || end < today;
+}
+
+export function isActive(event, today = todayAzores()) {
+  return !isEnded(event, today);
+}
+
+export function exhibitionStatus(event, today = todayAzores()) {
+  const start = isoCalendarDate(event?.date);
+  const end = endDateOf(event);
+  if (!start || !end || end < today) return 'ended';
+  if (start > today) return start <= addDays(today, 13) ? 'opening-soon' : 'upcoming';
+  return end <= addDays(today, 13) ? 'ending-soon' : 'on-view';
+}
+
+function compareName(a, b) {
+  return String(a?.name || '').localeCompare(String(b?.name || ''));
+}
+
+export function sortExhibitions(list, today = todayAzores()) {
+  const order = ['opening-soon', 'ending-soon', 'on-view', 'upcoming', 'ended'];
+  return [...list].sort((a, b) => {
+    const statusA = exhibitionStatus(a, today);
+    const statusB = exhibitionStatus(b, today);
+    const statusOrder = order.indexOf(statusA) - order.indexOf(statusB);
+    if (statusOrder) return statusOrder;
+    const dateA = statusA === 'opening-soon' || statusA === 'upcoming'
+      ? isoCalendarDate(a?.date)
+      : endDateOf(a);
+    const dateB = statusB === 'opening-soon' || statusB === 'upcoming'
+      ? isoCalendarDate(b?.date)
+      : endDateOf(b);
+    return (dateA || '').localeCompare(dateB || '') || compareName(a, b);
+  });
+}
+
+function attendanceDate(event, today) {
+  const start = isoCalendarDate(event?.date);
+  const end = endDateOf(event);
+  return start && end && start < today && end >= today ? today : start;
+}
+
+export function sortDatedEvents(list, today = todayAzores()) {
+  return [...list].sort((a, b) => {
+    const dateA = attendanceDate(a, today);
+    const dateB = attendanceDate(b, today);
+    if (!dateA && !dateB) return 0;
+    if (!dateA) return 1;
+    if (!dateB) return -1;
+    const dateOrder = dateA.localeCompare(dateB);
+    if (dateOrder) return dateOrder;
+    return String(a?.time || '').localeCompare(String(b?.time || '')) || compareName(a, b);
+  });
+}
+
+export function filterByKind(list, kind) {
+  return kind === 'all' ? [...list] : list.filter((event) => eventKind(event) === kind);
+}
+
+export function eventDateRange(event) {
+  const start = isoCalendarDate(event?.date);
+  const end = endDateOf(event);
+  if (!start || !end) return null;
+  const days = (Date.parse(`${end}T00:00:00Z`) - Date.parse(`${start}T00:00:00Z`)) / 86400000 + 1;
+  return { start, end, days };
+}
+
+export function eventOccursOn(event, isoDate) {
+  const range = eventDateRange(event);
+  const date = isoCalendarDate(isoDate);
+  return Boolean(range && date && range.start <= date && date <= range.end);
+}
+
 // Test whether an event falls inside a given date range. Mirrors the
 // website's range filter (rolling windows of 7 / 31 / 365 days from today).
 // `archive` is past-only; everything else is upcoming-only.
-export function isInRange(event, range) {
-  const d = parseEventDate(event?.date);
-  if (!d) return false;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  if (range === 'archive') return d < today;
-  if (d < today) return false;
+export function isInRange(event, range, today = todayAzores()) {
+  const start = isoCalendarDate(event?.date);
+  const end = endDateOf(event);
+  if (!start || !end) return false;
+  if (range === 'archive') return end < today;
+  if (end < today) return false;
   if (range === 'all') return true;
   const days = RANGE_DAYS[range];
   if (!days) return true;
-  const end = new Date(today);
-  end.setDate(end.getDate() + days);
-  return d < end;
+  return start < addDays(today, days);
+}
+
+export function isUpcoming(event, today = todayAzores()) {
+  return isActive(event, today);
+}
+
+export function isThisWeek(event, today = todayAzores()) {
+  return isInRange(event, 'week', today);
 }
 
 // Returns true when the event matches a free-text query against its name,
