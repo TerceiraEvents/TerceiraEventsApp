@@ -17,7 +17,7 @@ export default function EventDetailScreen({ route }) {
   const [unavailable, setUnavailable] = useState(false);
   useEffect(() => {
     let active = true;
-    Promise.all([fetchSpecialEvents(), getSavedEvents(), getRemindedEvents()]).then(([events, collection, reminders]) => {
+    Promise.all([fetchSpecialEvents(), getSavedEvents().catch(() => { if (active) Alert.alert(t('discovery.storageError')); return []; }), getRemindedEvents()]).then(([events, collection, reminders]) => {
       if (!active) return;
       const id = route.params?.id || eventId(route.params?.event);
       const current = events.find((item) => eventId(item) === id && id);
