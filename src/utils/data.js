@@ -1,6 +1,7 @@
 import { load as yamlLoad } from 'js-yaml';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import { validateEventDataset } from './feedState.js';
 import { normalizeEventTags } from './tags.js';
 
 const SPECIAL_EVENTS_URL =
@@ -12,13 +13,15 @@ const STORAGE_KEY_SPECIAL = 'terceiraevents_cache_special';
 const STORAGE_KEY_WEEKLY = 'terceiraevents_cache_weekly';
 
 let cachedSpecialEvents = null;
+let specialFeedState = { status: 'loading', fetchedAt: null };
+export function getSpecialFeedState() { return { ...specialFeedState }; }
 let cachedWeeklyEvents = null;
 
 async function loadFromStorage(key) {
   try {
     const yamlText = await AsyncStorage.getItem(key);
     if (yamlText !== null) {
-      return yamlLoad(yamlText) || [];
+      return validateEventDataset(yamlLoad(yamlText));
     }
   } catch (e) {
     console.error('Failed to read from AsyncStorage:', e);
@@ -34,17 +37,20 @@ async function saveToStorage(key, yamlText) {
   }
 }
 
-export async function fetchSpecialEvents() {
-  if (cachedSpecialEvents) return cachedSpecialEvents;
+export async function fetchSpecialEvents(forceRefresh = false) {
+  if (cachedSpecialEvents && !forceRefresh) return cachedSpecialEvents;
   try {
     const response = await fetch(SPECIAL_EVENTS_URL);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const text = await response.text();
-    cachedSpecialEvents = yamlLoad(text) || [];
+    cachedSpecialEvents = validateEventDataset(yamlLoad(text));
+    specialFeedState = { status: 'current', fetchedAt: new Date().toISOString() };
     await saveToStorage(STORAGE_KEY_SPECIAL, text);
     return cachedSpecialEvents;
   } catch (error) {
     console.error('Failed to fetch special events:', error);
-    const stored = await loadFromStorage(STORAGE_KEY_SPECIAL);
+    const stored = cachedSpecialEvents || await loadFromStorage(STORAGE_KEY_SPECIAL);
+    specialFeedState = { status: stored ? 'cached' : 'error', fetchedAt: null };
     if (stored) {
       cachedSpecialEvents = stored;
       return cachedSpecialEvents;
@@ -58,7 +64,8 @@ export async function fetchWeeklyEvents() {
   try {
     const response = await fetch(WEEKLY_EVENTS_URL);
     const text = await response.text();
-    cachedWeeklyEvents = yamlLoad(text) || [];
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    cachedWeeklyEvents = validateEventDataset(yamlLoad(text));
     await saveToStorage(STORAGE_KEY_WEEKLY, text);
     return cachedWeeklyEvents;
   } catch (error) {

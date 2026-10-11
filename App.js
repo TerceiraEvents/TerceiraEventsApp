@@ -1,6 +1,12 @@
 import React, { useEffect, useRef } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { NavigationContainer } from '@react-navigation/native';
+import { getPathFromState, getStateFromPath, NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import * as Linking from 'expo-linking';
+import { eventIdFromUrl } from './src/utils/eventLinks';
+import EventDetailScreen from './src/screens/EventDetailScreen';
+import SavedScreen from './src/screens/SavedScreen';
+import MoreScreen from './src/screens/MoreScreen';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Text } from 'react-native';
 import * as Notifications from 'expo-notifications';
@@ -18,18 +24,19 @@ import SettingsScreen from './src/screens/SettingsScreen';
 import SuggestEventScreen from './src/screens/SuggestEventScreen';
 import BlogStack from './src/navigation/BlogStack';
 
+const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
-const tabIcons = {
-  Home: { focused: '⌂', unfocused: '⌂' },
-  Weekly: { focused: '\u{1F504}', unfocused: '\u{1F504}' },
-  Events: { focused: '★', unfocused: '☆' },
-  Venues: { focused: '\u{1F4CD}', unfocused: '\u{1F4CD}' },
-  Blog: { focused: '\u{1F4F0}', unfocused: '\u{1F4F0}' },
-  Resources: { focused: '\u{1F517}', unfocused: '\u{1F517}' },
-  Settings: { focused: '⚙️', unfocused: '⚙' },
-  SuggestEvent: { focused: '\u{2795}', unfocused: '\u{2795}' },
-};
+function PrimaryTabs() {
+  const { t } = useLocale();
+  return <Tab.Navigator screenOptions={({ route }) => ({ tabBarIcon: ({ color, size }) => <Text accessibilityElementsHidden style={{ color, fontSize: size }}>{({ Home: '⌂', Events: '◇', Venues: '⌖', Saved: '♡', More: '☰' })[route.name]}</Text>, headerStyle: { backgroundColor: colors.primary }, headerTintColor: colors.white, tabBarActiveTintColor: colors.primary })}>
+    <Tab.Screen name="Home" component={HomeScreen} options={{ title: t('tabs.home') }} />
+    <Tab.Screen name="Events" component={SpecialEventsScreen} options={{ title: t('discovery.explore') }} />
+    <Tab.Screen name="Venues" component={VenuesScreen} options={{ title: t('tabs.venues') }} />
+    <Tab.Screen name="Saved" component={SavedScreen} options={{ title: t('discovery.saved') }} />
+    <Tab.Screen name="More" component={MoreScreen} options={{ title: t('discovery.more') }} />
+  </Tab.Navigator>;
+}
 
 function handleNotificationNavigation(navigation, data) {
   if (!data) return;
@@ -84,77 +91,17 @@ function AppShell() {
   }, []);
 
   return (
-    <NavigationContainer ref={navigationRef}>
-      <StatusBar style="light" />
-      <Tab.Navigator
-        screenOptions={({ route }) => ({
-          headerStyle: {
-            backgroundColor: colors.primary,
-          },
-          headerTintColor: colors.white,
-          headerTitleStyle: {
-            fontWeight: '700',
-          },
-          tabBarActiveTintColor: colors.primary,
-          tabBarInactiveTintColor: colors.textMuted,
-          tabBarStyle: {
-            backgroundColor: colors.white,
-            borderTopColor: colors.border,
-          },
-          tabBarIcon: ({ focused, color, size }) => {
-            const icons = tabIcons[route.name];
-            return (
-              <Text style={{ fontSize: size - 4, color }}>
-                {focused ? icons.focused : icons.unfocused}
-              </Text>
-            );
-          },
-        })}
-      >
-        <Tab.Screen
-          name="Home"
-          component={HomeScreen}
-          options={{ title: t('app.name'), headerShown: false }}
-        />
-        <Tab.Screen
-          name="Weekly"
-          component={WeeklyScreen}
-          options={{ title: t('tabs.weekly') }}
-        />
-        <Tab.Screen
-          name="Events"
-          component={SpecialEventsScreen}
-          options={{ title: t('tabs.events') }}
-        />
-        <Tab.Screen
-          name="Venues"
-          component={VenuesScreen}
-          options={{ title: t('tabs.venues') }}
-        />
-        <Tab.Screen
-          name="Blog"
-          component={BlogStack}
-          options={{ title: t('tabs.blog'), headerShown: false }}
-        />
-        <Tab.Screen
-          name="Resources"
-          component={ResourcesScreen}
-          options={{ title: t('tabs.resources') }}
-        />
-        <Tab.Screen
-          name="Settings"
-          component={SettingsScreen}
-          options={{ title: t('tabs.settings') }}
-        />
-        <Tab.Screen
-          name="SuggestEvent"
-          component={SuggestEventScreen}
-          options={{
-            title: t('tabs.suggestEvent'),
-            tabBarLabel: t('tabs.suggestEventShort'),
-          }}
-        />
-      </Tab.Navigator>
+    <NavigationContainer ref={navigationRef} linking={{ getPathFromState: (state, options) => { const clean = (value) => ({ ...value, routes: value.routes.map((route) => ({ ...route, ...(route.name === 'EventDetail' ? { params: route.params?.id ? { id: route.params.id } : {} } : {}), ...(route.state ? { state: clean(route.state) } : {}) })) }); return getPathFromState(clean(state), options); }, getStateFromPath: (path, options) => { const id = eventIdFromUrl(`https://eventosterceira.pt/${path.replace(/^\//, '')}`); return id ? { routes: [{ name: 'Main' }, { name: 'EventDetail', params: { id } }] } : getStateFromPath(path, options); }, prefixes: [Linking.createURL('/'), 'terceiraevents://', 'https://eventosterceira.pt'], config: { screens: { EventDetail: 'events/', Main: { screens: { Home: '', Events: 'special/', Saved: 'saved/' } } } } }}>
+      <StatusBar style="dark" />
+      <Stack.Navigator>
+        <Stack.Screen name="Main" component={PrimaryTabs} options={{ headerShown: false }} />
+        <Stack.Screen name="EventDetail" component={EventDetailScreen} options={{ title: t('discovery.details') }} />
+        <Stack.Screen name="Weekly" component={WeeklyScreen} options={{ title: t('tabs.weekly') }} />
+        <Stack.Screen name="Blog" component={BlogStack} options={{ headerShown: false }} />
+        <Stack.Screen name="Resources" component={ResourcesScreen} options={{ title: t('tabs.resources') }} />
+        <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: t('tabs.settings') }} />
+        <Stack.Screen name="SuggestEvent" component={SuggestEventScreen} options={{ title: t('tabs.suggestEvent') }} />
+      </Stack.Navigator>
     </NavigationContainer>
   );
 }

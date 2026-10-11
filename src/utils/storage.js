@@ -1,3 +1,4 @@
+import { createSavedPlans } from './savedPlans.js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const KEYS = {
@@ -82,3 +83,7 @@ export async function cleanupPastReminders() {
   await AsyncStorage.setItem(KEYS.REMINDERS, JSON.stringify([...cleaned]));
   return cleaned;
 }
+
+const savedPlans = createSavedPlans(AsyncStorage);
+export const getSavedEvents = savedPlans.read;
+export const toggleSavedEvent = savedPlans.toggle;
