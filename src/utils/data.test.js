@@ -303,14 +303,28 @@ test('date ranges classify single-day, running, future, end-today, and expired l
   }
 });
 
-test('event date helpers preserve UTC calendar dates from js-yaml Date values', async () => {
+test('parseEventDate returns local midnight for YAML Dates and ISO strings', async () => {
   const { load } = await import('js-yaml');
   const yamlDate = load('date: 2026-10-11').date;
   assert.ok(yamlDate instanceof Date);
-  assert.equal(parseEventDate(yamlDate).toISOString().slice(0, 10), '2026-10-11');
-  assert.equal(parseEventDate('2026-10-11').toISOString().slice(0, 10), '2026-10-11');
-  assert.equal(isInRange({ date: yamlDate }, 'all', '2026-10-11'), true);
-  assert.equal(isInRange({ date: '2026-10-11' }, 'all', '2026-10-11'), true);
+  for (const value of [yamlDate, '2026-10-11']) {
+    const date = parseEventDate(value);
+    assert.deepEqual(
+      [date.getFullYear(), date.getMonth(), date.getDate(),
+        date.getHours(), date.getMinutes(), date.getSeconds(), date.getMilliseconds()],
+      [2026, 9, 11, 0, 0, 0, 0],
+    );
+  }
+});
+
+test('calendar ranges treat YAML Dates and ISO strings equivalently', async () => {
+  const { load } = await import('js-yaml');
+  const yamlEvent = load('date: 2026-06-12\nend_date: 2026-12-31');
+  const isoEvent = { date: '2026-06-12', end_date: '2026-12-31' };
+  assert.deepEqual(eventDateRange(yamlEvent), eventDateRange(isoEvent));
+  for (const range of VALID_RANGES) {
+    assert.equal(isInRange(yamlEvent, range, '2026-10-11'), isInRange(isoEvent, range, '2026-10-11'));
+  }
 });
 
 test('todayAzores uses Atlantic/Azores calendar boundaries', () => {
@@ -447,6 +461,17 @@ test('formatEventDateShort: Date object accepted', () => {
 
 test('formatEventDateShort: UTC date objects keep their YAML calendar day', () => {
   assert.equal(formatEventDateShort(new Date('2026-05-05T00:00:00Z')), 'May 5');
+});
+
+test('formatEventDateShort preserves the calendar day after parseEventDate', async () => {
+  const { load } = await import('js-yaml');
+  for (const iso of ['2026-05-05', '2027-01-15', '2026-10-11']) {
+    for (const value of [iso, load(`date: ${iso}`).date]) {
+      for (const locale of ['en', 'pt']) {
+        assert.equal(formatEventDateShort(parseEventDate(value), locale), formatEventDateShort(iso, locale));
+      }
+    }
+  }
 });
 
 test('formatEventDateShort: empty → ""', () => {

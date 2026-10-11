@@ -80,7 +80,13 @@ export function clearCache() {
 function isoCalendarDate(value) {
   if (value instanceof Date) {
     if (Number.isNaN(value.getTime())) return null;
-    return `${value.getUTCFullYear()}-${String(value.getUTCMonth() + 1).padStart(2, '0')}-${String(value.getUTCDate()).padStart(2, '0')}`;
+    // YAML dates use UTC midnight; other Date values carry a local calendar day.
+    const utcMidnight = value.getUTCHours() === 0 && value.getUTCMinutes() === 0 &&
+      value.getUTCSeconds() === 0 && value.getUTCMilliseconds() === 0;
+    const year = utcMidnight ? value.getUTCFullYear() : value.getFullYear();
+    const month = utcMidnight ? value.getUTCMonth() : value.getMonth();
+    const day = utcMidnight ? value.getUTCDate() : value.getDate();
+    return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
   }
   if (value == null) return null;
   const iso = String(value).slice(0, 10);
