@@ -223,12 +223,12 @@ export default function EventCard({ event, reminded, onToggleReminder, onOpen, c
           <Text style={styles.description}>{displayDescription}</Text>
         )}
         {event.image && (
-          <Image
+          <TouchableOpacity accessibilityRole="link" accessibilityLabel={t('discovery.poster')} onPress={() => Linking.openURL(getImageUrl(event.image))}><Image
             source={{ uri: getImageUrl(event.image) }}
             style={styles.eventImage}
             resizeMode="contain"
             accessibilityLabel={`${displayName}`}
-          />
+          /><Text style={styles.linkText}>{t('discovery.poster')}</Text></TouchableOpacity>
         )}
         {event.organizer && <Text style={styles.address}>{event.organizer}</Text>}
         {[['source_url', 'discovery.source'], ['booking_url', 'discovery.booking']].map(([field, label]) => /^https?:\/\//i.test(event[field] || '') ? <TouchableOpacity key={field} accessibilityRole="link" style={{ paddingVertical: 12 }} onPress={() => Linking.openURL(event[field])}><Text>{t(label)}</Text></TouchableOpacity> : null)}
@@ -418,7 +418,7 @@ const styles = StyleSheet.create({
   },
   eventImage: {
     width: '100%',
-    height: 180,
+    height: 360,
     borderRadius: 8,
     marginTop: 8,
   },
