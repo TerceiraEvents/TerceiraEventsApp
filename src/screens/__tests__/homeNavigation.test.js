@@ -32,18 +32,37 @@ for (const catalog of [en, pt]) {
   });
 }
 
-test('On View route selects exhibitions across all dates on the actual Events screen', () => {
-  const effects = [];
-  const changes = [];
-  const react = { ...React, useState: (value) => [value, (next) => changes.push([value, next])], useEffect: (effect, deps) => effects.push([effect, deps]), useCallback: (value) => value, useMemo: (compute) => compute() };
+test('On View is consumed once, preserves ordinary Back, and reapplies the same repeated shortcut', () => {
+  const state = [], setters = new Map();
+  let cursor = 0, previous, pending;
+  const react = { ...React, useState: (value) => {
+    const index = cursor++;
+    if (!(index in state)) state[index] = value;
+    const setter = (next) => { state[index] = next; };
+    setters.set(value, setter);
+    return [state[index], setter];
+  }, useEffect: (effect, deps) => {
+    if (deps.length < 2) return;
+    if (!previous || deps.some((value, index) => !Object.is(value, previous[index]))) pending = effect;
+    previous = deps;
+  }, useCallback: (value) => value, useMemo: (compute) => compute() };
   const native = { StyleSheet: { create: (styles) => styles } };
-  const imports = { react, 'react-native': native, '../utils/eventRoute': {}, '../utils/theme': { colors: {}, fonts: {} }, '../utils/data': { sortEventsByDate: (events) => events, applyEventFilters: (events) => events }, '../utils/discovery': {}, '../utils/tags': {}, '../utils/notifications': {}, '../components/EventCard': () => null, '../components/LoadingView': () => null, '../i18n': { useLocale: () => ({ t: (key) => key }) } };
+  const imports = { react, 'react-native': native, '../utils/eventRoute': {}, '../utils/theme': { colors: {}, fonts: {} }, '../utils/data': { sortEventsByDate: (events) => events, sortExhibitions: (events) => events, applyEventFilters: (events) => events }, '../utils/discovery': {}, '../utils/tags': {}, '../utils/notifications': {}, '../components/EventCard': () => null, '../components/LoadingView': () => null, '../i18n': { useLocale: () => ({ t: (key) => key }) } };
   const code = transformSync(readFileSync(new URL('../SpecialEventsScreen.js', import.meta.url), 'utf8'), { babelrc: false, configFile: false, plugins: ['@babel/plugin-transform-react-jsx', '@babel/plugin-transform-modules-commonjs'] }).code;
   const module = { exports: {} };
   new Function('require', 'module', 'exports', code)((name) => { assert.ok(name in imports, name); return imports[name]; }, module, module.exports);
-  module.exports.default({ navigation: {}, route: { params: { kind: 'exhibition', range: 'all' } } });
-  const routeEffect = effects.find(([, deps]) => deps.includes('exhibition'));
-  assert.ok(routeEffect, 'route selection must reach the actual screen');
-  routeEffect[0]();
-  assert.deepEqual(changes, [['event', 'exhibition'], ['week', 'all']]);
+  const route = { params: { kind: 'exhibition', range: 'all' } };
+  const navigation = { setParams: (params) => { Object.assign(route.params, params); } };
+  const render = () => { cursor = 0; pending = null; module.exports.default({ navigation, route }); if (pending) pending(); };
+  render();
+  render();
+  setters.get('event')('event');
+  setters.get('week')('month');
+  render();
+  assert.ok(state.includes('event') && state.includes('month'), 'ordinary tab Back preserves user filters');
+  Object.assign(route.params, { kind: 'exhibition', range: 'all' });
+  render();
+  assert.ok(state.includes('exhibition') && state.includes('all'), 'same repeated shortcut reselects filters');
+  assert.equal(route.params.kind, undefined);
+  assert.equal(route.params.range, undefined);
 });

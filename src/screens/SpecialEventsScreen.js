@@ -60,7 +60,8 @@ export default function SpecialEventsScreen({ navigation, route }) {
   useEffect(() => {
     if (['event', 'exhibition'].includes(route?.params?.kind)) setKind(route.params.kind);
     if (route?.params?.range === 'all') setRange('all');
-  }, [route?.params?.kind, route?.params?.range]);
+    if (['event', 'exhibition'].includes(route?.params?.kind) || route?.params?.range === 'all') navigation.setParams({ kind: undefined, range: undefined });
+  }, [navigation, route?.params?.kind, route?.params?.range]);
 
   const loadEvents = useCallback(async (forceRefresh = false) => {
     const all = await fetchSpecialEvents(forceRefresh);
