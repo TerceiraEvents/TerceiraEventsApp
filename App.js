@@ -46,6 +46,7 @@ function PrimaryTabs() {
     <Tab.Navigator screenOptions={({ route }) => ({
       ...headerOptions(route.name),
       tabBarActiveTintColor: colors.primary,
+      tabBarInactiveTintColor: colors.textMuted,
       tabBarStyle: { height: tabBarHeight(fontScale, bottom) },
       tabBarLabelPosition: 'below-icon',
       tabBarLabel: ({ children, color }) => <Text style={{ color, fontSize: 12, lineHeight: 18, textAlign: 'center', width: '100%' }}>{children}</Text>,
