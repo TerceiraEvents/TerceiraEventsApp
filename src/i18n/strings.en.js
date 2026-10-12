@@ -56,16 +56,16 @@ export default
       "filterByTag": "Filter by tag"
     },
     "ranges": {
-      "thisWeek": "This Week",
-      "thisMonth": "This Month",
-      "thisYear": "This Year",
+      "thisWeek": "Next 7 days",
+      "thisMonth": "Next 31 days",
+      "thisYear": "Next 365 days",
       "allUpcoming": "All Upcoming",
       "archive": "Archive"
     },
     "empty": {
       "filtered": "No events match your filters.",
       "archive": "No past events yet.",
-      "thisWeek": "No special events this week.",
+      "thisWeek": "No published events in the next 7 days.",
       "default": "No events to show."
     }
   },

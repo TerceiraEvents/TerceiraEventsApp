@@ -56,16 +56,16 @@ export default
       "filterByTag": "Filtrar por etiqueta"
     },
     "ranges": {
-      "thisWeek": "Esta Semana",
-      "thisMonth": "Este Mês",
-      "thisYear": "Este Ano",
+      "thisWeek": "Próximos 7 dias",
+      "thisMonth": "Próximos 31 dias",
+      "thisYear": "Próximos 365 dias",
       "allUpcoming": "Próximos",
       "archive": "Arquivo"
     },
     "empty": {
       "filtered": "Nenhum evento corresponde aos filtros.",
       "archive": "Ainda não há eventos passados.",
-      "thisWeek": "Não há eventos especiais esta semana.",
+      "thisWeek": "Não há eventos publicados nos próximos 7 dias.",
       "default": "Sem eventos para mostrar."
     }
   },

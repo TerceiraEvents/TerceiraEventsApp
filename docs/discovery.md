@@ -6,7 +6,7 @@ The shared dataset's explicit `id` identifies an event. Website links use `https
 
 My Plans stores `{ id, event }` snapshots in device-local storage, uses current metadata for known IDs, and retains missing records with an explicit snapshot notice. Saving does not request notification permission or schedule notifications. Reminder keys retain the existing date/name format for installed-version compatibility; reminders do not yet follow date/name corrections.
 
-Home date shortcuts use Atlantic/Azores calendar dates. Today and Tomorrow are single days. This weekend selects Saturday and Sunday, or the remaining weekend day(s) when browsing on a weekend. On View is separate from dated occurrences. Weekly schedules are identified as published recurring schedules.
+Explore date filters use rolling windows labelled Next 7 days, Next 31 days, and Next 365 days, measured from the current Atlantic/Azores calendar day. Home date shortcuts use Atlantic/Azores calendar dates. Today and Tomorrow are single days. This weekend selects Saturday and Sunday, or the remaining weekend day(s) when browsing on a weekend. On View is separate from dated occurrences. Weekly schedules are identified as published recurring schedules.
 
 A successful data request records device fetch time, which does not imply organizer verification. Failed refreshes retain available memory or disk data and expose cached/error feedback. Dataset validation rejects non-array documents and records without names before cache persistence. Persistent-cache fetch time is unknown.
 
