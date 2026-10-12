@@ -1,0 +1,21 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { getStateFromPath, getPathFromState } from '@react-navigation/core';
+import { createLinking } from './linking.js';
+
+const linking = createLinking({ prefixes: [], parsePath: getStateFromPath, serializeState: getPathFromState });
+test('all event entry paths provide a route back to the primary tabs', () => {
+  for (const path of ['events/?id=one', 'pt/events/?id=one', 'events/?id=../other', 'events/?id=', 'events/']) {
+    const state = linking.getStateFromPath(path, linking.config);
+    assert.equal(state.routes[0].name, 'Main');
+    assert.equal(state.routes[1].name, 'EventDetail');
+  }
+  assert.equal(linking.getStateFromPath('events/?id=../other', linking.config).routes[1].params.id, undefined);
+});
+
+test('detail URLs serialize only identity and never navigation snapshots', () => {
+  const state = { index: 1, routes: [{ name: 'Main' }, { name: 'EventDetail', params: { id: 'one', event: { id: 'one', name: 'Snapshot' } } }] };
+  const path = linking.getPathFromState(state, linking.config);
+  assert.equal(path, '/events?id=one');
+  assert.equal(path.includes('object'), false);
+});

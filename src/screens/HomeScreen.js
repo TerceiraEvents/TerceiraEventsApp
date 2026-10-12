@@ -31,7 +31,10 @@ export default function HomeScreen({ navigation }) {
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 8 }}>{['today', 'tomorrow', 'weekend'].map((key) => <TouchableOpacity key={key} accessibilityRole="button" accessibilityState={{ selected: key === selection }} onPress={() => setSelection(key)} style={{ padding: 16, backgroundColor: key === selection ? colors.border : colors.card }}><Text>{t(`discovery.${key}`)}</Text></TouchableOpacity>)}</View>
     <Text style={{ padding: 16 }}>{window.start}{window.end !== window.start ? ` – ${window.end}` : ''} · Atlantic/Azores</Text>
     {['cached', 'error'].includes(feedback) && <TouchableOpacity accessibilityRole="button" style={{ padding: 16 }} onPress={() => load(true)}><Text accessibilityLiveRegion="polite">{t(`discovery.${feedback}`)} · {t('discovery.retry')}</Text></TouchableOpacity>}
-    {loading ? <Text style={{ padding: 16 }}>{t('discovery.loading')}</Text> : selected.length ? selected.slice(0, 5).map((event) => <EventCard key={event.id || `${event.date}-${event.name}`} event={event} compact onOpen={() => open(event)} />) : feedState.status !== 'error' ? <Text style={{ padding: 16 }}>{t('discovery.emptyDate')}</Text> : null}
+    {feedback === 'loading' && <Text style={{ padding: 16 }}>{t('discovery.loading')}</Text>}
+    {!!feedState.rejectedRecords && <Text style={{ padding: 16 }}>{t('discovery.partial', { count: feedState.rejectedRecords })}</Text>}
+    {selected.slice(0, 5).map((event) => <EventCard key={event.id || `${event.date}-${event.name}`} event={event} compact onOpen={() => open(event)} />)}
+    {feedback === 'emptyDate' && !feedState.rejectedRecords && <Text style={{ padding: 16 }}>{t('discovery.emptyDate')}</Text>}
     <TouchableOpacity accessibilityRole="button" style={{ padding: 16 }} onPress={() => navigation.navigate('Events')}><Text>{t('home.links.allUpcoming')}</Text></TouchableOpacity>
     {!!onView.length && <Text accessibilityRole="header" style={{ padding: 16, fontSize: 22 }}>{t('discovery.onView')}</Text>}
     {onView.map((event) => <EventCard key={event.id || `${event.date}-${event.name}`} event={event} compact onOpen={() => open(event)} />)}

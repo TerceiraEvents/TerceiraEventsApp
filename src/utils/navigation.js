@@ -1,5 +1,7 @@
+export const rootRoutes = { main: 'Main', detail: 'EventDetail', weekly: 'Weekly', blog: 'Blog', resources: 'Resources', settings: 'Settings', suggest: 'SuggestEvent' };
+
 export function handleNotificationNavigation(navigation, data) {
-  if (data?.type === 'daily_summary' || data?.type === 'event_reminder') navigation.navigate('Main', { screen: 'Events' });
+  if (data?.type === 'daily_summary' || data?.type === 'event_reminder') navigation.navigate(rootRoutes.main, { screen: 'Events' });
 }
 
 export function homeFeedback(status, eventCount, loading) {

@@ -1,10 +1,10 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { getPathFromState, getStateFromPath, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import * as Linking from 'expo-linking';
-import { handleNotificationNavigation } from './src/utils/navigation';
-import { eventIdFromUrl } from './src/utils/eventLinks';
+import { handleNotificationNavigation, rootRoutes } from './src/utils/navigation';
+import { createLinking } from './src/navigation/linking';
 import EventDetailScreen from './src/screens/EventDetailScreen';
 import SavedScreen from './src/screens/SavedScreen';
 import MoreScreen from './src/screens/MoreScreen';
@@ -43,6 +43,8 @@ function PrimaryTabs() {
 // what makes tab labels and screen titles flip without an app restart.
 function AppShell() {
   const navigationRef = useRef(null);
+  const [primaryHeader, setPrimaryHeader] = useState(true);
+  const updateHeader = () => setPrimaryHeader(['Home', 'Events', 'Venues', 'Saved', 'More'].includes(navigationRef.current?.getCurrentRoute()?.name));
   // Subscribe to locale changes — value isn't used directly, but the
   // hook keeps this subtree in sync with the provider.
   useLocale();
@@ -85,16 +87,22 @@ function AppShell() {
   }, []);
 
   return (
-    <NavigationContainer ref={navigationRef} linking={{ getPathFromState: (state, options) => { const clean = (value) => ({ ...value, routes: value.routes.map((route) => ({ ...route, ...(route.name === 'EventDetail' ? { params: route.params?.id ? { id: route.params.id } : {} } : {}), ...(route.state ? { state: clean(route.state) } : {}) })) }); return getPathFromState(clean(state), options); }, getStateFromPath: (path, options) => { const id = eventIdFromUrl(`https://eventosterceira.pt/${path.replace(/^\//, '')}`); return id ? { routes: [{ name: 'Main' }, { name: 'EventDetail', params: { id } }] } : getStateFromPath(path, options); }, prefixes: [Linking.createURL('/'), 'terceiraevents://', 'https://eventosterceira.pt', 'https://www.eventosterceira.pt'], config: { screens: { EventDetail: 'events/', Main: { screens: { Home: '', Events: 'special/', Saved: 'saved/' } } } } }}>
-      <StatusBar style="dark" />
-      <Stack.Navigator>
-        <Stack.Screen name="Main" component={PrimaryTabs} options={{ headerShown: false }} />
-        <Stack.Screen name="EventDetail" component={EventDetailScreen} options={{ title: t('discovery.details') }} />
-        <Stack.Screen name="Weekly" component={WeeklyScreen} options={{ title: t('tabs.weekly') }} />
-        <Stack.Screen name="Blog" component={BlogStack} options={{ headerShown: false }} />
-        <Stack.Screen name="Resources" component={ResourcesScreen} options={{ title: t('discovery.resources') }} />
-        <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: t('tabs.settings') }} />
-        <Stack.Screen name="SuggestEvent" component={SuggestEventScreen} options={{ title: t('tabs.suggestEvent') }} />
+    <NavigationContainer ref={navigationRef} linking={createLinking({
+      prefixes: [Linking.createURL('/'), 'terceiraevents://', 'https://eventosterceira.pt', 'https://www.eventosterceira.pt'],
+      parsePath: getStateFromPath,
+      serializeState: getPathFromState,
+    })}
+      onStateChange={updateHeader}
+      onReady={updateHeader}}>
+      <StatusBar style={primaryHeader ? 'light' : 'dark'} />
+      <Stack.Navigator screenOptions={{ headerStyle: { backgroundColor: colors.white }, headerTintColor: colors.text }}>
+        <Stack.Screen name={rootRoutes.main} component={PrimaryTabs} options={{ headerShown: false }} />
+        <Stack.Screen name={rootRoutes.detail} component={EventDetailScreen} options={{ title: t('discovery.details') }} />
+        <Stack.Screen name={rootRoutes.weekly} component={WeeklyScreen} options={{ title: t('tabs.weekly') }} />
+        <Stack.Screen name={rootRoutes.blog} component={BlogStack} options={{ headerShown: false }} />
+        <Stack.Screen name={rootRoutes.resources} component={ResourcesScreen} options={{ title: t('discovery.resources') }} />
+        <Stack.Screen name={rootRoutes.settings} component={SettingsScreen} options={{ title: t('tabs.settings') }} />
+        <Stack.Screen name={rootRoutes.suggest} component={SuggestEventScreen} options={{ title: t('tabs.suggestEvent') }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

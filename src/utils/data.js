@@ -1,7 +1,7 @@
 import { load as yamlLoad } from 'js-yaml';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { validateEventDataset, validateWeeklyDataset } from './feedState.js';
+import { validateEventDataset, validateWeeklyDataset, inspectEventDataset } from './feedState.js';
 import { normalizeEventTags } from './tags.js';
 
 const SPECIAL_EVENTS_URL =
@@ -43,14 +43,20 @@ export async function fetchSpecialEvents(forceRefresh = false) {
     const response = await fetch(SPECIAL_EVENTS_URL);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const text = await response.text();
-    cachedSpecialEvents = validateEventDataset(yamlLoad(text));
-    specialFeedState = { status: 'current', fetchedAt: new Date().toISOString() };
+    const parsed = inspectEventDataset(yamlLoad(text));
+    if (parsed.rejectedRecords && !parsed.events.length) throw new Error('No usable event records');
+    cachedSpecialEvents = parsed.events;
+    specialFeedState = { status: 'current', fetchedAt: new Date().toISOString(), rejectedRecords: parsed.rejectedRecords };
     await saveToStorage(STORAGE_KEY_SPECIAL, text);
     return cachedSpecialEvents;
   } catch (error) {
     console.error('Failed to fetch special events:', error);
-    const stored = cachedSpecialEvents || await loadFromStorage(STORAGE_KEY_SPECIAL);
-    specialFeedState = { status: stored ? 'cached' : 'error', fetchedAt: null };
+    const stored = cachedSpecialEvents || await loadFromStorage(STORAGE_KEY_SPECIAL, (value) => {
+      const parsed = inspectEventDataset(value);
+      specialFeedState.rejectedRecords = parsed.rejectedRecords;
+      return parsed.events;
+    });
+    specialFeedState = { status: stored ? 'cached' : 'error', fetchedAt: null, rejectedRecords: specialFeedState.rejectedRecords || 0 };
     if (stored) {
       cachedSpecialEvents = stored;
       return cachedSpecialEvents;

@@ -25,10 +25,6 @@ import {
 import { matchesDiscoveryOptions } from '../utils/discovery';
 import { TAGS, getTagMeta } from '../utils/tags';
 import {
-  getRemindedEvents,
-  makeEventKey,
-} from '../utils/storage';
-import {
   rescheduleAllNotifications,
 } from '../utils/notifications';
 import EventCard from '../components/EventCard';
@@ -51,7 +47,6 @@ export default function SpecialEventsScreen({ navigation }) {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [range, setRange] = useState('week');
-  const [remindedKeys, setRemindedKeys] = useState(new Set());
   const [locality, setLocality] = useState('');
   const [free, setFree] = useState(false);
   const [family, setFamily] = useState(false);
@@ -62,13 +57,9 @@ export default function SpecialEventsScreen({ navigation }) {
   const [rangePickerOpen, setRangePickerOpen] = useState(false);
 
   const loadEvents = useCallback(async (forceRefresh = false) => {
-    const [all, reminded] = await Promise.all([
-      fetchSpecialEvents(forceRefresh),
-      getRemindedEvents(),
-    ]);
+    const all = await fetchSpecialEvents(forceRefresh);
     setEvents(all);
     setFeedState(getSpecialFeedState());
-    setRemindedKeys(reminded);
   }, []);
 
   useEffect(() => {
@@ -112,6 +103,7 @@ export default function SpecialEventsScreen({ navigation }) {
         </View>
         <Text style={styles.header}>{t('specialEvents.title')}</Text>
         {['cached', 'error'].includes(feedState.status) && <TouchableOpacity accessibilityRole="button" style={{ padding: 16 }} onPress={onRefresh}><Text accessibilityLiveRegion="polite">{t(`discovery.${feedState.status}`)} · {t('discovery.retry')}</Text></TouchableOpacity>}
+        {!!feedState.rejectedRecords && <Text accessibilityLiveRegion="polite">{t('discovery.partial', { count: feedState.rejectedRecords })}</Text>}
         {feedState.fetchedAt && <Text>{t('discovery.fetched')} {feedState.fetchedAt}</Text>}
         <Text accessibilityLiveRegion="polite">{filtered.length} {t('discovery.results')}</Text>
         <View style={styles.dropdownRow}>
@@ -154,10 +146,10 @@ export default function SpecialEventsScreen({ navigation }) {
           </TouchableOpacity>
         </View>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-          {['', 'angra', 'praia', 'other'].map((value) => <TouchableOpacity key={value} accessibilityRole="button" accessibilityState={{ selected: locality === value }} style={{ padding: 12, backgroundColor: locality === value ? colors.border : colors.card }} onPress={() => setLocality(value)}><Text>{t(`discovery.${value || 'allPlaces'}`)}</Text></TouchableOpacity>)}
+          {(events.some((event) => event.locality) ? ['', 'angra', 'praia', 'other'] : []).map((value) => <TouchableOpacity key={value} accessibilityRole="button" accessibilityState={{ selected: locality === value }} style={{ padding: 12, backgroundColor: locality === value ? colors.border : colors.card }} onPress={() => setLocality(value)}><Text>{t(`discovery.${value || 'allPlaces'}`)}</Text></TouchableOpacity>)}
           <TouchableOpacity accessibilityRole="button" accessibilityState={{ selected: free }} style={{ padding: 12, backgroundColor: free ? colors.border : colors.card }} onPress={() => setFree(!free)}><Text>{t('discovery.free')}</Text></TouchableOpacity>
           <TouchableOpacity accessibilityRole="button" accessibilityState={{ selected: family }} style={{ padding: 12, backgroundColor: family ? colors.border : colors.card }} onPress={() => setFamily(!family)}><Text>{t('discovery.family')}</Text></TouchableOpacity>
-          <TouchableOpacity accessibilityRole="button" style={{ padding: 12 }} onPress={() => { setSearch(''); setSelectedTag(''); setLocality(''); setFree(false); setFamily(false); setRange('all'); setKind('event'); }}><Text>{t('discovery.reset')}</Text></TouchableOpacity>
+          <TouchableOpacity accessibilityRole="button" style={{ padding: 12 }} onPress={() => { setSearch(''); setSelectedTag(''); setLocality(''); setFree(false); setFamily(false); setRange('week'); setKind('event'); }}><Text>{t('discovery.reset')}</Text></TouchableOpacity>
         </View>
         <TextInput
           style={styles.searchInput}
@@ -179,7 +171,6 @@ export default function SpecialEventsScreen({ navigation }) {
             event={item}
             compact
             onOpen={() => navigation.navigate('EventDetail', { id: item.id, event: item })}
-            reminded={remindedKeys.has(makeEventKey(item))}
           />
         )}
         contentContainerStyle={styles.list}

@@ -18,3 +18,24 @@ test('saved snapshots reconcile current records and explicitly retain missing re
   assert.equal(result[1].event.name, 'Missing');
   assert.equal(result[1].unavailable, true);
 });
+
+test('load failure preserves snapshots without asserting that records disappeared', () => {
+  const saved = [{ id: 'one', event: { id: 'one', name: 'Saved' } }];
+  const result = reconcileSaved(saved, [], { status: 'error' });
+  assert.equal(result[0].unavailable, false);
+  assert.equal(result[0].event.name, 'Saved');
+});
+
+test('detail failure requests retry, while a loaded dataset can establish missing identity', async () => {
+  const { resolveEventDetail } = await import('./eventIdentity.js');
+  const snapshot = { id: 'one', name: 'Saved' };
+  assert.deepEqual(resolveEventDetail({ id: 'one', snapshot, events: [], feedState: { status: 'error' } }), { event: snapshot, unavailable: false, loadFailed: true });
+  assert.deepEqual(resolveEventDetail({ id: 'one', events: [], feedState: { status: 'error' } }), { event: null, unavailable: false, loadFailed: true });
+  assert.deepEqual(resolveEventDetail({ id: 'one', events: [], feedState: { status: 'current' } }), { event: null, unavailable: true, loadFailed: false });
+});
+
+
+test('missing identity without a snapshot provides the unavailable state', async () => {
+  const { resolveEventDetail } = await import('./eventIdentity.js');
+  assert.deepEqual(resolveEventDetail({ events: [], feedState: { status: 'current' } }), { event: null, unavailable: true, loadFailed: false });
+});

@@ -1,10 +1,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { handleNotificationNavigation, homeFeedback } from './navigation.js';
+import { handleNotificationNavigation, homeFeedback, rootRoutes } from './navigation.js';
 
 test('notification responses target Explore inside the primary navigation', () => {
   const calls = [];
-  const navigation = { navigate: (...args) => { assert.ok(['Main', 'EventDetail', 'Weekly', 'Blog', 'Resources', 'Settings', 'SuggestEvent'].includes(args[0]), 'Destination must be a root route'); calls.push(args); } };
+  const navigation = { navigate: (...args) => { assert.ok(Object.values(rootRoutes).includes(args[0]), 'Destination must be a root route'); calls.push(args); } };
   for (const type of ['daily_summary', 'event_reminder']) handleNotificationNavigation(navigation, { type });
   assert.deepEqual(calls, [['Main', { screen: 'Events' }], ['Main', { screen: 'Events' }]]);
   handleNotificationNavigation(navigation, { type: 'unknown' });

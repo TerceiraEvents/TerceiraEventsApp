@@ -31,6 +31,7 @@ export default function EventCard({ event, reminded, onToggleReminder, onOpen, c
   const displayVenue = localizedField(event, 'venue', locale);
   const displayDescription = localizedField(event, 'description', locale);
   const displayAddress = localizedField(event, 'address', locale);
+  const displayPrice = localizedField(event, 'price', locale);
   const displayFestival = localizedField(event, 'festival', locale);
 
   const openInstagram = () => {
@@ -130,7 +131,7 @@ export default function EventCard({ event, reminded, onToggleReminder, onOpen, c
         <Text style={styles.name}>{displayName}</Text>
         <Text style={styles.time}>{range?.start || ''}{range && range.end !== range.start ? ` – ${range.end}` : ''} · {event.time || t('discovery.timeUnknown')}</Text>
         <Text style={styles.venue}>{displayVenue}{event.locality ? ` · ${event.locality}` : ''}</Text>
-        <Text style={styles.address}>{event.price || (tagSlugs.includes('free') ? t('discovery.free') : t('discovery.priceUnknown'))}{event.status ? ` · ${event.status}` : ''}</Text>
+        <Text style={styles.address}>{displayPrice || (tagSlugs.includes('free') ? t('discovery.free') : t('discovery.priceUnknown'))}{event.status ? ` · ${event.status}` : ''}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -218,7 +219,7 @@ export default function EventCard({ event, reminded, onToggleReminder, onOpen, c
         )}
         <Text style={styles.venue}>{displayVenue}</Text>
         <Text style={styles.time}>{range?.start}{range && range.end !== range.start ? ` – ${range.end}` : ''} · {event.time || t('discovery.timeUnknown')}</Text>
-        <Text style={styles.address}>{event.price || (tagSlugs.includes('free') ? t('discovery.free') : t('discovery.priceUnknown'))}</Text>
+        <Text style={styles.address}>{displayPrice || (tagSlugs.includes('free') ? t('discovery.free') : t('discovery.priceUnknown'))}</Text>
         {displayDescription && (
           <Text style={styles.description}>{displayDescription}</Text>
         )}
