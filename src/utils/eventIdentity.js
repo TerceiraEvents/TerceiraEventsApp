@@ -9,10 +9,10 @@ export function eventUrl(event) {
 
 export function reconcileSaved(saved, events, feedState = { status: 'current' }) {
   const current = new Map(events.filter(eventId).map((event) => [event.id, event]));
-  return saved.map((snapshot) => ({ ...snapshot, event: current.get(snapshot.id) || snapshot.event, unavailable: feedState.status !== 'error' && !feedState.rejectedRecords && !current.has(snapshot.id) }));
+  return saved.map((snapshot) => ({ ...snapshot, event: current.get(snapshot.id) || snapshot.event, unavailable: feedState.status === 'current' && !feedState.rejectedRecords && !current.has(snapshot.id) }));
 }
 
 export function resolveEventDetail({ id, snapshot, events, feedState = { status: 'current' } }) {
   const current = events.find((event) => id && eventId(event) === id);
-  return { event: current || snapshot || null, unavailable: feedState.status !== 'error' && !feedState.rejectedRecords && (Boolean(id) || !snapshot) && !current, loadFailed: feedState.status === 'error' };
+  return { event: current || snapshot || null, unavailable: feedState.status === 'current' && !feedState.rejectedRecords && (Boolean(id) || !snapshot) && !current, loadFailed: feedState.status === 'error' };
 }

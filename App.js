@@ -3,7 +3,8 @@ import { StatusBar } from 'expo-status-bar';
 import { getPathFromState, getStateFromPath, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import * as Linking from 'expo-linking';
-import { handleNotificationNavigation, rootRoutes } from './src/utils/navigation';
+import { handleNotificationNavigation, rootRoutes, primaryRoutes } from './src/utils/navigation';
+import { headerOptions, statusBarStyleForRoute } from './src/navigation/headerTheme';
 import { createLinking } from './src/navigation/linking';
 import EventDetailScreen from './src/screens/EventDetailScreen';
 import SavedScreen from './src/screens/SavedScreen';
@@ -30,21 +31,37 @@ const Tab = createBottomTabNavigator();
 
 function PrimaryTabs() {
   const { t } = useLocale();
-  return <Tab.Navigator screenOptions={({ route }) => ({ tabBarIcon: ({ color, size }) => <Text accessibilityElementsHidden style={{ color, fontSize: size }}>{({ Home: '⌂', Events: '◇', Venues: '⌖', Saved: '♡', More: '☰' })[route.name]}</Text>, headerStyle: { backgroundColor: colors.primary }, headerTintColor: colors.white, tabBarActiveTintColor: colors.primary })}>
-    <Tab.Screen name="Home" component={HomeScreen} options={{ title: t('tabs.home') }} />
-    <Tab.Screen name="Events" component={SpecialEventsScreen} options={{ title: t('discovery.explore') }} />
-    <Tab.Screen name="Venues" component={VenuesScreen} options={{ title: t('tabs.venues') }} />
-    <Tab.Screen name="Saved" component={SavedScreen} options={{ title: t('discovery.saved') }} />
-    <Tab.Screen name="More" component={MoreScreen} options={{ title: t('discovery.more') }} />
-  </Tab.Navigator>;
+  const icons = {
+    [primaryRoutes.home]: '⌂',
+    [primaryRoutes.events]: '◇',
+    [primaryRoutes.venues]: '⌖',
+    [primaryRoutes.saved]: '♡',
+    [primaryRoutes.more]: '☰',
+  };
+  return (
+    <Tab.Navigator screenOptions={({ route }) => ({
+      ...headerOptions(route.name),
+      tabBarActiveTintColor: colors.primary,
+      tabBarIcon: ({ color, size }) => <Text accessibilityElementsHidden style={{ color, fontSize: size }}>{icons[route.name]}</Text>,
+    })}>
+      <Tab.Screen name={primaryRoutes.home} component={HomeScreen} options={{ title: t('tabs.home') }} />
+      <Tab.Screen name={primaryRoutes.events} component={SpecialEventsScreen} options={{ title: t('discovery.explore') }} />
+      <Tab.Screen name={primaryRoutes.venues} component={VenuesScreen} options={{ title: t('tabs.venues') }} />
+      <Tab.Screen name={primaryRoutes.saved} component={SavedScreen} options={{ title: t('discovery.saved') }} />
+      <Tab.Screen name={primaryRoutes.more} component={MoreScreen} options={{ title: t('discovery.more') }} />
+    </Tab.Navigator>
+  );
 }
 
 // Inner component so it re-renders when the locale changes; this is
 // what makes tab labels and screen titles flip without an app restart.
 function AppShell() {
   const navigationRef = useRef(null);
-  const [primaryHeader, setPrimaryHeader] = useState(true);
-  const updateHeader = () => setPrimaryHeader(['Home', 'Events', 'Venues', 'Saved', 'More'].includes(navigationRef.current?.getCurrentRoute()?.name));
+  const [statusBarStyle, setStatusBarStyle] = useState(statusBarStyleForRoute(primaryRoutes.home));
+  const updateHeader = () => {
+    const routeName = navigationRef.current?.getCurrentRoute()?.name;
+    if (routeName) setStatusBarStyle(statusBarStyleForRoute(routeName));
+  };
   // Subscribe to locale changes — value isn't used directly, but the
   // hook keeps this subtree in sync with the provider.
   useLocale();
@@ -94,8 +111,8 @@ function AppShell() {
     })}
       onStateChange={updateHeader}
       onReady={updateHeader}>
-      <StatusBar style={primaryHeader ? 'light' : 'dark'} />
-      <Stack.Navigator screenOptions={{ headerStyle: { backgroundColor: colors.white }, headerTintColor: colors.text }}>
+      <StatusBar style={statusBarStyle} />
+      <Stack.Navigator screenOptions={({ route }) => headerOptions(route.name)}>
         <Stack.Screen name={rootRoutes.main} component={PrimaryTabs} options={{ headerShown: false }} />
         <Stack.Screen name={rootRoutes.detail} component={EventDetailScreen} options={{ title: t('discovery.details') }} />
         <Stack.Screen name={rootRoutes.weekly} component={WeeklyScreen} options={{ title: t('tabs.weekly') }} />

@@ -1,6 +1,7 @@
 export default
 {
   "discovery": {
+    "detailUncertain": "This event is not in the available cache. Retry when connected to check the published record.",
     "partial": "Some published records cannot be displayed (%{count}). Available events remain listed.",
     "resources": "Resources",
     "poster": "Open full artwork",

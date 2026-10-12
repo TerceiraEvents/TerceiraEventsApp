@@ -1,6 +1,7 @@
 export default
 {
   "discovery": {
+    "detailUncertain": "Este evento não consta dos dados guardados disponíveis. Tente novamente com ligação para consultar a publicação.",
     "partial": "Alguns registos publicados não podem ser apresentados (%{count}). Os eventos disponíveis continuam listados.",
     "resources": "Recursos",
     "poster": "Abrir imagem completa",

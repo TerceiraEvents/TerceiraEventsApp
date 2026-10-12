@@ -63,6 +63,7 @@ export default function EventDetailScreen({ route }) {
         </TouchableOpacity>
       )}
       {!!feedState.rejectedRecords && <Text style={styles.notice}>{t('discovery.partial', { count: feedState.rejectedRecords })}</Text>}
+      {feedState.status === 'cached' && !event && <Text style={styles.notice}>{t('discovery.detailUncertain')}</Text>}
       {unavailable && <Text style={styles.notice}>{t('discovery.unavailable')}</Text>}
       {event && <>
         {isEnded(event) && <Text style={styles.notice}>{t('discovery.ended')}</Text>}

@@ -39,3 +39,10 @@ test('missing identity without a snapshot provides the unavailable state', async
   const { resolveEventDetail } = await import('./eventIdentity.js');
   assert.deepEqual(resolveEventDetail({ events: [], feedState: { status: 'current' } }), { event: null, unavailable: true, loadFailed: false });
 });
+
+test('a missing ID in cached data remains uncertain rather than establishing removal', async () => {
+  const { resolveEventDetail } = await import('./eventIdentity.js');
+  const snapshot = { id: 'one', name: 'Saved' };
+  assert.equal(resolveEventDetail({ id: 'one', snapshot, events: [], feedState: { status: 'cached' } }).unavailable, false);
+  assert.equal(reconcileSaved([{ id: 'one', event: snapshot }], [], { status: 'cached' })[0].unavailable, false);
+});
