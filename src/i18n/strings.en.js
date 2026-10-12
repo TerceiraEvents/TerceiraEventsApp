@@ -1,6 +1,10 @@
 export default
 {
   "discovery": {
+    "artworkUnavailable": "Artwork unavailable. Event information remains available.",
+    "artworkCredit": "Artwork credit:",
+    "artworkSource": "Artwork source",
+
     "localityPartial": "Locality coverage is partial. Choose All places to include events without confirmed locality.",
     "savedUnknown": "Saved state could not be read. Retry before changing your plans.",
     "reminderUnknown": "Reminder state could not be read. Your event and plans remain available.",

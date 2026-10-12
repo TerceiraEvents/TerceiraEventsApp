@@ -12,16 +12,21 @@ import FlagEventModal from './FlagEventModal';
 const BASE_URL =
   'https://raw.githubusercontent.com/TerceiraEvents/EventosTerceira.pt/main';
 
-function getImageUrl(imagePath) {
-  // Full URL (e.g. from R2 uploads): use as-is
-  if (/^https?:\/\//i.test(imagePath)) return imagePath;
-  // Relative path on the website repo: prepend GitHub raw base
-  return `${BASE_URL}${imagePath}`;
+function safeArtworkUrl(value, relative = false) {
+  if (typeof value !== 'string' || /[\s\\]/.test(value)) return null;
+  if (relative && /^\/assets\/images\/[\w./-]+$/.test(value) && !value.includes('..')) return `${BASE_URL}${value}`;
+  try {
+    const url = new URL(value);
+    return ['https:', 'http:'].includes(url.protocol) && !url.username && !url.password ? url.href : null;
+  } catch { return null; }
 }
 
 export default function EventCard({ event, reminded, onToggleReminder, onOpen, compact = false, calendarEnabled = Boolean(onToggleReminder) }) {
   const { t, locale } = useLocale();
   const [flagVisible, setFlagVisible] = useState(false);
+  const [failedArtwork, setFailedArtwork] = useState(null);
+  const artworkUrl = safeArtworkUrl(event.image, true);
+  const artworkSource = safeArtworkUrl(event.image_source);
   const date = parseEventDate(event.date);
   const formatted = date ? formatDate(date, locale) : null;
   const range = eventDateRange(event);
@@ -221,13 +226,20 @@ export default function EventCard({ event, reminded, onToggleReminder, onOpen, c
         {displayDescription && (
           <Text style={styles.description}>{displayDescription}</Text>
         )}
-        {event.image && (
-          <TouchableOpacity accessibilityRole="link" accessibilityLabel={t('discovery.poster')} onPress={() => Linking.openURL(getImageUrl(event.image))}><Image
-            source={{ uri: getImageUrl(event.image) }}
-            style={styles.eventImage}
-            resizeMode="contain"
-            accessibilityLabel={`${displayName}`}
-          /><Text style={styles.linkText}>{t('discovery.poster')}</Text></TouchableOpacity>
+        {artworkUrl && (
+          <View>
+            {failedArtwork === artworkUrl ? <Text accessibilityLiveRegion="polite" style={styles.address}>{t('discovery.artworkUnavailable')}</Text> : <Image
+              source={{ uri: artworkUrl }}
+              style={styles.eventImage}
+              resizeMode="contain"
+              accessibilityLabel={localizedField(event, 'image_alt', locale) || displayName}
+              onError={() => setFailedArtwork(artworkUrl)}
+            />}
+            <TouchableOpacity accessibilityRole="link" accessibilityLabel={t('discovery.poster')} style={styles.artworkAction} onPress={() => Linking.openURL(artworkUrl)}><Text style={styles.linkText}>{t('discovery.poster')}</Text></TouchableOpacity>
+            {event.image_credit && <Text style={styles.address}>{t('discovery.artworkCredit')} {event.image_credit}</Text>}
+            {event.image_rights && <Text style={styles.address}>{event.image_rights}</Text>}
+            {artworkSource && <TouchableOpacity accessibilityRole="link" accessibilityLabel={t('discovery.artworkSource')} style={styles.artworkAction} onPress={() => Linking.openURL(artworkSource)}><Text style={styles.linkText}>{t('discovery.artworkSource')}</Text></TouchableOpacity>}
+          </View>
         )}
         {event.organizer && <Text style={styles.address}>{event.organizer}</Text>}
         {[['source_url', 'discovery.source'], ['booking_url', 'discovery.booking']].map(([field, label]) => /^https?:\/\//i.test(event[field] || '') ? <TouchableOpacity key={field} accessibilityRole="link" style={{ paddingVertical: 12 }} onPress={() => Linking.openURL(event[field])}><Text>{t(label)}</Text></TouchableOpacity> : null)}
@@ -413,6 +425,11 @@ const styles = StyleSheet.create({
     color: colors.textLight,
     marginTop: 4,
     lineHeight: 20,
+  },
+  artworkAction: {
+    minHeight: 44,
+    paddingVertical: 12,
+    justifyContent: 'center',
   },
   eventImage: {
     width: '100%',
