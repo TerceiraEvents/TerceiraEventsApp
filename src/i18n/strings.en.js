@@ -5,6 +5,7 @@ export default
     "artworkCredit": "Artwork credit:",
     "artworkSource": "Artwork source",
 
+    "cacheTimeUnknown": "The last successful fetch time of these cached records is unknown.",
     "localityPartial": "Locality coverage is partial. Choose All places to include events without confirmed locality.",
     "savedUnknown": "Saved state could not be read. Retry before changing your plans.",
     "reminderUnknown": "Reminder state could not be read. Your event and plans remain available.",

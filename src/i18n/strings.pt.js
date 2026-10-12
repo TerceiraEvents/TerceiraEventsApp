@@ -5,6 +5,7 @@ export default
     "artworkCredit": "Crédito do cartaz:",
     "artworkSource": "Fonte do cartaz",
 
+    "cacheTimeUnknown": "A hora da última obtenção destes dados guardados é desconhecida.",
     "localityPartial": "Nem todos os eventos têm localidade confirmada. Escolha Todos os locais para incluir os restantes.",
     "savedUnknown": "Não foi possível ler os planos guardados. Tente novamente antes de os alterar.",
     "reminderUnknown": "Não foi possível ler o estado do lembrete. O evento e os planos continuam disponíveis.",
