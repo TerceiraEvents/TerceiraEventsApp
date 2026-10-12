@@ -1,3 +1,4 @@
+import { calendarDraft } from '../utils/eventTime';
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Linking, Alert, Share, Platform, Image } from 'react-native';
 import * as Calendar from 'expo-calendar';
@@ -41,66 +42,35 @@ export default function EventCard({ event, reminded, onToggleReminder, onOpen, c
   };
 
   const addToCalendar = async () => {
-    try {
-      const { status } = await Calendar.requestCalendarPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert(
-          t('eventCard.calendarPermissionTitle'),
-          t('eventCard.calendarPermissionBody'),
-        );
-        return;
-      }
-
-      const calendars = await Calendar.getCalendarsAsync(Calendar.EntityTypes.EVENT);
-      let targetCalendar;
-      if (Platform.OS === 'ios') {
-        targetCalendar = await Calendar.getDefaultCalendarAsync();
-      } else {
-        targetCalendar =
-          calendars.find((c) => c.accessLevel === 'owner' && c.isPrimary) ||
-          calendars.find((c) => c.accessLevel === 'owner') ||
-          calendars.find((c) => c.allowsModifications);
-      }
-
-      if (!targetCalendar) {
-        Alert.alert(
-          t('eventCard.calendarErrorTitle'),
-          t('eventCard.calendarNoWritable'),
-        );
-        return;
-      }
-
-      const eventDate = parseEventDate(event.date);
-      const startDate = new Date(eventDate);
-      if (event.time) {
-        const [hours, minutes] = event.time.split(':').map(Number);
-        startDate.setHours(hours, minutes, 0, 0);
-      } else {
-        startDate.setHours(12, 0, 0, 0);
-      }
-
-      const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
-
-      const location = [displayVenue, displayAddress].filter(Boolean).join(', ');
-
-      await Calendar.createEventAsync(targetCalendar.id, {
-        title: displayName,
-        startDate,
-        endDate,
-        location,
-        notes: displayDescription || '',
-      });
-
-      Alert.alert(
-        t('eventCard.calendarAddedTitle'),
-        t('eventCard.calendarAddedBody', { name: displayName }),
-      );
-    } catch (error) {
-      Alert.alert(
-        t('eventCard.calendarErrorTitle'),
-        t('eventCard.calendarAddFailed', { error: error.message }),
-      );
+    const draft = calendarDraft(event);
+    if (!draft.event) {
+      Alert.alert(t('eventCard.calendarErrorTitle'), t('eventCard.calendarTimeUnresolved'));
+      return;
     }
+    const openDraft = async () => {
+      try {
+        if (Platform.OS === 'ios' && Number.parseFloat(Platform.Version) < 17) {
+          const { status } = await Calendar.requestCalendarPermissionsAsync();
+          if (status !== 'granted') {
+            Alert.alert(t('eventCard.calendarPermissionTitle'), t('eventCard.calendarPermissionBody'));
+            return;
+          }
+        }
+        const notice = draft.notice ? t(draft.notice === 'all-day-draft' ? 'eventCard.calendarAllDayDraft' : 'eventCard.calendarDurationDraft') : '';
+        const result = await Calendar.createEventInCalendarAsync({
+          ...draft.event,
+          title: displayName,
+          location: [displayVenue, displayAddress].filter(Boolean).join(', '),
+          notes: [displayDescription, notice, event.time, eventUrl(event)].filter(Boolean).join('\n\n'),
+        });
+        if (result.action === 'saved') Alert.alert(t('eventCard.calendarAddedTitle'), t('eventCard.calendarAddedBody', { name: displayName }));
+      } catch (error) {
+        Alert.alert(t('eventCard.calendarErrorTitle'), t('eventCard.calendarAddFailed', { error: error.message }));
+      }
+    };
+    if (draft.notice) {
+      Alert.alert(t('eventCard.calendarReviewTitle'), t(draft.notice === 'all-day-draft' ? 'eventCard.calendarAllDayDraft' : 'eventCard.calendarDurationDraft'), [{ text: t('eventCard.calendarCancel'), style: 'cancel' }, { text: t('eventCard.calendarReview'), onPress: openDraft }]);
+    } else await openDraft();
   };
 
   const shareEvent = async () => {

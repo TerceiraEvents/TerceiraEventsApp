@@ -1,3 +1,4 @@
+import { reminderDate } from './eventTime';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import {
@@ -143,7 +144,6 @@ async function scheduleDailySummaries(
 
 // Schedule reminder notifications for reminded events
 async function scheduleEventReminders(specialEvents, settings, remindedKeys) {
-  const leadMs = settings.reminderLeadMinutes * 60 * 1000;
   const locale = getLocale();
 
   for (const event of specialEvents) {
@@ -153,26 +153,8 @@ async function scheduleEventReminders(specialEvents, settings, remindedKeys) {
     const eventDate = parseEventDate(event.date);
     if (!eventDate) continue;
 
-    // Build the trigger time from date + time
-    const triggerDate = new Date(eventDate);
-    if (event.time) {
-      const parts = event.time.match(/(\d{1,2}):(\d{2})/);
-      if (parts) {
-        triggerDate.setHours(parseInt(parts[1], 10), parseInt(parts[2], 10), 0, 0);
-      } else {
-        // No parseable time, default to noon
-        triggerDate.setHours(12, 0, 0, 0);
-      }
-    } else {
-      // No time specified, remind at 9am on the event day
-      triggerDate.setHours(9, 0, 0, 0);
-    }
-
-    // Subtract lead time
-    const notifyAt = new Date(triggerDate.getTime() - leadMs);
-
-    // Don't schedule if already passed
-    if (notifyAt <= new Date()) continue;
+    const notifyAt = reminderDate(event, settings.reminderLeadMinutes);
+    if (!notifyAt) continue;
 
     const formatted = formatDate(eventDate, locale);
     const timeStr = event.time
@@ -195,24 +177,11 @@ async function scheduleEventReminders(specialEvents, settings, remindedKeys) {
 // rescheduleAllNotifications will clean up.
 export async function scheduleOneReminder(event) {
   const settings = await getSettings();
-  const leadMs = settings.reminderLeadMinutes * 60 * 1000;
   const eventDate = parseEventDate(event.date);
-  if (!eventDate) return;
+  if (!eventDate) return false;
 
-  const triggerDate = new Date(eventDate);
-  if (event.time) {
-    const parts = event.time.match(/(\d{1,2}):(\d{2})/);
-    if (parts) {
-      triggerDate.setHours(parseInt(parts[1], 10), parseInt(parts[2], 10), 0, 0);
-    } else {
-      triggerDate.setHours(12, 0, 0, 0);
-    }
-  } else {
-    triggerDate.setHours(9, 0, 0, 0);
-  }
-
-  const notifyAt = new Date(triggerDate.getTime() - leadMs);
-  if (notifyAt <= new Date()) return;
+  const notifyAt = reminderDate(event, settings.reminderLeadMinutes);
+  if (!notifyAt) return false;
 
   const locale = getLocale();
   const formatted = formatDate(eventDate, locale);
@@ -228,4 +197,5 @@ export async function scheduleOneReminder(event) {
     },
     trigger: { date: notifyAt, type: 'date' },
   });
+  return true;
 }
