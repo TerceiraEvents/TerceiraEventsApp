@@ -146,10 +146,8 @@ export default function EventCard({ event, reminded, onToggleReminder, onOpen, c
         </View>
       )}
       <View style={styles.content}>
-        <View style={styles.titleRow}>
-          <Text style={[styles.name, styles.nameWithButtons]}>
-            {displayName}
-          </Text>
+        <Text style={styles.name}>{displayName}</Text>
+        <View style={styles.actionRow}>
           <TouchableOpacity
             accessibilityRole="button" accessibilityLabel={t('discovery.share')} onPress={shareEvent}
             style={styles.shareButton}
@@ -268,7 +266,7 @@ export default function EventCard({ event, reminded, onToggleReminder, onOpen, c
 
 const styles = StyleSheet.create({
   card: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     backgroundColor: colors.card,
     borderRadius: 12,
     marginHorizontal: 16,
@@ -287,9 +285,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: colors.primary,
     borderRadius: 8,
-    width: 56,
-    height: 64,
-    marginRight: 12,
+    minWidth: 56,
+    minHeight: 64,
+    alignSelf: 'flex-start',
+    padding: 8,
+    marginBottom: 12,
   },
   dateMonth: {
     color: colors.white,
@@ -309,11 +309,11 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
-  titleRow: {
+  actionRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     alignItems: 'flex-start',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
   },
   name: {
     fontSize: fonts.sizeMedium,
@@ -321,9 +321,6 @@ const styles = StyleSheet.create({
     color: colors.text,
     marginBottom: 2,
     flex: 1,
-  },
-  nameWithButtons: {
-    marginRight: 8,
   },
   shareButton: {
     padding: 12,

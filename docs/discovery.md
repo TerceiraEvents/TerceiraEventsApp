@@ -27,3 +27,5 @@ Detail loading resolves event data, saved plans, and reminder state independentl
 Detail navigation uses `eventDetailParams` to preserve source calendar dates in JSON-safe snapshots. Published stable IDs identify the current record; a snapshot keeps published information available while the feed loads.
 
 Explore filters, search and results share one scroll surface. `tabBarHeight` reserves two scaled label lines, icons and the device safe area; labels inherit the device font scale.
+
+Detail cards place their full-width heading above a wrapping action row. The date badge grows with its text; calendar, share, report and reminder actions keep their own accessible buttons.
