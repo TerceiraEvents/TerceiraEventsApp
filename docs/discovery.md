@@ -15,3 +15,9 @@ Feed cards show name, published date range and time, venue, and published price.
 ## Verification boundaries
 
 Automated tests cover identity correction, repeat IDs, unavailable snapshots, link parsing, date shortcuts across year/DST weekends, and malformed datasets. Expo exports validate JavaScript bundles for web, Android, and iOS. Exporting a bundle does not validate native rendering, accessibility, back gestures, OS link delivery, notification permissions, or calendar integration. Native device checks and screenshots remain required before considering the cross-platform issues complete.
+
+## Observed iOS checks
+
+On 12 October 2026, the app launched through Expo Go 54.0.7 on an iPhone 17 Pro simulator running iOS 26.4. Native UI inspection opened the weekly route and displayed the published weekly schedules. The current public weekly YAML request returned HTTP 200 and passed the grouped-weekly validator with seven day groups and eleven named events. Runtime inspection exposed a validator shape error, covered by a failing-before/passing-after regression test.
+
+These observations do not establish VoiceOver, enlarged text, notification/calendar permission behavior, offline behavior, custom/universal-link OS delivery, or Android correctness. Save remains disabled for records without the explicit shared dataset ID; native Save validation requires the shared schema rollout.
