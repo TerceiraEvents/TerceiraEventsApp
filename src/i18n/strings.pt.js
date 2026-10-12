@@ -1,48 +1,69 @@
 export default
 {
-  "discovery": {"partial": "Alguns registos publicados não podem ser apresentados (%{count}). Os eventos disponíveis continuam listados.","resources": "Recursos","poster": "Abrir imagem completa","free": "Gratuito", "family": "Para famílias", "angra": "Angra", "praia": "Praia", "other": "Outras localidades", "allPlaces": "Todos os locais", "reset": "Limpar filtros","source": "Fonte publicada", "booking": "Reservar","cached": "A usar dados guardados. O pedido de rede falhou.", "error": "Não foi possível carregar eventos.", "retry": "Tentar novamente", "fetched": "Dados obtidos pelo dispositivo em", "results": "resultados","explore": "Explorar", "saved": "Planos", "more": "Mais", "details": "Detalhes do evento", "search": "Pesquisar eventos", "today": "Hoje", "tomorrow": "Amanhã", "weekend": "Este fim de semana", "onView": "Em exposição", "dated": "Eventos com data", "weekly": "Programação semanal - horários recorrentes publicados", "loading": "A carregar eventos", "emptyDate": "Não há eventos publicados para estas datas. Consulte os próximos eventos abaixo.", "timeUnknown": "Hora não publicada", "priceUnknown": "Preço não publicado", "save": "Guardar nos Planos", "unsave": "Remover dos Planos", "savedEmpty": "Ainda não há eventos guardados. Guarde um evento nos detalhes.", "localOnly": "Guardado apenas neste dispositivo. Guardar não ativa lembretes.", "unavailable": "Este evento não está disponível nos dados atuais. A informação apresentada é uma cópia guardada.", "ended": "Este evento terminou.", "storageError": "Não foi possível ler ou guardar os planos. Tente novamente.", "share": "Partilhar evento", "calendar": "Adicionar ao calendário", "report": "Reportar evento", "reminder": "Alterar lembrete"},
+  "discovery": {
+    "partial": "Alguns registos publicados não podem ser apresentados (%{count}). Os eventos disponíveis continuam listados.",
+    "resources": "Recursos",
+    "poster": "Abrir imagem completa",
+    "free": "Gratuito",
+    "family": "Para famílias",
+    "angra": "Angra",
+    "praia": "Praia",
+    "other": "Outras localidades",
+    "allPlaces": "Todos os locais",
+    "reset": "Limpar filtros",
+    "source": "Fonte publicada",
+    "booking": "Reservar",
+    "cached": "A usar dados guardados. O pedido de rede falhou.",
+    "error": "Não foi possível carregar eventos.",
+    "retry": "Tentar novamente",
+    "fetched": "Dados obtidos pelo dispositivo em",
+    "results": "resultados",
+    "explore": "Explorar",
+    "saved": "Planos",
+    "more": "Mais",
+    "details": "Detalhes do evento",
+    "search": "Pesquisar eventos",
+    "today": "Hoje",
+    "tomorrow": "Amanhã",
+    "weekend": "Este fim de semana",
+    "onView": "Em exposição",
+    "dated": "Eventos com data",
+    "weekly": "Programação semanal - horários recorrentes publicados",
+    "loading": "A carregar eventos",
+    "emptyDate": "Não há eventos publicados para estas datas. Consulte os próximos eventos abaixo.",
+    "timeUnknown": "Hora não publicada",
+    "priceUnknown": "Preço não publicado",
+    "save": "Guardar nos Planos",
+    "unsave": "Remover dos Planos",
+    "savedEmpty": "Ainda não há eventos guardados. Guarde um evento nos detalhes.",
+    "localOnly": "Guardado apenas neste dispositivo. Guardar não ativa lembretes.",
+    "unavailable": "Este evento não está disponível nos dados atuais. A informação apresentada é uma cópia guardada.",
+    "ended": "Este evento terminou.",
+    "storageError": "Não foi possível ler ou guardar os planos. Tente novamente.",
+    "share": "Partilhar evento",
+    "calendar": "Adicionar ao calendário",
+    "report": "Reportar evento",
+    "reminder": "Alterar lembrete"
+  },
   "app": {
     "name": "Eventos da Terceira"
   },
   "tabs": {
     "home": "Início",
     "weekly": "Semanais",
-    "events": "Eventos",
     "venues": "Locais",
     "resources": "Mais",
     "settings": "Definições",
     "suggestEvent": "Sugerir Evento",
-    "suggestEventShort": "Sugerir",
     "blog": "Blog"
   },
   "home": {
     "title": "Eventos da Terceira",
-    "subtitle": "O que se passa na ilha Terceira",
     "intro": {
-      "p1": "A Terceira é conhecida como o \"parque de diversões\" dos Açores — uma ilha pequena cheia de concertos, festivais, touradas e festas todo o ano.",
-      "p2": "Esta aplicação ajuda-te a descobrir o que se passa pela Terceira: o programa de hoje, a semana que se aproxima e os locais que vale a pena conhecer."
-    },
-    "sections": {
-      "specialEvents": "Próximos eventos especiais",
-      "blog": "Do blog"
-    },
-    "buttons": {
-      "weekly": "Eventos Semanais",
-      "weeklySubtitle": "Diversão recorrente",
-      "specialEvents": "Eventos Especiais",
-      "specialEventsSubtitle": "O que há esta semana",
-      "venues": "Locais",
-      "venuesSubtitle": "Onde ir",
-      "blog": "Blog",
-      "blogSubtitle": "Notícias, guias e histórias",
-      "resources": "Recursos",
-      "resourcesSubtitle": "Outras formas de encontrar eventos",
-      "suggest": "Sugerir Evento",
-      "suggestSubtitle": "Submete um evento para revisão"
+      "p1": "A Terceira é conhecida como o \"parque de diversões\" dos Açores — uma ilha pequena cheia de concertos, festivais, touradas e festas todo o ano."
     },
     "links": {
-      "allUpcoming": "Ver todos →",
-      "allPosts": "Ver todos →"
+      "allUpcoming": "Ver todos →"
     }
   },
   "specialEvents": {

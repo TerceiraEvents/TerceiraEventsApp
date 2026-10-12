@@ -86,6 +86,7 @@ export async function fetchWeeklyEvents() {
 }
 
 export function clearCache() {
+  specialFeedState = { status: 'loading', fetchedAt: null, rejectedRecords: 0 };
   cachedSpecialEvents = null;
   cachedWeeklyEvents = null;
 }

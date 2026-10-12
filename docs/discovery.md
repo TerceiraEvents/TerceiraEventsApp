@@ -10,7 +10,7 @@ Explore date filters use rolling windows labelled Next 7 days, Next 31 days, and
 
 A successful data request records device fetch time, which does not imply organizer verification. Failed refreshes retain available memory or disk data and expose cached/error feedback. Dataset validation rejects non-array documents. Individual records without a nonempty string name are omitted, with an explicit partial-data warning; usable records remain available. A response with only invalid records does not overwrite a usable cache. Persistent-cache fetch time is unknown.
 
-Feed cards show name, published date range and time, venue, and published price. Missing time and price remain explicit. Details provide descriptions, tags, poster art with contain sizing, full address, verified source/booking URLs when present, and sharing/reporting/map/calendar/reminder controls.
+Feed cards show name, published date range and time, venue, and published price. Localized fields prefer the requested language, then the original field, then an available EN/PT field; missing translations retain published information. Missing time and price remain explicit. Details provide descriptions, tags, poster art with contain sizing, full address, verified source/booking URLs when present, and sharing/reporting/map/calendar/reminder controls.
 
 ## Verification boundaries
 
@@ -18,4 +18,4 @@ Automated tests cover identity correction, repeat IDs, unavailable snapshots, li
 
 ## Release dependencies
 
-The shared website schema, stable IDs, and event detail routes must be deployed before this app change merges or ships: EventosTerceira.pt pull requests 250, 253, and 254. Home classification requires explicit `kind`; saving and exact links require `id`. Locality controls appear only when the loaded dataset publishes locality metadata. Dataset failure offers Retry in details and My Plans and does not establish that an event is missing.
+The shared website schema, stable IDs, and event detail routes must be deployed before this app change merges or ships: https://github.com/TerceiraEvents/EventosTerceira.pt/pull/250, https://github.com/TerceiraEvents/EventosTerceira.pt/pull/253, and https://github.com/TerceiraEvents/EventosTerceira.pt/pull/254. Home classification requires explicit `kind`; saving and exact links require `id`. Locality controls appear only when the loaded dataset publishes locality metadata. Dataset failure offers Retry in details and My Plans and does not establish that an event is missing.

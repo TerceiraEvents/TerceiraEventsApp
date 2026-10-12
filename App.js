@@ -93,7 +93,7 @@ function AppShell() {
       serializeState: getPathFromState,
     })}
       onStateChange={updateHeader}
-      onReady={updateHeader}}>
+      onReady={updateHeader}>
       <StatusBar style={primaryHeader ? 'light' : 'dark'} />
       <Stack.Navigator screenOptions={{ headerStyle: { backgroundColor: colors.white }, headerTintColor: colors.text }}>
         <Stack.Screen name={rootRoutes.main} component={PrimaryTabs} options={{ headerShown: false }} />
