@@ -10,7 +10,7 @@ function scheduler(event) {
   const scheduled = [];
   const notifications = { setNotificationHandler: () => {}, cancelAllScheduledNotificationsAsync: async () => {}, scheduleNotificationAsync: async (payload) => { scheduled.push(payload); } };
   const key = `${event.date}|${event.name}`;
-  const imports = { 'expo-notifications': notifications, 'expo-device': { isDevice: true }, './storage': { getSettings: async () => ({ reminderLeadMinutes: 60, dailySummaryEnabled: false }), getRemindedEvents: async () => new Set([key]), cleanupPastReminders: async () => {}, makeEventKey: () => key }, './data': data, './eventTime': eventTime, '../i18n/core.js': { getLocale: () => 'en', t: (key) => key } };
+  const imports = { 'expo-notifications': notifications, 'expo-device': { isDevice: true }, 'react-native': { Platform: { OS: 'ios' } }, './storage': { getSettings: async () => ({ reminderLeadMinutes: 60, dailySummaryEnabled: false }), getRemindedEvents: async () => new Set([key]), cleanupPastReminders: async () => {}, makeEventKey: () => key }, './data': data, './eventTime': eventTime, '../i18n/core.js': { getLocale: () => 'en', t: (key) => key } };
   const code = transformSync(readFileSync(new URL('./notifications.js', import.meta.url), 'utf8'), { babelrc: false, configFile: false, plugins: ['@babel/plugin-transform-modules-commonjs'] }).code;
   const module = { exports: {} };
   new Function('require', 'module', 'exports', code)((name) => imports[name], module, module.exports);
