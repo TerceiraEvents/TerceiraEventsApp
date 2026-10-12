@@ -13,19 +13,21 @@ import pt from '../../i18n/strings.pt.js';
 const require = createRequire(import.meta.url);
 const { transformSync } = require('@babel/core');
 function nodes(element) { return [element, ...React.Children.toArray(element?.props?.children).flatMap(nodes)]; }
-function render(event, locale = 'en') {
+function render(event, locale = 'en', platform = 'android') {
   const state = []; let cursor = 0;
   const react = { ...React, useState: (initial) => { const index = cursor++; if (!(index in state)) state[index] = initial; return [state[index], (value) => { state[index] = value; }]; } };
   const native = Object.fromEntries(['View', 'Text', 'TouchableOpacity', 'Image'].map((name) => [name, name]));
   native.StyleSheet = { create: (styles) => styles };
+  const announced = []; native.Platform = { OS: platform };
+  native.AccessibilityInfo = { announceForAccessibility: (message) => announced.push(message) };
   const opened = []; native.Linking = { openURL: (url) => opened.push(url) };
   const t = (key) => key.split('.').reduce((value, part) => value?.[part], locale === 'pt' ? pt : en);
   const imports = { react, 'react-native': native, '../utils/data': data, '../utils/tags': tags, '../utils/theme': theme, '../utils/i18nFields': fields, '../utils/eventIdentity': identity, '../i18n': { useLocale: () => ({ t, locale }) } };
   const code = transformSync(readFileSync(new URL('../EventCard.js', import.meta.url), 'utf8'), { babelrc: false, configFile: false, plugins: ['@babel/plugin-transform-react-jsx', '@babel/plugin-transform-modules-commonjs'] }).code;
   const module = { exports: {} };
   new Function('require', 'module', 'exports', code)((name) => imports[name] || 'Modal', module, module.exports);
-  const rerender = () => { cursor = 0; return module.exports.default({ event }); };
-  return { tree: rerender(), rerender, opened, t };
+  const rerender = () => { cursor = 0; return module.exports.default({ event, calendarEnabled: true, onToggleReminder: () => {} }); };
+  return { tree: rerender(), rerender, opened, announced, t };
 }
 
 test('broken artwork retains event information and announces failure in EN/PT', () => {
@@ -39,6 +41,11 @@ test('broken artwork retains event information and announces failure in EN/PT', 
     assert.equal(nodes(tree).some((node) => node.type === 'Image'), false);
     const failure = nodes(tree).find((node) => node.props?.children === result.t('discovery.artworkUnavailable'));
     assert.equal(failure.props.accessibilityLiveRegion, 'polite');
+    assert.deepEqual(result.announced, []);
+    for (const key of ['share', 'calendar', 'report', 'reminder', 'poster']) {
+      const action = nodes(tree).find((node) => node.props?.accessibilityLabel === result.t(`discovery.${key}`));
+      assert.equal(typeof action?.props.onPress, 'function', `retains ${key}`);
+    }
   }
 });
 
@@ -65,5 +72,25 @@ test('missing or malformed artwork is absent; portrait, landscape and oversized 
     assert.equal(image.props.resizeMode, 'contain');
     assert.equal(image.props.style.width, '100%');
     assert.equal(image.props.style.height, 360);
+  }
+});
+
+
+test('iOS image failure announces the localized status through the public accessibility API', () => {
+  for (const locale of ['en', 'pt']) {
+    const result = render({ name: 'Published event', image: 'https://example.org/poster.jpg' }, locale, 'ios');
+    nodes(result.tree).find((node) => node.type === 'Image').props.onError();
+    assert.deepEqual(result.announced, [result.t('discovery.artworkUnavailable')]);
+  }
+});
+
+test('present rejected artwork shows failure without a full-size unsafe link', () => {
+  for (const locale of ['en', 'pt']) {
+    for (const image of [42, 'javascript:alert(1)', '//example.org/poster.jpg', '/assets/images/../secret.jpg']) {
+      const result = render({ name: 'Published event', image }, locale);
+      const all = nodes(result.tree);
+      assert.ok(all.some((node) => node.props?.children === result.t('discovery.artworkUnavailable')));
+      assert.equal(all.some((node) => node.props?.accessibilityLabel === result.t('discovery.poster')), false);
+    }
   }
 });

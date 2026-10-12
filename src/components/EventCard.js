@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Linking, Alert, Share, Platform, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Linking, Alert, Share, Platform, Image, AccessibilityInfo } from 'react-native';
 import * as Calendar from 'expo-calendar';
 import { colors, fonts } from '../utils/theme';
 import { parseEventDate, formatDate, eventDateRange } from '../utils/data';
@@ -27,6 +27,11 @@ export default function EventCard({ event, reminded, onToggleReminder, onOpen, c
   const [failedArtwork, setFailedArtwork] = useState(null);
   const artworkUrl = safeArtworkUrl(event.image, true);
   const artworkSource = safeArtworkUrl(event.image_source);
+  const artworkPresent = event.image !== undefined && event.image !== null && event.image !== '';
+  const artworkUnavailable = () => {
+    setFailedArtwork(artworkUrl);
+    if (Platform.OS === 'ios') AccessibilityInfo.announceForAccessibility(t('discovery.artworkUnavailable'));
+  };
   const date = parseEventDate(event.date);
   const formatted = date ? formatDate(date, locale) : null;
   const range = eventDateRange(event);
@@ -226,16 +231,16 @@ export default function EventCard({ event, reminded, onToggleReminder, onOpen, c
         {displayDescription && (
           <Text style={styles.description}>{displayDescription}</Text>
         )}
-        {artworkUrl && (
+        {artworkPresent && (
           <View>
-            {failedArtwork === artworkUrl ? <Text accessibilityLiveRegion="polite" style={styles.address}>{t('discovery.artworkUnavailable')}</Text> : <Image
+            {!artworkUrl || failedArtwork === artworkUrl ? <Text accessibilityLiveRegion="polite" style={styles.address}>{t('discovery.artworkUnavailable')}</Text> : <Image
               source={{ uri: artworkUrl }}
               style={styles.eventImage}
               resizeMode="contain"
               accessibilityLabel={localizedField(event, 'image_alt', locale) || displayName}
-              onError={() => setFailedArtwork(artworkUrl)}
+              onError={artworkUnavailable}
             />}
-            <TouchableOpacity accessibilityRole="link" accessibilityLabel={t('discovery.poster')} style={styles.artworkAction} onPress={() => Linking.openURL(artworkUrl)}><Text style={styles.linkText}>{t('discovery.poster')}</Text></TouchableOpacity>
+            {artworkUrl && <TouchableOpacity accessibilityRole="link" accessibilityLabel={t('discovery.poster')} style={styles.artworkAction} onPress={() => Linking.openURL(artworkUrl)}><Text style={styles.linkText}>{t('discovery.poster')}</Text></TouchableOpacity>}
             {event.image_credit && <Text style={styles.address}>{t('discovery.artworkCredit')} {event.image_credit}</Text>}
             {event.image_rights && <Text style={styles.address}>{event.image_rights}</Text>}
             {artworkSource && <TouchableOpacity accessibilityRole="link" accessibilityLabel={t('discovery.artworkSource')} style={styles.artworkAction} onPress={() => Linking.openURL(artworkSource)}><Text style={styles.linkText}>{t('discovery.artworkSource')}</Text></TouchableOpacity>}
