@@ -104,6 +104,7 @@ export default function SpecialEventsScreen({ navigation }) {
         </View>
         <Text style={styles.header}>{t('specialEvents.title')}</Text>
         {['cached', 'error'].includes(feedState.status) && <TouchableOpacity accessibilityRole="button" style={{ padding: 16 }} onPress={onRefresh}><Text accessibilityLiveRegion="polite">{t(`discovery.${feedState.status}`)} · {t('discovery.retry')}</Text></TouchableOpacity>}
+        {feedState.cacheTimeUnknown && <Text accessibilityLiveRegion="polite" style={{ padding: 16 }}>{t('discovery.cacheTimeUnknown')}</Text>}
         {!!feedState.rejectedRecords && <Text accessibilityLiveRegion="polite">{t('discovery.partial', { count: feedState.rejectedRecords })}</Text>}
         {feedState.fetchedAt && <Text>{t('discovery.fetched')} {feedState.fetchedAt}</Text>}
         <Text accessibilityLiveRegion="polite">{filtered.length} {t('discovery.results')}</Text>

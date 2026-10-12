@@ -33,6 +33,7 @@ export default function HomeScreen({ navigation }) {
     <Text style={{ padding: 16 }}>{window.start}{window.end !== window.start ? ` – ${window.end}` : ''} · Atlantic/Azores</Text>
     {['cached', 'error'].includes(feedback) && <TouchableOpacity accessibilityRole="button" style={{ padding: 16 }} onPress={() => load(true)}><Text accessibilityLiveRegion="polite">{t(`discovery.${feedback}`)} · {t('discovery.retry')}</Text></TouchableOpacity>}
     {feedback === 'loading' && <Text style={{ padding: 16 }}>{t('discovery.loading')}</Text>}
+    {feedState.cacheTimeUnknown && <Text accessibilityLiveRegion="polite" style={{ padding: 16 }}>{t('discovery.cacheTimeUnknown')}</Text>}
     {!!feedState.rejectedRecords && <Text style={{ padding: 16 }}>{t('discovery.partial', { count: feedState.rejectedRecords })}</Text>}
     {selected.slice(0, 5).map((event) => <EventCard key={event.id || `${event.date}-${event.name}`} event={event} compact onOpen={() => open(event)} />)}
     {feedback === 'emptyDate' && !feedState.rejectedRecords && <Text style={{ padding: 16 }}>{t('discovery.emptyDate')}</Text>}
