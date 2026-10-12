@@ -1,3 +1,4 @@
+import { eventDetailParams } from '../utils/eventRoute';
 import React, { useCallback, useEffect, useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { useLocale } from '../i18n';
@@ -24,7 +25,7 @@ export default function HomeScreen({ navigation }) {
   const selected = dated.filter((event) => { const range = eventDateRange(event); return range && range.start <= window.end && range.end >= window.start; });
   const feedback = homeFeedback(feedState.status, selected.length, loading);
   const onView = sortExhibitions(events.filter((event) => eventKind(event) === 'exhibition' && isActive(event))).slice(0, 3);
-  const open = (event) => navigation.navigate('EventDetail', { id: event.id, event });
+  const open = (event) => navigation.navigate('EventDetail', eventDetailParams(event));
   return <ScrollView style={{ backgroundColor: colors.background }} contentContainerStyle={{ paddingVertical: 16 }}>
     <Text accessibilityRole="header" style={{ fontSize: 28, fontWeight: '700', paddingHorizontal: 16 }}>{t('home.title')}</Text>
     <TouchableOpacity accessibilityRole="button" style={{ padding: 16 }} onPress={() => navigation.navigate('Events')}><Text>{t('discovery.search')}</Text></TouchableOpacity>

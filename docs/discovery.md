@@ -23,3 +23,5 @@ The shared website schema, stable IDs, and event detail routes must be deployed 
 Headers use one shared navigation theme. Primary-tab headers use the green theme with light status text. Stack headers, including BlogIndex and Post, use the white theme with dark status text. The status-bar decision and rendered navigator header options use the same route theme.
 
 Detail loading resolves event data, saved plans, and reminder state independently. A reminder read failure retains the exact event and saved collection, displays an unknown-reminder notice with Retry, and disables reminder changes until the state can be read.
+
+Detail navigation uses `eventDetailParams` to preserve source calendar dates in JSON-safe snapshots. Published stable IDs identify the current record; a snapshot keeps published information available while the feed loads.

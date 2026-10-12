@@ -1,3 +1,4 @@
+import { eventDetailParams } from '../utils/eventRoute';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
@@ -172,7 +173,7 @@ export default function SpecialEventsScreen({ navigation }) {
           <EventCard
             event={item}
             compact
-            onOpen={() => navigation.navigate('EventDetail', { id: item.id, event: item })}
+            onOpen={() => navigation.navigate('EventDetail', eventDetailParams(item))}
           />
         )}
         contentContainerStyle={styles.list}

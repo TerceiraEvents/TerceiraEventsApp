@@ -1,3 +1,4 @@
+import { eventDetailParams } from '../utils/eventRoute';
 import React, { useCallback, useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
@@ -45,7 +46,7 @@ export default function SavedScreen({ navigation }) {
           {events.map((event) => (
             <React.Fragment key={event.id}>
               {items.find((item) => item.id === event.id)?.unavailable && <Text style={styles.notice}>{t('discovery.unavailable')}</Text>}
-              <EventCard event={event} compact onOpen={() => navigation.navigate('EventDetail', { id: event.id, event })} />
+              <EventCard event={event} compact onOpen={() => navigation.navigate('EventDetail', eventDetailParams(event))} />
             </React.Fragment>
           ))}
         </React.Fragment>
