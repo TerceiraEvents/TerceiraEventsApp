@@ -10,7 +10,9 @@ import EventDetailScreen from './src/screens/EventDetailScreen';
 import SavedScreen from './src/screens/SavedScreen';
 import MoreScreen from './src/screens/MoreScreen';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Text } from 'react-native';
+import { Text, useWindowDimensions } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { tabBarHeight } from './src/utils/tabLayout';
 import * as Notifications from 'expo-notifications';
 import { colors } from './src/utils/theme';
 import { fetchSpecialEvents, fetchWeeklyEvents } from './src/utils/data';
@@ -31,6 +33,8 @@ const Tab = createBottomTabNavigator();
 
 function PrimaryTabs() {
   const { t } = useLocale();
+  const { fontScale } = useWindowDimensions();
+  const { bottom } = useSafeAreaInsets();
   const icons = {
     [primaryRoutes.home]: '⌂',
     [primaryRoutes.events]: '◇',
@@ -42,6 +46,9 @@ function PrimaryTabs() {
     <Tab.Navigator screenOptions={({ route }) => ({
       ...headerOptions(route.name),
       tabBarActiveTintColor: colors.primary,
+      tabBarStyle: { height: tabBarHeight(fontScale, bottom) },
+      tabBarLabelPosition: 'below-icon',
+      tabBarLabel: ({ children, color }) => <Text style={{ color, fontSize: 12, lineHeight: 18, textAlign: 'center', width: '100%' }}>{children}</Text>,
       tabBarIcon: ({ color, size }) => <Text accessibilityElementsHidden style={{ color, fontSize: size }}>{icons[route.name]}</Text>,
     })}>
       <Tab.Screen name={primaryRoutes.home} component={HomeScreen} options={{ title: t('tabs.home') }} />
