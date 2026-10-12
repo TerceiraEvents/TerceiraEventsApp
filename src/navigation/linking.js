@@ -16,10 +16,11 @@ export function createLinking({ prefixes, parsePath, serializeState }) {
     };
   }
   function getStateFromPath(path, options) {
-    const url = new URL(path.replace(/^\//, ''), 'https://eventosterceira.pt/');
-    if (/^\/(?:pt\/)?events\/?$/.test(url.pathname)) {
-      const id = url.searchParams.get('id');
-      return { routes: [{ name: 'Main' }, { name: 'EventDetail', params: id && /^[a-zA-Z0-9_-]+$/.test(id) ? { id } : {} }] };
+    const pathname = path.split(/[?#]/, 1)[0].replace(/^\//, '');
+    if (/^(?:pt\/)?events\/?$/.test(pathname)) {
+      const parsed = parsePath(path.replace(/^\/?pt\//, ''), options);
+      const id = parsed?.routes?.find((route) => route.name === 'EventDetail')?.params?.id;
+      return { routes: [{ name: 'Main' }, { name: 'EventDetail', params: typeof id === 'string' && /^[a-zA-Z0-9_-]+$/.test(id) ? { id } : {} }] };
     }
     return parsePath(path, options);
   }
