@@ -52,11 +52,11 @@ function PrimaryTabs() {
       tabBarLabel: ({ children, color }) => <Text style={{ color, fontSize: 12, lineHeight: 18, textAlign: 'center', width: '100%' }}>{children}</Text>,
       tabBarIcon: ({ color, size }) => <Text accessibilityElementsHidden style={{ color, fontSize: size }}>{icons[route.name]}</Text>,
     })}>
-      <Tab.Screen name={primaryRoutes.home} component={HomeScreen} options={{ title: t('tabs.home') }} />
-      <Tab.Screen name={primaryRoutes.events} component={SpecialEventsScreen} options={{ title: t('discovery.explore') }} />
-      <Tab.Screen name={primaryRoutes.venues} component={VenuesScreen} options={{ title: t('tabs.venues') }} />
-      <Tab.Screen name={primaryRoutes.saved} component={SavedScreen} options={{ title: t('discovery.saved') }} />
-      <Tab.Screen name={primaryRoutes.more} component={MoreScreen} options={{ title: t('discovery.more') }} />
+      <Tab.Screen name={primaryRoutes.home} component={HomeScreen} options={{ title: t('tabs.home'), tabBarAccessibilityLabel: t('tabs.home') }} />
+      <Tab.Screen name={primaryRoutes.events} component={SpecialEventsScreen} options={{ title: t('discovery.explore'), tabBarAccessibilityLabel: t('discovery.explore') }} />
+      <Tab.Screen name={primaryRoutes.venues} component={VenuesScreen} options={{ title: t('tabs.venues'), tabBarAccessibilityLabel: t('tabs.venues') }} />
+      <Tab.Screen name={primaryRoutes.saved} component={SavedScreen} options={{ title: t('discovery.saved'), tabBarAccessibilityLabel: t('discovery.saved') }} />
+      <Tab.Screen name={primaryRoutes.more} component={MoreScreen} options={{ title: t('discovery.more'), tabBarAccessibilityLabel: t('discovery.more') }} />
     </Tab.Navigator>
   );
 }
