@@ -96,8 +96,7 @@ export default function SpecialEventsScreen({ navigation }) {
   const activeRange = RANGE_BY_KEY[range] || RANGE_DEFS[0];
   const activeRangeLabel = t(`specialEvents.ranges.${activeRange.i18nKey}`);
 
-  return (
-    <View style={styles.container}>
+  const filters = (
       <View style={styles.headerArea}>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
           {['event', 'exhibition'].map((value) => <TouchableOpacity key={value} accessibilityRole="button" accessibilityState={{ selected: kind === value }} style={{ padding: 16, backgroundColor: kind === value ? colors.border : colors.card }} onPress={() => setKind(value)}><Text>{t(value === 'event' ? 'discovery.dated' : 'discovery.onView')}</Text></TouchableOpacity>)}
@@ -165,8 +164,14 @@ export default function SpecialEventsScreen({ navigation }) {
           autoCorrect={false}
         />
       </View>
+  );
+
+  return (
+    <View style={styles.container}>
 
       <FlatList
+        ListHeaderComponent={filters}
+        keyboardShouldPersistTaps="handled"
         data={filtered}
         keyExtractor={(item, index) => `${item.date}-${item.name}-${index}`}
         renderItem={({ item }) => (
