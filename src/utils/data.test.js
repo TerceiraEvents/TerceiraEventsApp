@@ -10,6 +10,17 @@ import {
   sortEventsByDate,
   isInRange,
   VALID_RANGES,
+  parseEventDate,
+  todayAzores,
+  eventKind,
+  isEnded,
+  isActive,
+  exhibitionStatus,
+  sortExhibitions,
+  sortDatedEvents,
+  filterByKind,
+  eventDateRange,
+  eventOccursOn,
   formatPostDate,
   formatEventDateShort,
 } from './data.js';
@@ -206,12 +217,11 @@ test('sortEventsByDate: empty input returns empty array', () => {
 
 // Build a date string offset from today by `days` calendar days, in YYYY-MM-DD.
 function dateOffset(days) {
-  const d = new Date();
-  d.setHours(0, 0, 0, 0);
-  d.setDate(d.getDate() + days);
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const dd = String(d.getDate()).padStart(2, '0');
+  const d = new Date(`${todayAzores()}T12:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + days);
+  const y = d.getUTCFullYear();
+  const m = String(d.getUTCMonth() + 1).padStart(2, '0');
+  const dd = String(d.getUTCDate()).padStart(2, '0');
   return `${y}-${m}-${dd}`;
 }
 
@@ -268,6 +278,149 @@ test('isInRange: unknown range falls back to upcoming-all', () => {
   assert.equal(isInRange({ date: dateOffset(-1) }, 'bogus'), false);
 });
 
+test('isInRange: ongoing listing overlaps windows until its inclusive end date', () => {
+  const event = { date: '2026-06-12', end_date: '2026-12-31' };
+  const today = '2026-10-11';
+  assert.deepEqual(
+    ['week', 'month', 'year', 'all', 'archive'].map((range) => isInRange(event, range, today)),
+    [true, true, true, true, false],
+  );
+});
+
+test('date ranges classify single-day, running, future, end-today, and expired listings', () => {
+  const cases = [
+    { name: 'single day today', event: { date: '2026-10-11' }, ended: false, occurs: true },
+    { name: 'running multi-day', event: { date: '2026-10-09', end_date: '2026-10-13' }, ended: false, occurs: true },
+    { name: 'future', event: { date: '2026-10-12', end_date: '2026-10-15' }, ended: false, occurs: false },
+    { name: 'ends today', event: { date: '2026-10-09', end_date: '2026-10-11' }, ended: false, occurs: true },
+    { name: 'expired', event: { date: '2026-10-09', end_date: '2026-10-10' }, ended: true, occurs: false },
+  ];
+  for (const { name, event, ended, occurs } of cases) {
+    assert.equal(isEnded(event, '2026-10-11'), ended, name);
+    assert.equal(isActive(event, '2026-10-11'), !ended, name);
+    assert.equal(eventOccursOn(event, '2026-10-11'), occurs, name);
+  }
+});
+
+test('parseEventDate returns local midnight for YAML Dates and ISO strings', async () => {
+  const { load } = await import('js-yaml');
+  const yamlDate = load('date: 2026-10-11').date;
+  assert.ok(yamlDate instanceof Date);
+  for (const value of [yamlDate, '2026-10-11']) {
+    const date = parseEventDate(value);
+    assert.deepEqual(
+      [date.getFullYear(), date.getMonth(), date.getDate(),
+        date.getHours(), date.getMinutes(), date.getSeconds(), date.getMilliseconds()],
+      [2026, 9, 11, 0, 0, 0, 0],
+    );
+  }
+});
+
+test('calendar ranges treat YAML Dates and ISO strings equivalently', async () => {
+  const { load } = await import('js-yaml');
+  const yamlEvent = load('date: 2026-06-12\nend_date: 2026-12-31');
+  const isoEvent = { date: '2026-06-12', end_date: '2026-12-31' };
+  assert.deepEqual(eventDateRange(yamlEvent), eventDateRange(isoEvent));
+  for (const range of VALID_RANGES) {
+    assert.equal(isInRange(yamlEvent, range, '2026-10-11'), isInRange(isoEvent, range, '2026-10-11'));
+  }
+});
+
+test('todayAzores uses Atlantic/Azores calendar boundaries', () => {
+  const cases = [
+    ['2026-10-11T23:30:00Z', '2026-10-11'],
+    ['2026-10-12T00:30:00Z', '2026-10-12'],
+    ['2027-01-15T00:30:00Z', '2027-01-14'],
+    ['2027-03-28T00:30:00Z', '2027-03-27'],
+    ['2027-03-28T01:30:00Z', '2027-03-28'],
+    ['2026-10-25T00:30:00Z', '2026-10-25'],
+    ['2026-10-25T01:30:00Z', '2026-10-25'],
+  ];
+  for (const [instant, expected] of cases) {
+    assert.equal(todayAzores(new Date(instant)), expected, instant);
+  }
+});
+
+test('todayAzores fallback handles standard time, daylight time, and switch instants', () => {
+  const original = Intl.DateTimeFormat;
+  try {
+    Intl.DateTimeFormat = function unavailableTimeZone() {
+      throw new RangeError('time zone unsupported');
+    };
+    const cases = [
+      ['2027-01-15T00:30:00Z', '2027-01-14'],
+      ['2027-03-28T00:30:00Z', '2027-03-27'],
+      ['2027-03-28T01:30:00Z', '2027-03-28'],
+      ['2026-10-25T00:30:00Z', '2026-10-25'],
+      ['2026-10-25T01:30:00Z', '2026-10-25'],
+    ];
+    for (const [instant, expected] of cases) {
+      assert.equal(todayAzores(new Date(instant)), expected, instant);
+    }
+  } finally {
+    Intl.DateTimeFormat = original;
+  }
+});
+
+test('exhibition status uses inclusive display dates and the 13-day threshold', () => {
+  const cases = [
+    [{ date: '2026-10-10', end_date: '2026-10-10' }, 'ended'],
+    [{ date: '2026-10-12', end_date: '2026-11-01' }, 'opening-soon'],
+    [{ date: '2026-10-25', end_date: '2026-11-01' }, 'upcoming'],
+    [{ date: '2026-10-01', end_date: '2026-10-24' }, 'ending-soon'],
+    [{ date: '2026-10-01', end_date: '2026-10-25' }, 'on-view'],
+  ];
+  for (const [event, expected] of cases) {
+    assert.equal(exhibitionStatus(event, '2026-10-11'), expected);
+  }
+});
+
+test('classification, filters, and inclusive calendar range helpers', () => {
+  const events = [
+    { name: 'Event', date: '2026-12-30', end_date: '2027-01-02' },
+    { name: 'Exhibition', kind: 'exhibition', date: '2026-12-30', end_date: '2027-01-02' },
+    { name: 'Legacy exhibition tag', tags: ['exhibition'], date: '2026-12-30' },
+  ];
+  assert.deepEqual(events.map(eventKind), ['event', 'exhibition', 'event']);
+  assert.deepEqual(filterByKind(events, 'event').map((event) => event.name), ['Event', 'Legacy exhibition tag']);
+  assert.deepEqual(filterByKind(events, 'exhibition').map((event) => event.name), ['Exhibition']);
+  assert.equal(filterByKind(events, 'all').length, 3);
+  assert.deepEqual(eventDateRange(events[0]), { start: '2026-12-30', end: '2027-01-02', days: 4 });
+  assert.equal(eventOccursOn(events[0], '2027-01-02'), true);
+  assert.equal(eventOccursOn(events[0], '2027-01-03'), false);
+});
+
+test('sortExhibitions follows status priority and each status date order', () => {
+  const exhibitions = [
+    { name: 'Upcoming', date: '2026-11-30', end_date: '2026-12-31' },
+    { name: 'On view later end', date: '2026-10-01', end_date: '2026-12-01' },
+    { name: 'Opening later', date: '2026-10-20', end_date: '2026-11-01' },
+    { name: 'Ending later', date: '2026-10-01', end_date: '2026-10-20' },
+    { name: 'Opening first', date: '2026-10-12', end_date: '2026-11-01' },
+    { name: 'On view first', date: '2026-10-01', end_date: '2026-11-30' },
+    { name: 'Ending first', date: '2026-10-01', end_date: '2026-10-12' },
+  ];
+  assert.deepEqual(
+    sortExhibitions(exhibitions, '2026-10-11').map((event) => event.name),
+    ['Opening first', 'Opening later', 'Ending first', 'Ending later', 'On view first', 'On view later end', 'Upcoming'],
+  );
+});
+
+test('sortDatedEvents orders by next attendance date, time, and name', () => {
+  const events = [
+    { name: 'Late', date: '2026-10-13', time: '20:00' },
+    { name: 'Running later time', date: '2026-10-09', end_date: '2026-10-12', time: '19:00' },
+    { name: 'Running early time', date: '2026-10-09', end_date: '2026-10-12', time: '17:00' },
+    { name: 'Earlier future', date: '2026-10-12', time: '22:00' },
+    { name: 'Same time B', date: '2026-10-12', time: '18:00' },
+    { name: 'Same time A', date: '2026-10-12', time: '18:00' },
+  ];
+  assert.deepEqual(
+    sortDatedEvents(events, '2026-10-11').map((event) => event.name),
+    ['Running early time', 'Running later time', 'Same time A', 'Same time B', 'Earlier future', 'Late'],
+  );
+});
+
 // ---------- formatPostDate ----------
 
 test('formatPostDate: ISO string → "30 Apr 2026"', () => {
@@ -303,6 +456,21 @@ test('formatEventDateShort: Date object accepted', () => {
   // Construct date in local time so cross-host TZ doesn't shift the day
   const d = new Date(2026, 4, 5);
   assert.equal(formatEventDateShort(d), 'May 5');
+});
+
+test('formatEventDateShort: UTC date objects keep their YAML calendar day', () => {
+  assert.equal(formatEventDateShort(new Date('2026-05-05T00:00:00Z')), 'May 5');
+});
+
+test('formatEventDateShort preserves the calendar day after parseEventDate', async () => {
+  const { load } = await import('js-yaml');
+  for (const iso of ['2026-05-05', '2027-01-15', '2026-10-11']) {
+    for (const value of [iso, load(`date: ${iso}`).date]) {
+      for (const locale of ['en', 'pt']) {
+        assert.equal(formatEventDateShort(parseEventDate(value), locale), formatEventDateShort(iso, locale));
+      }
+    }
+  }
 });
 
 test('formatEventDateShort: empty → ""', () => {
