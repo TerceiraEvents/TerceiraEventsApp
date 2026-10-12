@@ -30,6 +30,16 @@ export default function HomeScreen({ navigation }) {
     <Text accessibilityRole="header" style={{ fontSize: 28, fontWeight: '700', paddingHorizontal: 16 }}>{t('home.title')}</Text>
     <TouchableOpacity accessibilityRole="button" style={{ padding: 16 }} onPress={() => navigation.navigate('Events')}><Text>{t('discovery.search')}</Text></TouchableOpacity>
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 8 }}>{['today', 'tomorrow', 'weekend'].map((key) => <TouchableOpacity key={key} accessibilityRole="button" accessibilityState={{ selected: key === selection }} onPress={() => setSelection(key)} style={{ padding: 16, backgroundColor: key === selection ? colors.border : colors.card }}><Text>{t(`discovery.${key}`)}</Text></TouchableOpacity>)}</View>
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 8 }}>
+      {[
+        ['Weekly', 'tabs.weekly'],
+        ['Events', 'discovery.onView', { kind: 'exhibition', range: 'all' }],
+        ['Blog', 'tabs.blog'],
+        ['Resources', 'discovery.resources'],
+        ['Settings', 'tabs.settings'],
+        ['SuggestEvent', 'tabs.suggestEvent'],
+      ].map(([route, label, params]) => <TouchableOpacity key={label} accessibilityRole="button" style={{ minHeight: 44, minWidth: 44, padding: 12, justifyContent: 'center' }} onPress={() => params ? navigation.navigate(route, params) : navigation.navigate(route)}><Text>{t(label)}</Text></TouchableOpacity>)}
+    </View>
     <Text style={{ padding: 16 }}>{window.start}{window.end !== window.start ? ` – ${window.end}` : ''} · Atlantic/Azores</Text>
     {['cached', 'error'].includes(feedback) && <TouchableOpacity accessibilityRole="button" style={{ padding: 16 }} onPress={() => load(true)}><Text accessibilityLiveRegion="polite">{t(`discovery.${feedback}`)} · {t('discovery.retry')}</Text></TouchableOpacity>}
     {feedback === 'loading' && <Text style={{ padding: 16 }}>{t('discovery.loading')}</Text>}

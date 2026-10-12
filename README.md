@@ -45,3 +45,5 @@ Updates to the website data are automatically reflected in the app.
 ## License
 
 MIT
+
+Home presents visible shortcuts to Weekly, On View, Blog, Resources, Settings and Suggest Event below its date shortcuts. The five bottom tabs remain available; Home shortcuts wrap with 44px minimum targets and localized labels. On View opens the exhibition filter across all dates.

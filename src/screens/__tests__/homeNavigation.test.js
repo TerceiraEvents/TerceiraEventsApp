@@ -1,0 +1,49 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import React from 'react';
+import en from '../../i18n/strings.en.js';
+import pt from '../../i18n/strings.pt.js';
+const require = createRequire(import.meta.url);
+const { transformSync } = require('@babel/core');
+function nodes(element) { return [element, ...React.Children.toArray(element?.props?.children).flatMap(nodes)]; }
+for (const catalog of [en, pt]) {
+  test(`Home exposes every secondary destination before any interaction (${catalog === en ? 'EN' : 'PT'})`, () => {
+    const react = { ...React, useState: (value) => [value, () => {}], useEffect: () => {}, useCallback: (value) => value };
+    const native = Object.fromEntries(['ScrollView', 'Text', 'TouchableOpacity', 'View'].map((name) => [name, name]));
+    const t = (key) => key.split('.').reduce((value, part) => value[part], catalog);
+    const imports = { react, 'react-native': native, '../i18n': { useLocale: () => ({ t }) }, '../utils/eventRoute': {}, '../utils/theme': { colors: {} }, '../utils/navigation': { homeFeedback: () => 'loading' }, '../utils/discovery': { shortcutWindow: () => ({ start: '2026-10-13', end: '2026-10-13' }) }, '../utils/data': { todayAzores: () => '2026-10-13', sortDatedEvents: (events) => events, sortExhibitions: (events) => events }, '../components/EventCard': () => null };
+    const code = transformSync(readFileSync(new URL('../HomeScreen.js', import.meta.url), 'utf8'), { babelrc: false, configFile: false, plugins: ['@babel/plugin-transform-react-jsx', '@babel/plugin-transform-modules-commonjs'] }).code;
+    const module = { exports: {} };
+    new Function('require', 'module', 'exports', code)((name) => { assert.ok(name in imports, name); return imports[name]; }, module, module.exports);
+    const calls = [];
+    const tree = module.exports.default({ navigation: { navigate: (...args) => calls.push(args) } });
+    const buttons = nodes(tree).filter((node) => node?.type === 'TouchableOpacity');
+    for (const [label, route, params] of [['tabs.weekly', 'Weekly'], ['discovery.onView', 'Events', { kind: 'exhibition', range: 'all' }], ['tabs.blog', 'Blog'], ['discovery.resources', 'Resources'], ['tabs.settings', 'Settings'], ['tabs.suggestEvent', 'SuggestEvent']]) {
+      const button = buttons.find((node) => nodes(node).some((child) => child?.type === 'Text' && child.props.children === t(label)));
+      assert.ok(button, `visible ${t(label)}`);
+      assert.equal(button.props.accessibilityRole, 'button');
+      assert.ok(button.props.style.minHeight >= 44 && button.props.style.minWidth >= 44);
+      button.props.onPress();
+      assert.deepEqual(calls.pop(), params ? [route, params] : [route]);
+    }
+    for (const key of ['today', 'tomorrow', 'weekend']) assert.ok(buttons.some((node) => nodes(node).some((child) => child?.props?.children === t(`discovery.${key}`))));
+  });
+}
+
+test('On View route selects exhibitions across all dates on the actual Events screen', () => {
+  const effects = [];
+  const changes = [];
+  const react = { ...React, useState: (value) => [value, (next) => changes.push([value, next])], useEffect: (effect, deps) => effects.push([effect, deps]), useCallback: (value) => value, useMemo: (compute) => compute() };
+  const native = { StyleSheet: { create: (styles) => styles } };
+  const imports = { react, 'react-native': native, '../utils/eventRoute': {}, '../utils/theme': { colors: {}, fonts: {} }, '../utils/data': { sortEventsByDate: (events) => events, applyEventFilters: (events) => events }, '../utils/discovery': {}, '../utils/tags': {}, '../utils/notifications': {}, '../components/EventCard': () => null, '../components/LoadingView': () => null, '../i18n': { useLocale: () => ({ t: (key) => key }) } };
+  const code = transformSync(readFileSync(new URL('../SpecialEventsScreen.js', import.meta.url), 'utf8'), { babelrc: false, configFile: false, plugins: ['@babel/plugin-transform-react-jsx', '@babel/plugin-transform-modules-commonjs'] }).code;
+  const module = { exports: {} };
+  new Function('require', 'module', 'exports', code)((name) => { assert.ok(name in imports, name); return imports[name]; }, module, module.exports);
+  module.exports.default({ navigation: {}, route: { params: { kind: 'exhibition', range: 'all' } } });
+  const routeEffect = effects.find(([, deps]) => deps.includes('exhibition'));
+  assert.ok(routeEffect, 'route selection must reach the actual screen');
+  routeEffect[0]();
+  assert.deepEqual(changes, [['event', 'exhibition'], ['week', 'all']]);
+});
