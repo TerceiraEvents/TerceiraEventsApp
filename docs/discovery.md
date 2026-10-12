@@ -29,3 +29,4 @@ Detail navigation uses `eventDetailParams` to preserve source calendar dates in 
 Explore filters, search and results share one scroll surface. `tabBarHeight` reserves two scaled label lines, icons and the device safe area; labels inherit the device font scale.
 
 Saved state on detail pages remains unknown until storage is read successfully. Read failures expose Retry and disable the Saved toggle; event information, calendar and independent reminder state remain available.
+Detail cards place their full-width heading above a wrapping action row. The date badge grows with its text; calendar, share, report and reminder actions keep their own accessible buttons.
