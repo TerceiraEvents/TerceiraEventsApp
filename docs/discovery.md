@@ -27,3 +27,5 @@ Detail loading resolves event data, saved plans, and reminder state independentl
 Detail navigation uses `eventDetailParams` to preserve source calendar dates in JSON-safe snapshots. Published stable IDs identify the current record; a snapshot keeps published information available while the feed loads.
 
 Explore filters, search and results share one scroll surface. `tabBarHeight` reserves two scaled label lines, icons and the device safe area; labels inherit the device font scale.
+
+Saved state on detail pages remains unknown until storage is read successfully. Read failures expose Retry and disable the Saved toggle; event information, calendar and independent reminder state remain available.

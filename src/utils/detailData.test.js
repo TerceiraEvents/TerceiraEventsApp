@@ -26,3 +26,15 @@ test('strict reminder reading exposes failures while an empty stored collection 
     assert.deepEqual([...await getRemindedEventsStrict()], []);
   } finally { storage.getItem = original; }
 });
+
+test('saved read failure is unknown and cannot become an unsaved detail state', async () => {
+  const event = { id: 'known', name: 'Current event' };
+  const result = await loadDetailData({ fetchEvents: async () => [event], readSaved: async () => { throw new Error('Saved storage unavailable'); }, readReminders: async () => new Set(['reminded']) });
+  assert.equal(result.saved, null);
+  assert.equal(result.events[0], event);
+  assert.deepEqual([...result.reminders], ['reminded']);
+  assert.match(result.savedError.message, /Saved storage unavailable/);
+  const retried = await loadDetailData({ fetchEvents: async () => [event], readSaved: async () => [{ id: 'known', event }], readReminders: async () => new Set() });
+  assert.equal(retried.saved[0].id, 'known');
+  assert.equal(retried.savedError, null);
+});

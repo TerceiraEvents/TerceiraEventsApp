@@ -15,7 +15,8 @@ export default function EventDetailScreen({ route }) {
   const [loading, setLoading] = useState(!event);
   const [reminded, setReminded] = useState(null);
   const [reminderFailed, setReminderFailed] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const [saved, setSaved] = useState(null);
+  const [savedFailed, setSavedFailed] = useState(false);
   const [unavailable, setUnavailable] = useState(false);
   const [feedState, setFeedState] = useState({ status: 'loading' });
   const id = route.params?.id || eventId(route.params?.event);
@@ -28,7 +29,7 @@ export default function EventDetailScreen({ route }) {
         readSaved: getSavedEvents,
         readReminders: getRemindedEventsStrict,
       });
-      if (savedError) Alert.alert(t('discovery.storageError'));
+      setSavedFailed(Boolean(savedError));
       setReminderFailed(Boolean(reminderError));
       if (reminderError) setReminded(null);
       const state = getSpecialFeedState();
@@ -37,7 +38,7 @@ export default function EventDetailScreen({ route }) {
       setUnavailable(resolved.unavailable);
       setFeedState(state);
       if (resolved.event && reminders) setReminded(reminders.has(makeEventKey(resolved.event)));
-      setSaved(collection.some((entry) => entry.id === id));
+      setSaved(collection ? collection.some((entry) => entry.id === id) : null);
     } catch { Alert.alert(t('discovery.storageError')); }
     finally { setLoading(false); }
   }, [id, route.params?.event, t]);
@@ -70,19 +71,21 @@ export default function EventDetailScreen({ route }) {
       {!!feedState.rejectedRecords && <Text style={styles.notice}>{t('discovery.partial', { count: feedState.rejectedRecords })}</Text>}
       {feedState.status === 'cached' && !event && <Text style={styles.notice}>{t('discovery.detailUncertain')}</Text>}
       {unavailable && <Text style={styles.notice}>{t('discovery.unavailable')}</Text>}
+      {savedFailed && event && <TouchableOpacity accessibilityRole="button" style={styles.notice} onPress={() => load(true)}><Text accessibilityLiveRegion="polite">{t('discovery.savedUnknown')} · {t('discovery.retry')}</Text></TouchableOpacity>}
       {reminderFailed && event && <TouchableOpacity accessibilityRole="button" style={styles.notice} onPress={() => load(true)}><Text accessibilityLiveRegion="polite">{t('discovery.reminderUnknown')} · {t('discovery.retry')}</Text></TouchableOpacity>}
       {event && <>
         {isEnded(event) && <Text style={styles.notice}>{t('discovery.ended')}</Text>}
         <TouchableOpacity
-          disabled={!eventId(event)}
+          disabled={!eventId(event) || saved === null}
           accessibilityRole="button"
-          accessibilityState={{ selected: saved, disabled: !eventId(event) }}
+          accessibilityState={{ selected: saved === true, disabled: !eventId(event) || saved === null }}
           style={styles.notice}
           onPress={async () => {
+            if (saved === null) return;
             try { setSaved(await toggleSavedEvent(event)); }
             catch { Alert.alert(t('discovery.storageError')); }
           }}
-        ><Text>{t(saved ? 'discovery.unsave' : 'discovery.save')}</Text></TouchableOpacity>
+        ><Text>{t(saved === null ? 'discovery.savedUnknown' : saved ? 'discovery.unsave' : 'discovery.save')}</Text></TouchableOpacity>
         <EventCard event={event} calendarEnabled={!isEnded(event)} reminded={reminded} onToggleReminder={isEnded(event) || reminded === null ? undefined : toggleReminder} />
         <Text style={styles.notice}>{t('discovery.localOnly')}</Text>
       </>}
