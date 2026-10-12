@@ -41,7 +41,7 @@ const RANGE_DEFS = [
 ];
 const RANGE_BY_KEY = Object.fromEntries(RANGE_DEFS.map((r) => [r.key, r]));
 
-export default function SpecialEventsScreen({ navigation }) {
+export default function SpecialEventsScreen({ navigation, route }) {
   const { t } = useLocale();
   const [events, setEvents] = useState([]);
   const [feedState, setFeedState] = useState({ status: 'loading' });
@@ -56,6 +56,12 @@ export default function SpecialEventsScreen({ navigation }) {
   const [selectedTag, setSelectedTag] = useState('');
   const [tagPickerOpen, setTagPickerOpen] = useState(false);
   const [rangePickerOpen, setRangePickerOpen] = useState(false);
+
+  useEffect(() => {
+    if (['event', 'exhibition'].includes(route?.params?.kind)) setKind(route.params.kind);
+    if (route?.params?.range === 'all') setRange('all');
+    if (['event', 'exhibition'].includes(route?.params?.kind) || route?.params?.range === 'all') navigation.setParams({ kind: undefined, range: undefined });
+  }, [navigation, route?.params?.kind, route?.params?.range]);
 
   const loadEvents = useCallback(async (forceRefresh = false) => {
     const all = await fetchSpecialEvents(forceRefresh);
