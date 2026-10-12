@@ -1,3 +1,4 @@
+import { createSavedPlans } from './savedPlans.js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const KEYS = {
@@ -39,14 +40,17 @@ export function makeEventKey(event) {
   return `${dateStr}|${event.name}`;
 }
 
+export async function getRemindedEventsStrict() {
+  const raw = await AsyncStorage.getItem(KEYS.REMINDERS);
+  if (!raw) return new Set();
+  const keys = JSON.parse(raw);
+  if (!Array.isArray(keys) || keys.some((key) => typeof key !== 'string')) throw new Error('Invalid reminder storage');
+  return new Set(keys);
+}
+
 export async function getRemindedEvents() {
-  try {
-    const raw = await AsyncStorage.getItem(KEYS.REMINDERS);
-    if (!raw) return new Set();
-    return new Set(JSON.parse(raw));
-  } catch {
-    return new Set();
-  }
+  try { return await getRemindedEventsStrict(); }
+  catch { return new Set(); }
 }
 
 export async function setEventReminder(event) {
@@ -82,3 +86,7 @@ export async function cleanupPastReminders() {
   await AsyncStorage.setItem(KEYS.REMINDERS, JSON.stringify([...cleaned]));
   return cleaned;
 }
+
+const savedPlans = createSavedPlans(AsyncStorage);
+export const getSavedEvents = savedPlans.read;
+export const toggleSavedEvent = savedPlans.toggle;

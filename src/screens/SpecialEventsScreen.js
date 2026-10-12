@@ -1,3 +1,4 @@
+import { eventDetailParams } from '../utils/eventRoute';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
@@ -15,22 +16,17 @@ import { colors, fonts } from '../utils/theme';
 import {
   fetchSpecialEvents,
   fetchWeeklyEvents,
-  clearCache,
+  getSpecialFeedState,
   applyEventFilters,
   sortEventsByDate,
   isInRange,
+  eventKind,
+  sortExhibitions,
 } from '../utils/data';
+import { matchesDiscoveryOptions, localityCoverage } from '../utils/discovery';
 import { TAGS, getTagMeta } from '../utils/tags';
 import {
-  getRemindedEvents,
-  setEventReminder,
-  removeEventReminder,
-  makeEventKey,
-} from '../utils/storage';
-import {
-  requestPermissions,
   rescheduleAllNotifications,
-  scheduleOneReminder,
 } from '../utils/notifications';
 import EventCard from '../components/EventCard';
 import LoadingView from '../components/LoadingView';
@@ -45,26 +41,26 @@ const RANGE_DEFS = [
 ];
 const RANGE_BY_KEY = Object.fromEntries(RANGE_DEFS.map((r) => [r.key, r]));
 
-export default function SpecialEventsScreen() {
+export default function SpecialEventsScreen({ navigation }) {
   const { t } = useLocale();
   const [events, setEvents] = useState([]);
+  const [feedState, setFeedState] = useState({ status: 'loading' });
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [range, setRange] = useState('week');
-  const [remindedKeys, setRemindedKeys] = useState(new Set());
+  const [locality, setLocality] = useState('');
+  const [free, setFree] = useState(false);
+  const [family, setFamily] = useState(false);
+  const [kind, setKind] = useState('event');
   const [search, setSearch] = useState('');
   const [selectedTag, setSelectedTag] = useState('');
   const [tagPickerOpen, setTagPickerOpen] = useState(false);
   const [rangePickerOpen, setRangePickerOpen] = useState(false);
 
   const loadEvents = useCallback(async (forceRefresh = false) => {
-    if (forceRefresh) clearCache();
-    const [all, reminded] = await Promise.all([
-      fetchSpecialEvents(),
-      getRemindedEvents(),
-    ]);
+    const all = await fetchSpecialEvents(forceRefresh);
     setEvents(all);
-    setRemindedKeys(reminded);
+    setFeedState(getSpecialFeedState());
   }, []);
 
   useEffect(() => {
@@ -73,6 +69,7 @@ export default function SpecialEventsScreen() {
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
+    try {
     await loadEvents(true);
     // Reschedule notifications on refresh since data may have changed
     const [special, weekly] = await Promise.all([
@@ -80,47 +77,21 @@ export default function SpecialEventsScreen() {
       fetchWeeklyEvents(),
     ]);
     await rescheduleAllNotifications(special, weekly);
-    setRefreshing(false);
+    } finally { setRefreshing(false); }
   }, [loadEvents]);
-
-  const handleToggleReminder = useCallback(
-    async (event) => {
-      const key = makeEventKey(event);
-      const isCurrentlyReminded = remindedKeys.has(key);
-
-      if (!isCurrentlyReminded) {
-        const granted = await requestPermissions();
-        if (!granted) return;
-        await setEventReminder(event);
-        await scheduleOneReminder(event);
-      } else {
-        await removeEventReminder(event);
-        // Full reschedule to remove the cancelled notification
-        const [special, weekly] = await Promise.all([
-          fetchSpecialEvents(),
-          fetchWeeklyEvents(),
-        ]);
-        await rescheduleAllNotifications(special, weekly);
-      }
-
-      // Refresh reminded keys
-      const updated = await getRemindedEvents();
-      setRemindedKeys(updated);
-    },
-    [remindedKeys],
-  );
 
   const sortedEvents = useMemo(() => sortEventsByDate(events), [events]);
 
   const filtered = useMemo(() => {
-    let base = sortedEvents.filter((e) => isInRange(e, range));
+    let base = sortedEvents.filter((e) => isInRange(e, range) && eventKind(e) === kind);
+    if (kind === 'exhibition') base = sortExhibitions(base);
     if (range === 'archive') base = base.reverse();
-    return applyEventFilters(base, { search, selectedTag });
-  }, [sortedEvents, range, search, selectedTag]);
+    return applyEventFilters(base, { search, selectedTag }).filter((event) => matchesDiscoveryOptions(event, { locality, free, family }));
+  }, [sortedEvents, range, search, selectedTag, kind, locality, free, family]);
 
   if (loading) return <LoadingView />;
 
-  const showReminder = range !== 'archive';
+  const localities = localityCoverage(events);
   const activeTag = selectedTag ? getTagMeta(selectedTag) : null;
   const activeRange = RANGE_BY_KEY[range] || RANGE_DEFS[0];
   const activeRangeLabel = t(`specialEvents.ranges.${activeRange.i18nKey}`);
@@ -128,7 +99,15 @@ export default function SpecialEventsScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.headerArea}>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+          {['event', 'exhibition'].map((value) => <TouchableOpacity key={value} accessibilityRole="button" accessibilityState={{ selected: kind === value }} style={{ padding: 16, backgroundColor: kind === value ? colors.border : colors.card }} onPress={() => setKind(value)}><Text>{t(value === 'event' ? 'discovery.dated' : 'discovery.onView')}</Text></TouchableOpacity>)}
+          <TouchableOpacity accessibilityRole="button" style={{ padding: 16 }} onPress={() => navigation.navigate('Weekly')}><Text>{t('discovery.weekly')}</Text></TouchableOpacity>
+        </View>
         <Text style={styles.header}>{t('specialEvents.title')}</Text>
+        {['cached', 'error'].includes(feedState.status) && <TouchableOpacity accessibilityRole="button" style={{ padding: 16 }} onPress={onRefresh}><Text accessibilityLiveRegion="polite">{t(`discovery.${feedState.status}`)} · {t('discovery.retry')}</Text></TouchableOpacity>}
+        {!!feedState.rejectedRecords && <Text accessibilityLiveRegion="polite">{t('discovery.partial', { count: feedState.rejectedRecords })}</Text>}
+        {feedState.fetchedAt && <Text>{t('discovery.fetched')} {feedState.fetchedAt}</Text>}
+        <Text accessibilityLiveRegion="polite">{filtered.length} {t('discovery.results')}</Text>
         <View style={styles.dropdownRow}>
           <TouchableOpacity
             style={styles.rangeDropdown}
@@ -168,6 +147,13 @@ export default function SpecialEventsScreen() {
             </Text>
           </TouchableOpacity>
         </View>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+          {(localities.options.length ? ['', ...localities.options] : []).map((value) => <TouchableOpacity key={value} accessibilityRole="button" accessibilityState={{ selected: locality === value }} style={{ padding: 12, backgroundColor: locality === value ? colors.border : colors.card }} onPress={() => setLocality(value)}><Text>{t(`discovery.${value || 'allPlaces'}`)}</Text></TouchableOpacity>)}
+          <TouchableOpacity accessibilityRole="button" accessibilityState={{ selected: free }} style={{ padding: 12, backgroundColor: free ? colors.border : colors.card }} onPress={() => setFree(!free)}><Text>{t('discovery.free')}</Text></TouchableOpacity>
+          <TouchableOpacity accessibilityRole="button" accessibilityState={{ selected: family }} style={{ padding: 12, backgroundColor: family ? colors.border : colors.card }} onPress={() => setFamily(!family)}><Text>{t('discovery.family')}</Text></TouchableOpacity>
+          <TouchableOpacity accessibilityRole="button" style={{ padding: 12 }} onPress={() => { setSearch(''); setSelectedTag(''); setLocality(''); setFree(false); setFamily(false); setRange('week'); setKind('event'); }}><Text>{t('discovery.reset')}</Text></TouchableOpacity>
+        </View>
+        {!!localities.options.length && localities.confirmed < localities.total && <Text>{t('discovery.localityPartial')}</Text>}
         <TextInput
           style={styles.searchInput}
           value={search}
@@ -186,8 +172,8 @@ export default function SpecialEventsScreen() {
         renderItem={({ item }) => (
           <EventCard
             event={item}
-            reminded={remindedKeys.has(makeEventKey(item))}
-            onToggleReminder={showReminder ? handleToggleReminder : undefined}
+            compact
+            onOpen={() => navigation.navigate('EventDetail', eventDetailParams(item))}
           />
         )}
         contentContainerStyle={styles.list}
@@ -202,7 +188,7 @@ export default function SpecialEventsScreen() {
         ListEmptyComponent={
           <View style={styles.empty}>
             <Text style={styles.emptyText}>
-              {search || selectedTag
+              {search || selectedTag || locality || free || family
                 ? t('specialEvents.empty.filtered')
                 : range === 'archive'
                   ? t('specialEvents.empty.archive')

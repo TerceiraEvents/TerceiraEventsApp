@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Linking, Alert, Share, Platform, Image } from 'react-native';
 import * as Calendar from 'expo-calendar';
 import { colors, fonts } from '../utils/theme';
-import { parseEventDate, formatDate } from '../utils/data';
+import { parseEventDate, formatDate, eventDateRange } from '../utils/data';
 import { normalizeEventTags, getTagMeta } from '../utils/tags';
 import { useLocale } from '../i18n';
 import { localizedField } from '../utils/i18nFields';
+import { eventUrl } from '../utils/eventIdentity';
 import FlagEventModal from './FlagEventModal';
 
 const BASE_URL =
@@ -18,17 +19,19 @@ function getImageUrl(imagePath) {
   return `${BASE_URL}${imagePath}`;
 }
 
-export default function EventCard({ event, reminded, onToggleReminder }) {
+export default function EventCard({ event, reminded, onToggleReminder, onOpen, compact = false, calendarEnabled = Boolean(onToggleReminder) }) {
   const { t, locale } = useLocale();
   const [flagVisible, setFlagVisible] = useState(false);
   const date = parseEventDate(event.date);
   const formatted = date ? formatDate(date, locale) : null;
+  const range = eventDateRange(event);
   const tagSlugs = normalizeEventTags(event);
 
   const displayName = localizedField(event, 'name', locale);
   const displayVenue = localizedField(event, 'venue', locale);
   const displayDescription = localizedField(event, 'description', locale);
   const displayAddress = localizedField(event, 'address', locale);
+  const displayPrice = localizedField(event, 'price', locale);
   const displayFestival = localizedField(event, 'festival', locale);
 
   const openInstagram = () => {
@@ -113,7 +116,7 @@ export default function EventCard({ event, reminded, onToggleReminder }) {
     if (dateLine) lines.push(`${dateLine}${timePart}`);
     if (venueLine) lines.push(venueLine);
     lines.push('');
-    lines.push(t('eventCard.shareFooter'));
+    lines.push(eventUrl(event) || t('eventCard.shareFooter'));
 
     try {
       await Share.share({ message: lines.join('\n') });
@@ -121,6 +124,17 @@ export default function EventCard({ event, reminded, onToggleReminder }) {
       // user cancelled or share failed
     }
   };
+
+  if (compact) return (
+    <TouchableOpacity style={styles.card} onPress={onOpen} accessibilityRole="button" accessibilityLabel={`${displayName}, ${range?.start || ''}${range && range.end !== range.start ? ` – ${range.end}` : ''}, ${event.time || t('discovery.timeUnknown')}, ${displayVenue}`}>
+      <View style={styles.content}>
+        <Text style={styles.name}>{displayName}</Text>
+        <Text style={styles.time}>{range?.start || ''}{range && range.end !== range.start ? ` – ${range.end}` : ''} · {event.time || t('discovery.timeUnknown')}</Text>
+        <Text style={styles.venue}>{displayVenue}{event.locality ? ` · ${event.locality}` : ''}</Text>
+        <Text style={styles.address}>{displayPrice || (tagSlugs.includes('free') ? t('discovery.free') : t('discovery.priceUnknown'))}{event.status ? ` · ${event.status}` : ''}</Text>
+      </View>
+    </TouchableOpacity>
+  );
 
   return (
     <View style={styles.card}>
@@ -137,15 +151,15 @@ export default function EventCard({ event, reminded, onToggleReminder }) {
             {displayName}
           </Text>
           <TouchableOpacity
-            onPress={shareEvent}
+            accessibilityRole="button" accessibilityLabel={t('discovery.share')} onPress={shareEvent}
             style={styles.shareButton}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
             <Text style={styles.shareIcon}>{'\u{1F4E4}'}</Text>
           </TouchableOpacity>
-          {onToggleReminder && (
+          {calendarEnabled && date && (
             <TouchableOpacity
-              onPress={addToCalendar}
+              accessibilityRole="button" accessibilityLabel={t('discovery.calendar')} onPress={addToCalendar}
               style={styles.calendarButton}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
@@ -153,7 +167,7 @@ export default function EventCard({ event, reminded, onToggleReminder }) {
             </TouchableOpacity>
           )}
           <TouchableOpacity
-            onPress={() => setFlagVisible(true)}
+            accessibilityRole="button" accessibilityLabel={t('discovery.report')} onPress={() => setFlagVisible(true)}
             style={styles.flagButton}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
@@ -161,7 +175,7 @@ export default function EventCard({ event, reminded, onToggleReminder }) {
           </TouchableOpacity>
           {onToggleReminder && (
             <TouchableOpacity
-              onPress={() => onToggleReminder(event)}
+              accessibilityRole="button" accessibilityLabel={t('discovery.reminder')} onPress={() => onToggleReminder(event)}
               style={[styles.bellButton, reminded && styles.bellActive]}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
@@ -204,18 +218,21 @@ export default function EventCard({ event, reminded, onToggleReminder }) {
           </View>
         )}
         <Text style={styles.venue}>{displayVenue}</Text>
-        {event.time && <Text style={styles.time}>{event.time}</Text>}
+        <Text style={styles.time}>{range?.start}{range && range.end !== range.start ? ` – ${range.end}` : ''} · {event.time || t('discovery.timeUnknown')}</Text>
+        <Text style={styles.address}>{displayPrice || (tagSlugs.includes('free') ? t('discovery.free') : t('discovery.priceUnknown'))}</Text>
         {displayDescription && (
           <Text style={styles.description}>{displayDescription}</Text>
         )}
         {event.image && (
-          <Image
+          <TouchableOpacity accessibilityRole="link" accessibilityLabel={t('discovery.poster')} onPress={() => Linking.openURL(getImageUrl(event.image))}><Image
             source={{ uri: getImageUrl(event.image) }}
             style={styles.eventImage}
-            resizeMode="cover"
+            resizeMode="contain"
             accessibilityLabel={`${displayName}`}
-          />
+          /><Text style={styles.linkText}>{t('discovery.poster')}</Text></TouchableOpacity>
         )}
+        {event.organizer && <Text style={styles.address}>{event.organizer}</Text>}
+        {[['source_url', 'discovery.source'], ['booking_url', 'discovery.booking']].map(([field, label]) => /^https?:\/\//i.test(event[field] || '') ? <TouchableOpacity key={field} accessibilityRole="link" style={{ paddingVertical: 12 }} onPress={() => Linking.openURL(event[field])}><Text>{t(label)}</Text></TouchableOpacity> : null)}
         {displayAddress && <Text style={styles.address}>{displayAddress}</Text>}
         {(event.map_url || displayAddress || displayVenue) && (
           <TouchableOpacity
@@ -294,6 +311,7 @@ const styles = StyleSheet.create({
   },
   titleRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'flex-start',
     justifyContent: 'space-between',
   },
@@ -308,7 +326,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   shareButton: {
-    padding: 4,
+    padding: 12,
     borderRadius: 16,
     marginRight: 2,
   },
@@ -316,7 +334,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   calendarButton: {
-    padding: 4,
+    padding: 12,
     borderRadius: 16,
     marginRight: 2,
   },
@@ -324,7 +342,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   flagButton: {
-    padding: 4,
+    padding: 12,
     borderRadius: 16,
     marginRight: 2,
   },
@@ -332,7 +350,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   bellButton: {
-    padding: 4,
+    padding: 12,
     borderRadius: 16,
   },
   bellActive: {
@@ -401,7 +419,7 @@ const styles = StyleSheet.create({
   },
   eventImage: {
     width: '100%',
-    height: 180,
+    height: 360,
     borderRadius: 8,
     marginTop: 8,
   },

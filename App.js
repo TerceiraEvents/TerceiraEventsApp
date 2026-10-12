@@ -1,6 +1,14 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { NavigationContainer } from '@react-navigation/native';
+import { getPathFromState, getStateFromPath, NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import * as Linking from 'expo-linking';
+import { handleNotificationNavigation, rootRoutes, primaryRoutes } from './src/utils/navigation';
+import { headerOptions, statusBarStyleForRoute } from './src/navigation/headerTheme';
+import { createLinking } from './src/navigation/linking';
+import EventDetailScreen from './src/screens/EventDetailScreen';
+import SavedScreen from './src/screens/SavedScreen';
+import MoreScreen from './src/screens/MoreScreen';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Text } from 'react-native';
 import * as Notifications from 'expo-notifications';
@@ -18,30 +26,42 @@ import SettingsScreen from './src/screens/SettingsScreen';
 import SuggestEventScreen from './src/screens/SuggestEventScreen';
 import BlogStack from './src/navigation/BlogStack';
 
+const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
-const tabIcons = {
-  Home: { focused: '⌂', unfocused: '⌂' },
-  Weekly: { focused: '\u{1F504}', unfocused: '\u{1F504}' },
-  Events: { focused: '★', unfocused: '☆' },
-  Venues: { focused: '\u{1F4CD}', unfocused: '\u{1F4CD}' },
-  Blog: { focused: '\u{1F4F0}', unfocused: '\u{1F4F0}' },
-  Resources: { focused: '\u{1F517}', unfocused: '\u{1F517}' },
-  Settings: { focused: '⚙️', unfocused: '⚙' },
-  SuggestEvent: { focused: '\u{2795}', unfocused: '\u{2795}' },
-};
-
-function handleNotificationNavigation(navigation, data) {
-  if (!data) return;
-  if (data.type === 'daily_summary' || data.type === 'event_reminder') {
-    navigation.navigate('Events');
-  }
+function PrimaryTabs() {
+  const { t } = useLocale();
+  const icons = {
+    [primaryRoutes.home]: '⌂',
+    [primaryRoutes.events]: '◇',
+    [primaryRoutes.venues]: '⌖',
+    [primaryRoutes.saved]: '♡',
+    [primaryRoutes.more]: '☰',
+  };
+  return (
+    <Tab.Navigator screenOptions={({ route }) => ({
+      ...headerOptions(route.name),
+      tabBarActiveTintColor: colors.primary,
+      tabBarIcon: ({ color, size }) => <Text accessibilityElementsHidden style={{ color, fontSize: size }}>{icons[route.name]}</Text>,
+    })}>
+      <Tab.Screen name={primaryRoutes.home} component={HomeScreen} options={{ title: t('tabs.home') }} />
+      <Tab.Screen name={primaryRoutes.events} component={SpecialEventsScreen} options={{ title: t('discovery.explore') }} />
+      <Tab.Screen name={primaryRoutes.venues} component={VenuesScreen} options={{ title: t('tabs.venues') }} />
+      <Tab.Screen name={primaryRoutes.saved} component={SavedScreen} options={{ title: t('discovery.saved') }} />
+      <Tab.Screen name={primaryRoutes.more} component={MoreScreen} options={{ title: t('discovery.more') }} />
+    </Tab.Navigator>
+  );
 }
 
 // Inner component so it re-renders when the locale changes; this is
 // what makes tab labels and screen titles flip without an app restart.
 function AppShell() {
   const navigationRef = useRef(null);
+  const [statusBarStyle, setStatusBarStyle] = useState(statusBarStyleForRoute(primaryRoutes.home));
+  const updateHeader = () => {
+    const routeName = navigationRef.current?.getCurrentRoute()?.name;
+    if (routeName) setStatusBarStyle(statusBarStyleForRoute(routeName));
+  };
   // Subscribe to locale changes — value isn't used directly, but the
   // hook keeps this subtree in sync with the provider.
   useLocale();
@@ -84,77 +104,23 @@ function AppShell() {
   }, []);
 
   return (
-    <NavigationContainer ref={navigationRef}>
-      <StatusBar style="light" />
-      <Tab.Navigator
-        screenOptions={({ route }) => ({
-          headerStyle: {
-            backgroundColor: colors.primary,
-          },
-          headerTintColor: colors.white,
-          headerTitleStyle: {
-            fontWeight: '700',
-          },
-          tabBarActiveTintColor: colors.primary,
-          tabBarInactiveTintColor: colors.textMuted,
-          tabBarStyle: {
-            backgroundColor: colors.white,
-            borderTopColor: colors.border,
-          },
-          tabBarIcon: ({ focused, color, size }) => {
-            const icons = tabIcons[route.name];
-            return (
-              <Text style={{ fontSize: size - 4, color }}>
-                {focused ? icons.focused : icons.unfocused}
-              </Text>
-            );
-          },
-        })}
-      >
-        <Tab.Screen
-          name="Home"
-          component={HomeScreen}
-          options={{ title: t('app.name'), headerShown: false }}
-        />
-        <Tab.Screen
-          name="Weekly"
-          component={WeeklyScreen}
-          options={{ title: t('tabs.weekly') }}
-        />
-        <Tab.Screen
-          name="Events"
-          component={SpecialEventsScreen}
-          options={{ title: t('tabs.events') }}
-        />
-        <Tab.Screen
-          name="Venues"
-          component={VenuesScreen}
-          options={{ title: t('tabs.venues') }}
-        />
-        <Tab.Screen
-          name="Blog"
-          component={BlogStack}
-          options={{ title: t('tabs.blog'), headerShown: false }}
-        />
-        <Tab.Screen
-          name="Resources"
-          component={ResourcesScreen}
-          options={{ title: t('tabs.resources') }}
-        />
-        <Tab.Screen
-          name="Settings"
-          component={SettingsScreen}
-          options={{ title: t('tabs.settings') }}
-        />
-        <Tab.Screen
-          name="SuggestEvent"
-          component={SuggestEventScreen}
-          options={{
-            title: t('tabs.suggestEvent'),
-            tabBarLabel: t('tabs.suggestEventShort'),
-          }}
-        />
-      </Tab.Navigator>
+    <NavigationContainer ref={navigationRef} linking={createLinking({
+      prefixes: [Linking.createURL('/'), 'terceiraevents://', 'https://eventosterceira.pt', 'https://www.eventosterceira.pt'],
+      parsePath: getStateFromPath,
+      serializeState: getPathFromState,
+    })}
+      onStateChange={updateHeader}
+      onReady={updateHeader}>
+      <StatusBar style={statusBarStyle} />
+      <Stack.Navigator screenOptions={({ route }) => headerOptions(route.name)}>
+        <Stack.Screen name={rootRoutes.main} component={PrimaryTabs} options={{ headerShown: false }} />
+        <Stack.Screen name={rootRoutes.detail} component={EventDetailScreen} options={{ title: t('discovery.details') }} />
+        <Stack.Screen name={rootRoutes.weekly} component={WeeklyScreen} options={{ title: t('tabs.weekly') }} />
+        <Stack.Screen name={rootRoutes.blog} component={BlogStack} options={{ headerShown: false }} />
+        <Stack.Screen name={rootRoutes.resources} component={ResourcesScreen} options={{ title: t('discovery.resources') }} />
+        <Stack.Screen name={rootRoutes.settings} component={SettingsScreen} options={{ title: t('tabs.settings') }} />
+        <Stack.Screen name={rootRoutes.suggest} component={SuggestEventScreen} options={{ title: t('tabs.suggestEvent') }} />
+      </Stack.Navigator>
     </NavigationContainer>
   );
 }

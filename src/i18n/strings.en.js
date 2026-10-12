@@ -1,47 +1,72 @@
 export default
 {
+  "discovery": {
+    "localityPartial": "Locality coverage is partial. Choose All places to include events without confirmed locality.",
+    "reminderUnknown": "Reminder state could not be read. Your event and plans remain available.",
+    "detailUncertain": "This event is not in the available cache. Retry when connected to check the published record.",
+    "partial": "Some published records cannot be displayed (%{count}). Available events remain listed.",
+    "resources": "Resources",
+    "poster": "Open full artwork",
+    "free": "Free",
+    "family": "Family friendly",
+    "angra": "Angra",
+    "praia": "Praia",
+    "other": "Other localities",
+    "allPlaces": "All places",
+    "reset": "Reset filters",
+    "source": "Published source",
+    "booking": "Booking",
+    "cached": "Using cached data. The network request failed.",
+    "error": "Events could not be loaded.",
+    "retry": "Retry",
+    "fetched": "Device fetched data at",
+    "results": "results",
+    "explore": "Explore",
+    "saved": "My Plans",
+    "more": "More",
+    "details": "Event details",
+    "search": "Find events",
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "weekend": "This weekend",
+    "onView": "On View",
+    "dated": "Dated events",
+    "weekly": "Weekly regulars - published recurring schedules",
+    "loading": "Loading events",
+    "emptyDate": "No published events for these dates. Browse upcoming events below.",
+    "timeUnknown": "Times: see details or check with organizer",
+    "priceUnknown": "Admission: see details or check with organizer",
+    "save": "Save to My Plans",
+    "unsave": "Remove from My Plans",
+    "savedEmpty": "No saved events yet. Save an event from its details.",
+    "localOnly": "Saved on this device only. Saving does not enable reminders.",
+    "unavailable": "This event is unavailable in the current dataset. Any displayed information is a saved snapshot.",
+    "ended": "This event has ended.",
+    "storageError": "Could not read or save your plans. Please try again.",
+    "share": "Share event",
+    "calendar": "Add to calendar",
+    "report": "Report event",
+    "reminder": "Toggle reminder"
+  },
   "app": {
     "name": "Terceira Events"
   },
   "tabs": {
     "home": "Home",
     "weekly": "Weekly",
-    "events": "Events",
     "venues": "Venues",
     "resources": "More",
     "settings": "Settings",
     "suggestEvent": "Suggest Event",
-    "suggestEventShort": "Suggest",
     "blog": "Blog"
   },
   "home": {
     "title": "Terceira Events",
-    "subtitle": "What's happening on Terceira Island",
     "intro": {
-      "p1": "Terceira is known as \"the amusement park\" of the Azores — a small island packed with concerts, festivals, bullfights, and parties year-round.",
-      "p2": "This app helps you discover what's happening across Terceira: today's lineup, the week ahead, and venues worth knowing."
-    },
-    "sections": {
-      "specialEvents": "Upcoming special events",
-      "blog": "From the blog"
-    },
-    "buttons": {
-      "weekly": "Weekly Events",
-      "weeklySubtitle": "Recurring entertainment",
-      "specialEvents": "Special Events",
-      "specialEventsSubtitle": "What's on this week",
-      "venues": "Venues",
-      "venuesSubtitle": "Where to go",
-      "blog": "Blog",
-      "blogSubtitle": "News, guides, and stories",
-      "resources": "Resources",
-      "resourcesSubtitle": "Other ways to find events",
-      "suggest": "Suggest Event",
-      "suggestSubtitle": "Submit an event for review"
+      "p1": "Terceira is known as \"the amusement park\" of the Azores — a small island packed with concerts, festivals, bullfights, and parties year-round."
     },
     "links": {
-      "allUpcoming": "All upcoming →",
-      "allPosts": "All posts →"
+      "allUpcoming": "All upcoming →"
     }
   },
   "specialEvents": {
@@ -55,16 +80,16 @@ export default
       "filterByTag": "Filter by tag"
     },
     "ranges": {
-      "thisWeek": "This Week",
-      "thisMonth": "This Month",
-      "thisYear": "This Year",
+      "thisWeek": "Next 7 days",
+      "thisMonth": "Next 31 days",
+      "thisYear": "Next 365 days",
       "allUpcoming": "All Upcoming",
       "archive": "Archive"
     },
     "empty": {
       "filtered": "No events match your filters.",
       "archive": "No past events yet.",
-      "thisWeek": "No special events this week.",
+      "thisWeek": "No published events in the next 7 days.",
       "default": "No events to show."
     }
   },
