@@ -19,3 +19,9 @@ export function matchesDiscoveryOptions(event, { locality = '', free = false, fa
   const tags = new Set(normalizeEventTags(event));
   return (!locality || event.locality === locality) && (!free || tags.has('free')) && (!family || tags.has('kid-friendly'));
 }
+
+export function localityCoverage(events) {
+  const supported = ['angra', 'praia', 'other'];
+  const confirmed = events.filter((event) => supported.includes(event?.locality));
+  return { options: supported.filter((value) => confirmed.some((event) => event.locality === value)), confirmed: confirmed.length, total: events.length };
+}

@@ -22,7 +22,7 @@ import {
   eventKind,
   sortExhibitions,
 } from '../utils/data';
-import { matchesDiscoveryOptions } from '../utils/discovery';
+import { matchesDiscoveryOptions, localityCoverage } from '../utils/discovery';
 import { TAGS, getTagMeta } from '../utils/tags';
 import {
   rescheduleAllNotifications,
@@ -90,6 +90,7 @@ export default function SpecialEventsScreen({ navigation }) {
 
   if (loading) return <LoadingView />;
 
+  const localities = localityCoverage(events);
   const activeTag = selectedTag ? getTagMeta(selectedTag) : null;
   const activeRange = RANGE_BY_KEY[range] || RANGE_DEFS[0];
   const activeRangeLabel = t(`specialEvents.ranges.${activeRange.i18nKey}`);
@@ -146,11 +147,12 @@ export default function SpecialEventsScreen({ navigation }) {
           </TouchableOpacity>
         </View>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-          {(events.some((event) => event.locality) ? ['', 'angra', 'praia', 'other'] : []).map((value) => <TouchableOpacity key={value} accessibilityRole="button" accessibilityState={{ selected: locality === value }} style={{ padding: 12, backgroundColor: locality === value ? colors.border : colors.card }} onPress={() => setLocality(value)}><Text>{t(`discovery.${value || 'allPlaces'}`)}</Text></TouchableOpacity>)}
+          {(localities.options.length ? ['', ...localities.options] : []).map((value) => <TouchableOpacity key={value} accessibilityRole="button" accessibilityState={{ selected: locality === value }} style={{ padding: 12, backgroundColor: locality === value ? colors.border : colors.card }} onPress={() => setLocality(value)}><Text>{t(`discovery.${value || 'allPlaces'}`)}</Text></TouchableOpacity>)}
           <TouchableOpacity accessibilityRole="button" accessibilityState={{ selected: free }} style={{ padding: 12, backgroundColor: free ? colors.border : colors.card }} onPress={() => setFree(!free)}><Text>{t('discovery.free')}</Text></TouchableOpacity>
           <TouchableOpacity accessibilityRole="button" accessibilityState={{ selected: family }} style={{ padding: 12, backgroundColor: family ? colors.border : colors.card }} onPress={() => setFamily(!family)}><Text>{t('discovery.family')}</Text></TouchableOpacity>
           <TouchableOpacity accessibilityRole="button" style={{ padding: 12 }} onPress={() => { setSearch(''); setSelectedTag(''); setLocality(''); setFree(false); setFamily(false); setRange('week'); setKind('event'); }}><Text>{t('discovery.reset')}</Text></TouchableOpacity>
         </View>
+        {!!localities.options.length && localities.confirmed < localities.total && <Text>{t('discovery.localityPartial')}</Text>}
         <TextInput
           style={styles.searchInput}
           value={search}

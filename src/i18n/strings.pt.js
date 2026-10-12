@@ -1,6 +1,7 @@
 export default
 {
   "discovery": {
+    "localityPartial": "Nem todos os eventos têm localidade confirmada. Escolha Todos os locais para incluir os restantes.",
     "reminderUnknown": "Não foi possível ler o estado do lembrete. O evento e os planos continuam disponíveis.",
     "detailUncertain": "Este evento não consta dos dados guardados disponíveis. Tente novamente com ligação para consultar a publicação.",
     "partial": "Alguns registos publicados não podem ser apresentados (%{count}). Os eventos disponíveis continuam listados.",

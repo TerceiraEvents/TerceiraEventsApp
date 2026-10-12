@@ -23,3 +23,10 @@ test('discovery applies the shared normalized tags and strict legacy family bool
   assert.equal(matchesDiscoveryOptions({ tags: 'free', kid_friendly: true }, { free: true, family: true }), true);
   assert.equal(matchesDiscoveryOptions({ kid_friendly: 'false' }, { family: true }), false);
 });
+
+test('locality facets contain only populated validated values in a partial dataset', async () => {
+  const { localityCoverage } = await import('./discovery.js');
+  const events = [{ name: 'Halloween', locality: 'angra' }, { name: 'Unknown location' }, { name: 'Unsupported value', locality: 'unknown' }];
+  assert.deepEqual(localityCoverage(events), { options: ['angra'], confirmed: 1, total: 3 });
+  assert.deepEqual(localityCoverage([{ name: 'Unknown location' }]), { options: [], confirmed: 0, total: 1 });
+});

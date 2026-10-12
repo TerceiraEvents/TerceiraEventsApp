@@ -18,7 +18,7 @@ Automated tests cover identity correction, repeat IDs, unavailable snapshots, li
 
 ## Release dependencies
 
-The shared website schema, stable IDs, and event detail routes must be deployed before this app change merges or ships: https://github.com/TerceiraEvents/EventosTerceira.pt/pull/250, https://github.com/TerceiraEvents/EventosTerceira.pt/pull/253, and https://github.com/TerceiraEvents/EventosTerceira.pt/pull/254. Home classification requires explicit `kind`; saving and exact links require `id`. Locality controls appear only when the loaded dataset publishes locality metadata. Dataset failure offers Retry in details and My Plans and does not establish that an event is missing.
+The shared website schema, stable IDs, and event detail routes must be deployed before this app change merges or ships: https://github.com/TerceiraEvents/EventosTerceira.pt/pull/250, https://github.com/TerceiraEvents/EventosTerceira.pt/pull/253, https://github.com/TerceiraEvents/EventosTerceira.pt/pull/254, and https://github.com/TerceiraEvents/EventosTerceira.pt/pull/255. Home classification requires explicit `kind`; saving and exact links require `id`. Locality controls offer only populated, validated locality values. Partial locality coverage is explicit; All places includes records without confirmed locality. The locality deployment is part of the release gate. Dataset failure offers Retry in details and My Plans and does not establish that an event is missing.
 
 Headers use one shared navigation theme. Primary-tab headers use the green theme with light status text. Stack headers, including BlogIndex and Post, use the white theme with dark status text. The status-bar decision and rendered navigator header options use the same route theme.
 
