@@ -2,7 +2,8 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, Alert, StyleSheet } from 'react-native';
 import { useLocale } from '../i18n';
 import { fetchSpecialEvents, fetchWeeklyEvents, getSpecialFeedState, isEnded } from '../utils/data';
-import { getSavedEvents, toggleSavedEvent, getRemindedEvents, makeEventKey, setEventReminder, removeEventReminder } from '../utils/storage';
+import { getSavedEvents, toggleSavedEvent, getRemindedEventsStrict, makeEventKey, setEventReminder, removeEventReminder } from '../utils/storage';
+import { loadDetailData } from '../utils/detailData';
 import { eventId, resolveEventDetail } from '../utils/eventIdentity';
 import { requestPermissions, scheduleOneReminder, rescheduleAllNotifications } from '../utils/notifications';
 import EventCard from '../components/EventCard';
@@ -12,7 +13,8 @@ export default function EventDetailScreen({ route }) {
   const { t } = useLocale();
   const [event, setEvent] = useState(route.params?.event || null);
   const [loading, setLoading] = useState(!event);
-  const [reminded, setReminded] = useState(false);
+  const [reminded, setReminded] = useState(null);
+  const [reminderFailed, setReminderFailed] = useState(false);
   const [saved, setSaved] = useState(false);
   const [unavailable, setUnavailable] = useState(false);
   const [feedState, setFeedState] = useState({ status: 'loading' });
@@ -21,17 +23,20 @@ export default function EventDetailScreen({ route }) {
   const load = useCallback(async (refresh = false) => {
     setLoading(true);
     try {
-      const [events, collection, reminders] = await Promise.all([
-        fetchSpecialEvents(refresh),
-        getSavedEvents().catch(() => { Alert.alert(t('discovery.storageError')); return []; }),
-        getRemindedEvents(),
-      ]);
+      const { events, saved: collection, reminders, savedError, reminderError } = await loadDetailData({
+        fetchEvents: () => fetchSpecialEvents(refresh),
+        readSaved: getSavedEvents,
+        readReminders: getRemindedEventsStrict,
+      });
+      if (savedError) Alert.alert(t('discovery.storageError'));
+      setReminderFailed(Boolean(reminderError));
+      if (reminderError) setReminded(null);
       const state = getSpecialFeedState();
       const resolved = resolveEventDetail({ id, snapshot: route.params?.event, events, feedState: state });
       setEvent(resolved.event);
       setUnavailable(resolved.unavailable);
       setFeedState(state);
-      if (resolved.event) setReminded(reminders.has(makeEventKey(resolved.event)));
+      if (resolved.event && reminders) setReminded(reminders.has(makeEventKey(resolved.event)));
       setSaved(collection.some((entry) => entry.id === id));
     } catch { Alert.alert(t('discovery.storageError')); }
     finally { setLoading(false); }
@@ -65,6 +70,7 @@ export default function EventDetailScreen({ route }) {
       {!!feedState.rejectedRecords && <Text style={styles.notice}>{t('discovery.partial', { count: feedState.rejectedRecords })}</Text>}
       {feedState.status === 'cached' && !event && <Text style={styles.notice}>{t('discovery.detailUncertain')}</Text>}
       {unavailable && <Text style={styles.notice}>{t('discovery.unavailable')}</Text>}
+      {reminderFailed && event && <TouchableOpacity accessibilityRole="button" style={styles.notice} onPress={() => load(true)}><Text accessibilityLiveRegion="polite">{t('discovery.reminderUnknown')} · {t('discovery.retry')}</Text></TouchableOpacity>}
       {event && <>
         {isEnded(event) && <Text style={styles.notice}>{t('discovery.ended')}</Text>}
         <TouchableOpacity
@@ -77,7 +83,7 @@ export default function EventDetailScreen({ route }) {
             catch { Alert.alert(t('discovery.storageError')); }
           }}
         ><Text>{t(saved ? 'discovery.unsave' : 'discovery.save')}</Text></TouchableOpacity>
-        <EventCard event={event} reminded={reminded} onToggleReminder={isEnded(event) ? undefined : toggleReminder} />
+        <EventCard event={event} calendarEnabled={!isEnded(event)} reminded={reminded} onToggleReminder={isEnded(event) || reminded === null ? undefined : toggleReminder} />
         <Text style={styles.notice}>{t('discovery.localOnly')}</Text>
       </>}
     </ScrollView>

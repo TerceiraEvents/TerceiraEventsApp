@@ -19,7 +19,7 @@ function getImageUrl(imagePath) {
   return `${BASE_URL}${imagePath}`;
 }
 
-export default function EventCard({ event, reminded, onToggleReminder, onOpen, compact = false }) {
+export default function EventCard({ event, reminded, onToggleReminder, onOpen, compact = false, calendarEnabled = Boolean(onToggleReminder) }) {
   const { t, locale } = useLocale();
   const [flagVisible, setFlagVisible] = useState(false);
   const date = parseEventDate(event.date);
@@ -157,7 +157,7 @@ export default function EventCard({ event, reminded, onToggleReminder, onOpen, c
           >
             <Text style={styles.shareIcon}>{'\u{1F4E4}'}</Text>
           </TouchableOpacity>
-          {onToggleReminder && (
+          {calendarEnabled && date && (
             <TouchableOpacity
               accessibilityRole="button" accessibilityLabel={t('discovery.calendar')} onPress={addToCalendar}
               style={styles.calendarButton}
