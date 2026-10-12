@@ -92,7 +92,7 @@ function AppShell() {
         <Stack.Screen name="EventDetail" component={EventDetailScreen} options={{ title: t('discovery.details') }} />
         <Stack.Screen name="Weekly" component={WeeklyScreen} options={{ title: t('tabs.weekly') }} />
         <Stack.Screen name="Blog" component={BlogStack} options={{ headerShown: false }} />
-        <Stack.Screen name="Resources" component={ResourcesScreen} options={{ title: t('tabs.resources') }} />
+        <Stack.Screen name="Resources" component={ResourcesScreen} options={{ title: t('discovery.resources') }} />
         <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: t('tabs.settings') }} />
         <Stack.Screen name="SuggestEvent" component={SuggestEventScreen} options={{ title: t('tabs.suggestEvent') }} />
       </Stack.Navigator>
