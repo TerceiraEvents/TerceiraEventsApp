@@ -2,7 +2,7 @@ export function createLinking({ prefixes, parsePath, serializeState }) {
   const config = {
     screens: {
       EventDetail: 'events/',
-      Main: { screens: { Home: '', Events: 'special/' } },
+      Main: { screens: { Home: '', Events: { path: 'special/', parse: { saved: (value) => value === '1' || value === 'true' }, stringify: { saved: (value) => value ? '1' : '0' } } } },
     },
   };
   function cleanState(state) {
@@ -25,7 +25,7 @@ export function createLinking({ prefixes, parsePath, serializeState }) {
       const id = parsed?.routes?.find((route) => route.name === 'EventDetail')?.params?.id;
       return { routes: [{ name: 'Main' }, { name: 'EventDetail', params: typeof id === 'string' && /^[a-zA-Z0-9_-]+$/.test(id) ? { id } : {} }] };
     }
-    return parsePath(path, options);
+    return parsePath(path.replace(/^\/?pt\//, ''), options);
   }
   return {
     prefixes,

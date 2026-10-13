@@ -26,3 +26,18 @@ test('saved links select the visible Saved events filter rather than a removed t
     assert.deepEqual(state.routes[0].state.routes, [{ name: 'Events', params: { saved: true, range: 'all' } }]);
   }
 });
+
+test('EN/PT discovery URLs round-trip a visible Saved filter as a boolean', () => {
+  for (const path of ['special/?saved=1&range=all&kind=exhibition', 'pt/special/?saved=1&range=all&kind=exhibition']) {
+    const state = linking.getStateFromPath(path, linking.config);
+    assert.ok(state, 'discovery path is recognized');
+    const events = state.routes[0].state.routes.find((route) => route.name === 'Events');
+    assert.equal(events.params.saved, true);
+    assert.equal(events.params.range, 'all');
+    assert.equal(events.params.kind, 'exhibition');
+    const serialized = linking.getPathFromState(state, linking.config);
+    assert.match(serialized, /saved=1/);
+    const restored = linking.getStateFromPath(serialized, linking.config);
+    assert.equal(restored.routes[0].state.routes.find((route) => route.name === 'Events').params.saved, true);
+  }
+});
