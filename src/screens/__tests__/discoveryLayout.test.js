@@ -63,8 +63,8 @@ test('actual primary tab options reserve large-label space without disabling sca
     const channels = inactive.slice(1).match(/../g).map((value) => parseInt(value, 16) / 255).map((value) => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4);
     const luminance = channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
     assert.ok(1.05 / (luminance + 0.05) >= 4.5, 'inactive normal-size tab labels need 4.5:1 contrast on white');
-    const label = options.tabBarLabel({ children: 'My Plans', color: 'green' });
-    assert.equal(label.props.children, 'My Plans');
+    const label = options.tabBarLabel({ children: 'Events', color: 'green' });
+    assert.equal(label.props.children, 'Events');
     assert.equal(label.props.numberOfLines, undefined);
     assert.notEqual(label.props.allowFontScaling, false);
   }

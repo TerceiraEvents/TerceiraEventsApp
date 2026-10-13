@@ -58,6 +58,7 @@ export default function SpecialEventsScreen({ navigation, route }) {
   const [kind, setKind] = useState('event');
   const [savedOnly, setSavedOnly] = useState(false);
   const [savedRecords, setSavedRecords] = useState(null);
+  const [savedRefreshing, setSavedRefreshing] = useState(true);
   const [savedReadError, setSavedReadError] = useState(false);
   const [search, setSearch] = useState('');
   const [selectedTag, setSelectedTag] = useState('');
@@ -66,15 +67,18 @@ export default function SpecialEventsScreen({ navigation, route }) {
 
   useEffect(() => {
     if (['event', 'exhibition'].includes(route?.params?.kind)) setKind(route.params.kind);
-    if (route?.params?.range === 'all') setRange('all');
+    const explicitRange = RANGE_DEFS.some((option) => option.key === route?.params?.range);
+    if (explicitRange) setRange(route.params.range);
+    else if (route?.params?.saved === true) setRange('all');
     if (route?.params?.saved === true) setSavedOnly(true);
-    if (['event', 'exhibition'].includes(route?.params?.kind) || route?.params?.range === 'all' || route?.params?.saved === true) navigation.setParams({ kind: undefined, range: undefined, saved: undefined });
+    if (['event', 'exhibition'].includes(route?.params?.kind) || explicitRange || route?.params?.saved === true) navigation.setParams({ kind: undefined, range: undefined, saved: undefined });
   }, [navigation, route?.params?.kind, route?.params?.range, route?.params?.saved]);
 
   const loadSaved = useCallback(async () => {
-    setSavedRecords(null);
+    setSavedRefreshing(true);
     try { setSavedRecords(await getSavedEvents()); setSavedReadError(false); }
     catch { setSavedReadError(true); }
+    finally { setSavedRefreshing(false); }
   }, []);
   useFocusEffect(useCallback(() => { loadSaved(); }, [loadSaved]));
 
@@ -124,7 +128,7 @@ export default function SpecialEventsScreen({ navigation, route }) {
       <View style={styles.headerArea}>
         <TouchableOpacity accessibilityRole="checkbox" accessibilityState={{ checked: savedOnly, disabled: savedIDs === null && !savedOnly }} disabled={savedIDs === null && !savedOnly} style={{ padding: 16, minWidth: 44, minHeight: 44 }} onPress={() => { if (!savedOnly) setRange('all'); setSavedOnly(!savedOnly); }}><Text>{t('discovery.saved')}</Text></TouchableOpacity>
         {savedOnly && <Text style={{ padding: 8 }}>{t('discovery.localOnly')} {t('discovery.otherFilters')}</Text>}
-        {savedOnly && savedIDs === null && !savedReadError && <Text accessibilityLiveRegion="polite">{t('discovery.loadingSaved')}</Text>}
+        {savedOnly && savedRefreshing && !savedReadError && <Text accessibilityLiveRegion="polite">{t('discovery.loadingSaved')}</Text>}
         {savedReadError && <TouchableOpacity accessibilityRole="button" style={{ padding: 16 }} onPress={loadSaved}><Text accessibilityLiveRegion="polite">{t('discovery.savedUnknown')} · {t('discovery.retry')}</Text></TouchableOpacity>}
         <TouchableOpacity accessibilityRole="button" style={{ padding: 16, minWidth: 44, minHeight: 44 }} onPress={() => { setSavedOnly(false); setRange('week'); setKind('event'); setLocality(''); setFree(false); setFamily(false); setSearch(''); setSelectedTag(''); }}><Text>{t('discovery.reset')}</Text></TouchableOpacity>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
@@ -229,6 +233,8 @@ export default function SpecialEventsScreen({ navigation, route }) {
             <Text style={styles.emptyText}>
               {feedState.refreshing
                 ? t('discovery.refreshing')
+                : savedOnly && savedRefreshing
+                  ? t('discovery.loadingSaved')
                 : savedOnly && savedReadError
                   ? t('discovery.savedUnknown')
                 : savedOnly && savedRecords === null

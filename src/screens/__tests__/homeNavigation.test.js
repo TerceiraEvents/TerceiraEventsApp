@@ -33,7 +33,7 @@ for (const catalog of [en, pt]) {
   });
 }
 
-test('On View is consumed once, preserves ordinary Back, and reapplies the same repeated shortcut', () => {
+test('Exhibitions is consumed once, preserves ordinary Back, and reapplies the same repeated shortcut', () => {
   const state = [], setters = new Map();
   let cursor = 0, previous, pending;
   const react = { ...React, useState: (value) => {
@@ -77,7 +77,7 @@ test('On View is consumed once, preserves ordinary Back, and reapplies the same 
     render(); render();
     const button = nodes(home).find((node) => node?.type === 'TouchableOpacity' && nodes(node).some((child) => child?.props?.children === label));
     button.props.onPress(); render();
-    assert.ok(state.includes('event') && state.includes('all'), `${label} after On View opens dated upcoming events`);
+    assert.ok(state.includes('event') && state.includes('all'), `${label} after Exhibitions opens dated upcoming events`);
     render();
   }
 });

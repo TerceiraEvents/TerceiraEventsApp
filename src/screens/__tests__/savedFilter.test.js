@@ -50,7 +50,9 @@ for (const catalog of [en, pt]) test(`actual Saved events filter and result coun
   const list = nodes(tree).find((node) => node?.type === 'FlatList');
   assert.deepEqual(list.props.data.map((event) => event.id), ['missing'], 'missing persisted ID retains its own snapshot');
   assert.ok(nodes(list.props.renderItem({ item: list.props.data[0] })).some((node) => node.props?.children === 'discovery.unavailable'));
-  saved = []; focus.forEach((effect) => effect()); await settle(); tree = render();
+  saved = []; focus.forEach((effect) => effect()); tree = render();
+  assert.deepEqual(nodes(tree).find((node) => node?.type === 'FlatList').props.data.map((event) => event.id), ['missing'], 'focus refresh retains visible saved snapshots while storage is read');
+  await settle(); tree = render();
   assert.deepEqual(nodes(tree).find((node) => node?.type === 'FlatList').props.data, [], 'return after unsaving refreshes persisted IDs');
   assert(emptyLabel(tree).includes('discovery.savedEmpty'));
   publicationUpdate(events, {status:'stored',refreshing:true}); tree=render();
@@ -65,4 +67,25 @@ for (const catalog of [en, pt]) test(`actual Saved events filter and result coun
   assert.ok(nodes(tree).some((node) => React.Children.toArray(node.props?.children).join('') === 'discovery.savedUnknown · discovery.retry'), 'unreadable storage has explicit feedback');
   find(tree, 'discovery.reset').props.onPress(); tree = render();
   assert.equal(find(tree, 'discovery.saved').props.accessibilityState.checked, false);
+});
+
+test('actual Saved URL defaults to all dates and preserves an explicit date range', async () => {
+  for (const explicitRange of [undefined, 'week']) {
+    const today = data.todayAzores();
+    const later = new Date(`${today}T12:00:00Z`); later.setUTCDate(later.getUTCDate() + 40);
+    const events = [{ id: 'near', name: 'Near saved event', date: today, tags: [] }, { id: 'far', name: 'Far saved event', date: later.toISOString().slice(0, 10), tags: [] }];
+    const state = [], effects = [], focus = []; let cursor = 0, initial = true;
+    const react = { ...React, useState: (value) => { const index = cursor++; if (!(index in state)) state[index] = value; return [state[index], (next) => { state[index] = next; }]; }, useEffect: (effect) => { if (initial) effects.push(effect); }, useCallback: (value) => value, useMemo: (compute) => compute() };
+    const native = Object.fromEntries(['View', 'Text', 'FlatList', 'TouchableOpacity', 'RefreshControl', 'TextInput', 'Modal', 'Pressable', 'ScrollView'].map((name) => [name, name])); native.StyleSheet = { create: (styles) => styles };
+    const imports = { '../hooks/useSpecialFeed': () => {}, '../utils/eventIdentity': identity, react, 'react-native': native, '@react-navigation/native': { useFocusEffect: (effect) => { if (initial) focus.push(effect); } }, '../utils/storage': { getSavedEvents: async () => events.map(event => ({ id: event.id, event })) }, '../utils/data': { ...data, fetchSpecialEvents: async () => events, getSpecialFeedState: () => ({ status: 'current' }) }, '../utils/discovery': discovery, '../utils/tags': tags, '../utils/theme': theme, '../utils/eventRoute': {}, '../utils/notifications': {}, '../components/EventCard': () => null, '../components/LoadingView': 'Loading', '../i18n': { useLocale: () => ({ t: (key) => key }) } };
+    const code = transformSync(readFileSync(new URL('../SpecialEventsScreen.js', import.meta.url), 'utf8'), { babelrc: false, configFile: false, plugins: ['@babel/plugin-transform-react-jsx', '@babel/plugin-transform-modules-commonjs'] }).code;
+    const module = { exports: {} }; new Function('require', 'module', 'exports', code)((name) => imports[name], module, module.exports);
+    const route = { params: { saved: true, ...(explicitRange ? { range: explicitRange } : {}) } };
+    const navigation = { setParams: (params) => Object.assign(route.params, params) };
+    const render = () => { cursor = 0; const tree = module.exports.default({ navigation, route }); initial = false; return tree; };
+    render(); effects.forEach(effect => effect()); focus.forEach(effect => effect()); await new Promise(resolve => setImmediate(resolve));
+    const tree = render(); const list = nodes(tree).find(node => node?.type === 'FlatList');
+    assert.deepEqual(list.props.data.map(event => event.id), explicitRange ? ['near'] : ['near', 'far']);
+    assert.equal(route.params.saved, undefined);
+  }
 });

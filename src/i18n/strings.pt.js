@@ -186,7 +186,7 @@ export default
       "section": "Lembretes de Eventos",
       "leadTime": "Avisar-me Antes do Evento",
       "leadTimeDescription": "Quanto tempo antes do evento enviar a notificação de lembrete",
-      "info": "Toca no ícone do sino em qualquer evento especial para definires um lembrete. Vais receber uma notificação antes do evento começar."
+      "info": "Use Lembrete num evento com uma hora futura publicada."
     },
     "notifications": {
     "reminderChannel": "Lembretes de eventos",

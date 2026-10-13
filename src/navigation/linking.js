@@ -10,6 +10,7 @@ export function createLinking({ prefixes, parsePath, serializeState }) {
       ...state,
       routes: state.routes.map((route) => ({
         ...route,
+        ...(route.params ? { params: Object.fromEntries(Object.entries(route.params).filter(([, value]) => value !== undefined)) } : {}),
         ...(route.name === 'EventDetail' ? { params: route.params?.id ? { id: route.params.id } : {} } : {}),
         ...(route.state ? { state: cleanState(route.state) } : {}),
       })),
