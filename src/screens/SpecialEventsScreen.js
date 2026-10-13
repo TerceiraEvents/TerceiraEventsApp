@@ -1,4 +1,5 @@
 import { useFocusEffect } from '@react-navigation/native';
+import { reconcileSaved } from '../utils/eventIdentity';
 import { getSavedEvents } from '../utils/storage';
 import { eventDetailParams } from '../utils/eventRoute';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
@@ -55,7 +56,7 @@ export default function SpecialEventsScreen({ navigation, route }) {
   const [family, setFamily] = useState(false);
   const [kind, setKind] = useState('event');
   const [savedOnly, setSavedOnly] = useState(false);
-  const [savedIDs, setSavedIDs] = useState(null);
+  const [savedRecords, setSavedRecords] = useState(null);
   const [savedReadError, setSavedReadError] = useState(false);
   const [search, setSearch] = useState('');
   const [selectedTag, setSelectedTag] = useState('');
@@ -70,8 +71,8 @@ export default function SpecialEventsScreen({ navigation, route }) {
   }, [navigation, route?.params?.kind, route?.params?.range, route?.params?.saved]);
 
   const loadSaved = useCallback(async () => {
-    setSavedIDs(null);
-    try { setSavedIDs((await getSavedEvents()).map((entry) => entry.id)); setSavedReadError(false); }
+    setSavedRecords(null);
+    try { setSavedRecords(await getSavedEvents()); setSavedReadError(false); }
     catch { setSavedReadError(true); }
   }, []);
   useFocusEffect(useCallback(() => { loadSaved(); }, [loadSaved]));
@@ -99,7 +100,9 @@ export default function SpecialEventsScreen({ navigation, route }) {
     } finally { setRefreshing(false); }
   }, [loadEvents]);
 
-  const sortedEvents = useMemo(() => sortEventsByDate(events), [events]);
+  const savedIDs = useMemo(() => savedRecords?.map((entry) => entry.id) || null, [savedRecords]);
+  const savedItems = useMemo(() => reconcileSaved(savedRecords || [], events, feedState), [savedRecords, events, feedState]);
+  const sortedEvents = useMemo(() => sortEventsByDate(savedOnly ? savedItems.map((entry) => entry.event).filter(Boolean) : events), [events, savedOnly, savedItems]);
 
   const filtered = useMemo(() => {
     let base = sortedEvents.filter((e) => isInRange(e, range) && eventKind(e) === kind);
@@ -200,11 +203,14 @@ export default function SpecialEventsScreen({ navigation, route }) {
         data={filtered}
         keyExtractor={(item, index) => `${item.date}-${item.name}-${index}`}
         renderItem={({ item }) => (
+          <View>
+          {savedOnly && savedItems.some((entry) => entry.id === item.id && entry.unavailable) && <Text style={{ padding: 16 }}>{t('discovery.unavailable')}</Text>}
           <EventCard
             event={item}
             compact
             onOpen={() => navigation.navigate('EventDetail', eventDetailParams(item))}
           />
+          </View>
         )}
         contentContainerStyle={styles.list}
         refreshControl={

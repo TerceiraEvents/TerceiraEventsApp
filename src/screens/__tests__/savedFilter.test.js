@@ -1,3 +1,4 @@
+import * as identity from '../../utils/eventIdentity.js';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -13,12 +14,13 @@ function nodes(element) { return [element, ...React.Children.toArray(element?.pr
 
 test('actual Saved events filter reads IDs on focus, combines facets, refreshes removal and clears visibly', async () => {
   const state = [], effects = [], focus = [];
-  let cursor = 0, initial = true, saved = [{ id: 'keep' }, { id: 'paid' }], denied = false;
+  let cursor = 0, initial = true, saved = [], denied = false;
   const events = [{ id: 'keep', name: 'Saved free', date: '2099-01-01', tags: ['free'] }, { id: 'other', name: 'Unsaved free', date: '2099-01-01', tags: ['free'] }, { id: 'paid', name: 'Saved paid', date: '2099-01-01', tags: [] }];
+  saved = [{ id: 'keep', event: events[0] }, { id: 'paid', event: events[2] }];
   const react = { ...React, useState: (value) => { const index = cursor++; if (!(index in state)) state[index] = value; return [state[index], (next) => { state[index] = typeof next === 'function' ? next(state[index]) : next; }]; }, useEffect: (effect) => { if (initial) effects.push(effect); }, useCallback: (value) => value, useMemo: (compute) => compute() };
   const native = Object.fromEntries(['View', 'Text', 'FlatList', 'TouchableOpacity', 'RefreshControl', 'TextInput', 'Modal', 'Pressable', 'ScrollView'].map((name) => [name, name]));
   native.StyleSheet = { create: (styles) => styles };
-  const imports = { react, 'react-native': native, '@react-navigation/native': { useFocusEffect: (effect) => { if (initial) focus.push(effect); } }, '../utils/storage': { getSavedEvents: async () => { if (denied) throw new Error('Unreadable'); return saved; } }, '../utils/data': { ...data, fetchSpecialEvents: async () => events, getSpecialFeedState: () => ({ status: 'fresh' }) }, '../utils/discovery': discovery, '../utils/tags': tags, '../utils/theme': theme, '../utils/eventRoute': {}, '../utils/notifications': {}, '../components/EventCard': () => null, '../components/LoadingView': 'Loading', '../i18n': { useLocale: () => ({ t: (key) => key }) } };
+  const imports = { '../utils/eventIdentity': identity, react, 'react-native': native, '@react-navigation/native': { useFocusEffect: (effect) => { if (initial) focus.push(effect); } }, '../utils/storage': { getSavedEvents: async () => { if (denied) throw new Error('Unreadable'); return saved; } }, '../utils/data': { ...data, fetchSpecialEvents: async () => events, getSpecialFeedState: () => ({ status: 'current' }) }, '../utils/discovery': discovery, '../utils/tags': tags, '../utils/theme': theme, '../utils/eventRoute': {}, '../utils/notifications': {}, '../components/EventCard': () => null, '../components/LoadingView': 'Loading', '../i18n': { useLocale: () => ({ t: (key) => key }) } };
   const code = transformSync(readFileSync(new URL('../SpecialEventsScreen.js', import.meta.url), 'utf8'), { babelrc: false, configFile: false, plugins: ['@babel/plugin-transform-react-jsx', '@babel/plugin-transform-modules-commonjs'] }).code;
   const module = { exports: {} };
   new Function('require', 'module', 'exports', code)((name) => { assert.ok(name in imports, name); return imports[name]; }, module, module.exports);
@@ -34,6 +36,11 @@ test('actual Saved events filter reads IDs on focus, combines facets, refreshes 
   assert.deepEqual(nodes(tree).find((node) => node?.type === 'FlatList').props.data.map((event) => event.id), ['keep', 'paid'], 'all-date selection exposes far-future saved IDs');
   find(tree, 'discovery.free').props.onPress(); tree = render();
   assert.deepEqual(nodes(tree).find((node) => node?.type === 'FlatList').props.data.map((event) => event.id), ['keep']);
+  saved = [{ id: 'missing', event: { id: 'missing', name: 'Unavailable snapshot', date: '2099-01-01', tags: ['free'] } }];
+  focus.forEach((effect) => effect()); await settle(); tree = render();
+  const list = nodes(tree).find((node) => node?.type === 'FlatList');
+  assert.deepEqual(list.props.data.map((event) => event.id), ['missing'], 'missing persisted ID retains its own snapshot');
+  assert.ok(nodes(list.props.renderItem({ item: list.props.data[0] })).some((node) => node.props?.children === 'discovery.unavailable'));
   saved = []; focus.forEach((effect) => effect()); await settle(); tree = render();
   assert.deepEqual(nodes(tree).find((node) => node?.type === 'FlatList').props.data, [], 'return after unsaving refreshes persisted IDs');
   denied = true; focus.forEach((effect) => effect()); await settle(); tree = render();

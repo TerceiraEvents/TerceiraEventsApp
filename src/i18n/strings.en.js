@@ -65,7 +65,7 @@ export default
   "tabs": {
     "home": "Home",
     "weekly": "Weekly",
-    "venues": "Venues",
+    "venues": "Places",
     "resources": "More",
     "settings": "Settings",
     "suggestEvent": "Suggest Event",
