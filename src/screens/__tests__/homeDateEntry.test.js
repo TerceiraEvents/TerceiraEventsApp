@@ -77,6 +77,8 @@ for (const selection of ['today', 'tomorrow', 'weekend', 'all', 'exhibition']) t
     assert.equal(explore.scrollCalls.length, 1);
     assert.deepEqual(explore.scrollCalls[0].ids.slice().sort(), expected, 'scroll occurs after new filtered data commits');
     assert.equal(explore.scrollCalls[0].animated, false);
+    assert.equal(button(tree, explore.t('discovery.filters')).props.accessibilityState.expanded, false, 'fresh Home entry closes optional controls');
+    button(tree, explore.t('discovery.filters')).props.onPress(); tree = explore.render();
     assert.equal(button(tree, explore.t('discovery.saved')).props.accessibilityState.checked, false);
     assert.equal(nodes(tree).find(node => node.type === 'TextInput').props.value, '');
     assert.ok(button(tree, en.specialEvents.allTags));
@@ -93,6 +95,7 @@ for (const selection of ['today', 'tomorrow', 'weekend', 'all', 'exhibition']) t
     explore.setOffset(222); explore.focus(); tree = await explore.settle();
     assert.deepEqual(list(tree).props.data.map(event => event.id), before);
     assert.equal(explore.getOffset(), 222, 'Back retains native scroll position');
+    assert.equal(button(tree, explore.t('discovery.filters')).props.accessibilityState.expanded, true, 'ordinary Back retains the open panel');
     assert.equal(explore.scrollCalls.length, 1, 'Back does not repeat fresh-entry reset');
     assert.equal(button(tree, explore.t('discovery.free')).props.accessibilityState.selected, true);
 });

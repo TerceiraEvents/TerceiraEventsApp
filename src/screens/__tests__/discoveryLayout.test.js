@@ -94,6 +94,7 @@ test('expanded filters have one canonical Clear that retains date and catalog', 
   assert.equal(state[4], 'today', 'Saved combines with the selected day'); assert.equal(state[9], true);
   header.find(node => node.type === 'TouchableOpacity' && children(node).some(child => child.props?.children === 'discovery.reset')).props.onPress();
   assert.equal(state[4], 'today'); assert.equal(state[8], 'exhibition');
+  assert.equal(state[17], false, 'Clear returns focus to results by closing optional controls');
   assert.deepEqual([state[5], state[6], state[7], state[9], state[13], state[14]], ['', false, false, false, '', '']);
 });
 

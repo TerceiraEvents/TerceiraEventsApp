@@ -79,7 +79,7 @@ export default function SpecialEventsScreen({ navigation, route }) {
     if (fresh) {
       setFreshEntry(value => value + 1);
       setSavedOnly(false); setSearch(''); setSelectedTag(''); setLocality(''); setFree(false); setFamily(false);
-      setTagPickerOpen(false); setRangePickerOpen(false);
+      setTagPickerOpen(false); setRangePickerOpen(false); setFiltersOpen(false);
     }
     if (['event', 'exhibition'].includes(route?.params?.kind)) setKind(route.params.kind);
     const explicitRange = RANGE_DEFS.some((option) => option.key === route?.params?.range);
@@ -220,7 +220,7 @@ export default function SpecialEventsScreen({ navigation, route }) {
         {!!localities.options.length && localities.confirmed < localities.total && <Text>{t('discovery.localityPartial')}</Text>}
           {feedState.fetchedAt && <Text>{t('discovery.fetched')} {feedState.fetchedAt}</Text>}
         </View>}
-        {(savedOnly || locality || free || family || search || selectedTag) && <TouchableOpacity accessibilityRole="button" style={{ padding: 12, minHeight: 44 }} onPress={() => { setSavedOnly(false); setLocality(''); setFree(false); setFamily(false); setSearch(''); setSelectedTag(''); }}><Text>{t('discovery.reset')}</Text></TouchableOpacity>}
+        {(savedOnly || locality || free || family || search || selectedTag) && <TouchableOpacity accessibilityRole="button" style={{ padding: 12, minHeight: 44 }} onPress={() => { setFiltersOpen(false); setSavedOnly(false); setLocality(''); setFree(false); setFamily(false); setSearch(''); setSelectedTag(''); }}><Text>{t('discovery.reset')}</Text></TouchableOpacity>}
 
       </View>
   );

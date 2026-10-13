@@ -71,6 +71,8 @@ for (const catalog of [en, pt]) test(`actual Saved events filter and result coun
   assert(!emptyLabel(tree).includes('specialEvents.empty.upcoming'));
   assert.ok(nodes(tree).some((node) => React.Children.toArray(node.props?.children).join('') === 'discovery.savedUnknown · discovery.retry'), 'unreadable storage has explicit feedback');
   find(tree, 'discovery.reset').props.onPress(); tree = render();
+  assert.equal(find(tree, 'discovery.filters').props.accessibilityState.expanded, false);
+  find(tree, 'discovery.filters').props.onPress(); tree = render();
   assert.equal(find(tree, 'discovery.saved').props.accessibilityState.checked, false);
 });
 
