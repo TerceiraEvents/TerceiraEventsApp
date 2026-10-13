@@ -48,3 +48,5 @@ Home date actions open the full dated catalog for Today, Tomorrow, or the remain
 Tab labels use their full share of the viewport after horizontal safe insets. Events and Weekly receive larger shares, with Weekly the widest, through the public tab item flex style; label widths match those same weights. Text keeps system scaling and wrapping within its own tab cell.
 
 Home and Events use a shared focused Azores-day clock. It resynchronizes on focus, when the app becomes active, and every minute while focused. Date filters explicitly use that day; clock changes do not fetch data or schedule notifications. Blur and unmount remove the interval and AppState listener.
+
+Native link initialization reads Expo Linking’s retained URL before the asynchronous initial-launch URL. Incoming URLs during native startup can open their exact destination; ready-state URLs use React Navigation’s event subscription.

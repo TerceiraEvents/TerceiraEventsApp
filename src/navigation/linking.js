@@ -1,4 +1,4 @@
-export function createLinking({ prefixes, parsePath, serializeState }) {
+export function createLinking({ prefixes, parsePath, serializeState, getLinkingURL, getInitialURL }) {
   const config = {
     screens: {
       EventDetail: 'events/',
@@ -34,6 +34,7 @@ export function createLinking({ prefixes, parsePath, serializeState }) {
   return {
     prefixes,
     config,
+    getInitialURL: async () => getLinkingURL?.() ?? await getInitialURL?.(),
     getStateFromPath,
     getPathFromState: (state, options) => serializeState(cleanState(state), options),
   };

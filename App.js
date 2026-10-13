@@ -117,6 +117,8 @@ function AppShell() {
   return (
     <NavigationContainer ref={navigationRef} linking={createLinking({
       prefixes: [Linking.createURL('/'), 'terceiraevents://', 'https://eventosterceira.pt', 'https://www.eventosterceira.pt'],
+      getLinkingURL: Linking.getLinkingURL,
+      getInitialURL: Linking.getInitialURL,
       parsePath: getStateFromPath,
       serializeState: getPathFromState,
     })}
