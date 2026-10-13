@@ -30,3 +30,7 @@ Explore filters, search and results share one scroll surface. `tabBarHeight` res
 
 Saved state on detail pages remains unknown until storage is read successfully. Read failures expose Retry and disable the Saved toggle; event information, calendar and independent reminder state remain available.
 Detail cards place their full-width heading above a wrapping action row. The date badge grows with its text; calendar, share, report and reminder actions keep their own accessible buttons.
+
+## Artwork in event details
+
+Artwork uses a fixed 360-point frame with contain sizing and an independent full-size link. A failed or rejected image displays localized feedback while retaining the published event and its actions. Android uses a polite live region; iOS image-load failures invoke the public accessibility announcement API. A rejected URL has no full-size control. Published `image_alt_en`/`image_alt_pt`, `image_credit`, `image_rights`, and HTTP(S) `image_source` provide accessibility and provenance. Relative artwork paths use `/assets/images/` in the shared repository; unsafe or malformed URLs have no image control. The component tests simulate image failure and inspect framing and EN/PT labels; they do not establish native decoding of portrait, landscape, or oversized files. Permission-cleared source samples and actual Android/iOS artwork rendering remain required.
