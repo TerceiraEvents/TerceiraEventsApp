@@ -37,6 +37,15 @@ export default function EventCard({ event, reminded, reminderUnavailable = false
   const date = parseEventDate(event.date);
   const formatted = date ? formatDate(date, locale) : null;
   const range = eventDateRange(event);
+  const readableDate = (value) => {
+    const parsed = parseEventDate(value);
+    if (!parsed) return '';
+    const parts = formatDate(parsed, locale);
+    return `${parts.day} ${parts.month} ${parts.year}`;
+  };
+  const dateLabel = range ? `${readableDate(range.start)}${range.end !== range.start ? ` – ${readableDate(range.end)}` : ''}` : '';
+  const localityLabel = ['angra', 'praia', 'other'].includes(event.locality) ? t(`discovery.${event.locality}`) : event.locality;
+
   const tagSlugs = normalizeEventTags(event);
 
   const displayName = localizedField(event, 'name', locale);
@@ -107,11 +116,11 @@ export default function EventCard({ event, reminded, reminderUnavailable = false
   };
 
   if (compact) return (
-    <TouchableOpacity style={styles.card} onPress={onOpen} accessibilityRole="button" accessibilityLabel={`${displayName}, ${range?.start || ''}${range && range.end !== range.start ? ` – ${range.end}` : ''}, ${event.time || t('discovery.timeUnknown')}, ${displayVenue}`}>
+    <TouchableOpacity style={styles.card} onPress={onOpen} accessibilityRole="button" accessibilityLabel={`${displayName}, ${dateLabel}, ${event.time || t('discovery.timeUnknown')}, ${displayVenue}`}>
       <View style={styles.content}>
         <Text style={styles.name}>{displayName}</Text>
-        <Text style={styles.time}>{range?.start || ''}{range && range.end !== range.start ? ` – ${range.end}` : ''} · {event.time || t('discovery.timeUnknown')}</Text>
-        <Text style={styles.venue}>{displayVenue}{event.locality ? ` · ${event.locality}` : ''}</Text>
+        <Text style={styles.time}>{dateLabel} · {event.time || t('discovery.timeUnknown')}</Text>
+        <Text style={styles.venue}>{displayVenue}{localityLabel ? ` · ${localityLabel}` : ''}</Text>
         <Text style={styles.address}>{displayPrice || (tagSlugs.includes('free') ? t('discovery.free') : t('discovery.priceUnknown'))}{event.status ? ` · ${event.status}` : ''}</Text>
       </View>
     </TouchableOpacity>
@@ -196,8 +205,8 @@ export default function EventCard({ event, reminded, reminderUnavailable = false
             })}
           </View>
         )}
-        <Text style={styles.venue}>{displayVenue}</Text>
-        <Text style={styles.time}>{range?.start}{range && range.end !== range.start ? ` – ${range.end}` : ''} · {event.time || t('discovery.timeUnknown')}</Text>
+        <Text style={styles.venue}>{displayVenue}{localityLabel ? ` · ${localityLabel}` : ''}</Text>
+        <Text style={styles.time}>{dateLabel} · {event.time || t('discovery.timeUnknown')}</Text>
         <Text style={styles.address}>{displayPrice || (tagSlugs.includes('free') ? t('discovery.free') : t('discovery.priceUnknown'))}</Text>
         {displayDescription && (
           <Text style={styles.description}>{displayDescription}</Text>
