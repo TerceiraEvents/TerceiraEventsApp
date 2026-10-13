@@ -1,7 +1,8 @@
+import Text from '../components/Text';
 import useSpecialFeed from '../hooks/useSpecialFeed';
 import { reminderDate, publishedEventTime } from '../utils/eventTime';
 import React, { useCallback, useEffect, useState } from 'react';
-import { ScrollView, Text, TouchableOpacity, Alert, StyleSheet } from 'react-native';
+import { ScrollView, TouchableOpacity, Alert, StyleSheet } from 'react-native';
 import { useLocale } from '../i18n';
 import { fetchSpecialEvents, fetchWeeklyEvents, getSpecialFeedState, isEnded } from '../utils/data';
 import { getSettings, getSavedEvents, toggleSavedEvent, getRemindedEventsStrict, makeEventKey, setEventReminder, removeEventReminder } from '../utils/storage';

@@ -16,7 +16,7 @@ function nodes(element) { return [element, ...React.Children.toArray(element?.pr
 function render(screen, catalog) {
   const native = Object.fromEntries(['View', 'Text', 'ScrollView', 'FlatList', 'TouchableOpacity', 'TextInput', 'Modal', 'Pressable', 'RefreshControl', 'Switch', 'ActivityIndicator', 'KeyboardAvoidingView'].map(name => [name, name]));
   native.StyleSheet = { create: value => value }; native.Platform = { OS: 'ios' };
-  const imports = {
+  const imports = { '../components/Text': 'Text', './Text': 'Text', './src/components/Text': { __esModule: true, default: 'Text', TextProvider: 'TextProvider' },
     react: { ...React, useRef: value => ({ current: value }), useState: value => [value === true ? false : value === null && screen === 'SettingsScreen' ? {} : value, () => {}], useEffect: () => {}, useCallback: value => value, useMemo: compute => compute() },
     'react-native': native, '@react-navigation/native': { useFocusEffect: () => {} },
     '../i18n': { useLocale: () => ({ locale: catalog === en ? 'en' : 'pt', t: key => key.split('.').reduce((value, part) => value?.[part], catalog) || key }), LOCALE_CHOICES: [] },

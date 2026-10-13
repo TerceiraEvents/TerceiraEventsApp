@@ -1,5 +1,6 @@
+import Text from '../components/Text';
 import React from 'react';
-import { ScrollView, TouchableOpacity, Text } from 'react-native';
+import { ScrollView, TouchableOpacity } from 'react-native';
 import { moreRoutes } from '../navigation/moreRoutes';
 import { useLocale } from '../i18n';
 export default function MoreScreen({ navigation }) {

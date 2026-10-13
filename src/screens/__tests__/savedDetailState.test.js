@@ -17,7 +17,7 @@ test('detail retains event and calendar while failed Saved read exposes Retry an
   const native = { ScrollView: 'ScrollView', Text: 'Text', TouchableOpacity: 'TouchableOpacity', Alert: { alert: () => {} }, StyleSheet: { create: (value) => value } };
   const event = { id: 'known', name: 'Published event', date: '2026-10-17' };
   let failing = true;
-  const imports = { '../hooks/useSpecialFeed': () => {},
+  const imports = { '../components/Text': 'Text', './Text': 'Text', './src/components/Text': { __esModule: true, default: 'Text', TextProvider: 'TextProvider' }, '../hooks/useSpecialFeed': () => {},
     react, 'react-native': native,
     '../i18n': { useLocale: () => ({ t: (key) => key }) },
     '../utils/data': { fetchSpecialEvents: async () => [event], getSpecialFeedState: () => ({ status: 'current' }), isEnded: () => false },
