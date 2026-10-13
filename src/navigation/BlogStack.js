@@ -1,5 +1,6 @@
+import Text from '../components/Text';
 import React from 'react';
-import { TouchableOpacity, Text } from 'react-native';
+import { TouchableOpacity } from 'react-native';
 import { colors } from '../utils/theme';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import BlogScreen from '../screens/BlogScreen';

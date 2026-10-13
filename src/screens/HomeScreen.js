@@ -1,8 +1,9 @@
+import Text from '../components/Text';
 import useAzoresDay from '../hooks/useAzoresDay';
 import useSpecialFeed from '../hooks/useSpecialFeed';
 import { eventDetailParams } from '../utils/eventRoute';
 import React, { useCallback, useEffect, useState } from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, TouchableOpacity, View } from 'react-native';
 import { useLocale } from '../i18n';
 import { fetchSpecialEvents, getSpecialFeedState, eventKind, eventDateRange, sortDatedEvents, sortExhibitions, isActive } from '../utils/data';
 import { homeFeedback } from '../utils/navigation';

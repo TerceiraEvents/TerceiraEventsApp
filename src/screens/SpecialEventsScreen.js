@@ -1,3 +1,4 @@
+import Text from '../components/Text';
 import useAzoresDay from '../hooks/useAzoresDay';
 import { useFocusEffect } from '@react-navigation/native';
 import { reconcileSaved } from '../utils/eventIdentity';
@@ -7,7 +8,6 @@ import { eventDetailParams } from '../utils/eventRoute';
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   FlatList,
   TouchableOpacity,

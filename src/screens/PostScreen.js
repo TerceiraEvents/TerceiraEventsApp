@@ -1,8 +1,8 @@
+import Text, { useFontScale } from '../components/Text';
 import React from 'react';
 import {
   ScrollView,
   View,
-  Text,
   TouchableOpacity,
   StyleSheet,
   Linking,
@@ -18,6 +18,7 @@ const formatDate = formatPostDate;
 
 export default function PostScreen({ route }) {
   const { t, locale } = useLocale();
+  const fontScale = useFontScale();
   const post = route?.params?.post;
   if (!post) {
     return (
@@ -41,7 +42,7 @@ export default function PostScreen({ route }) {
           {localizedField(post, 'subtitle', locale)}
         </Text>
       ) : null}
-      <Markdown style={mdStyles}>
+      <Markdown key={fontScale} style={mdStyles}>
         {localizedField(post, 'body', locale) || ''}
       </Markdown>
       {post.source_url ? (

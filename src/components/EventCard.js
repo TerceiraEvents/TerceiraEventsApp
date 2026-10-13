@@ -1,6 +1,7 @@
+import Text from './Text';
 import { calendarDraft } from '../utils/eventTime';
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Linking, Alert, Share, Platform, Image, AccessibilityInfo } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Linking, Alert, Share, Platform, Image, AccessibilityInfo } from 'react-native';
 import * as Calendar from 'expo-calendar';
 import { colors, fonts } from '../utils/theme';
 import { parseEventDate, formatDate, eventDateRange } from '../utils/data';

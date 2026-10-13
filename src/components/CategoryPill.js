@@ -1,5 +1,6 @@
+import Text from './Text';
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { fonts } from '../utils/theme';
 import { useLocale } from '../i18n';
 import { categoryPillMeta } from '../utils/blogCategory';

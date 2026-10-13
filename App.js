@@ -1,3 +1,4 @@
+import Text, { TextProvider } from './src/components/Text';
 import React, { useEffect, useRef, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { getPathFromState, getStateFromPath, NavigationContainer } from '@react-navigation/native';
@@ -9,7 +10,7 @@ import { createLinking } from './src/navigation/linking';
 import EventDetailScreen from './src/screens/EventDetailScreen';
 import MoreScreen from './src/screens/MoreScreen';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Text, useWindowDimensions } from 'react-native';
+import { useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { tabBarHeight } from './src/utils/tabLayout';
 import * as Notifications from 'expo-notifications';
@@ -141,7 +142,7 @@ function AppShell() {
 export default function App() {
   return (
     <LocaleProvider>
-      <AppShell />
+      <TextProvider><AppShell /></TextProvider>
     </LocaleProvider>
   );
 }

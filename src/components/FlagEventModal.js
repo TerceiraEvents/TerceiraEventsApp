@@ -1,8 +1,8 @@
+import Text from './Text';
 import React, { useState } from 'react';
 import {
   Modal,
   View,
-  Text,
   TextInput,
   StyleSheet,
   TouchableOpacity,

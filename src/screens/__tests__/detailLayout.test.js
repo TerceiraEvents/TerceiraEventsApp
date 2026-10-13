@@ -16,7 +16,7 @@ test('detail title has full card width independently of all four actions', () =>
   const react = { ...React, useState: (value) => [value, () => {}] };
   const native = Object.fromEntries(['View', 'Text', 'TouchableOpacity', 'Image'].map((name) => [name, name]));
   native.StyleSheet = { create: (styles) => styles };
-  const imports = { react, 'react-native': native, '../utils/data': data, '../utils/tags': tags, '../utils/theme': theme, '../utils/i18nFields': fields, '../utils/eventIdentity': identity, '../i18n': { useLocale: () => ({ t: (key) => key, locale: 'en' }) } };
+  const imports = { '../components/Text': 'Text', './Text': 'Text', './src/components/Text': { __esModule: true, default: 'Text', TextProvider: 'TextProvider' }, react, 'react-native': native, '../utils/data': data, '../utils/tags': tags, '../utils/theme': theme, '../utils/i18nFields': fields, '../utils/eventIdentity': identity, '../i18n': { useLocale: () => ({ t: (key) => key, locale: 'en' }) } };
   const code = transformSync(readFileSync(new URL('../../components/EventCard.js', import.meta.url), 'utf8'), { babelrc: false, configFile: false, plugins: ['@babel/plugin-transform-react-jsx', '@babel/plugin-transform-modules-commonjs'] }).code;
   const module = { exports: {} };
   new Function('require', 'module', 'exports', code)((name) => imports[name] || 'Modal', module, module.exports);

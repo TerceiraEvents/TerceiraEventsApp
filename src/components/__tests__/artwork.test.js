@@ -22,7 +22,7 @@ function render(event, locale = 'en', platform = 'android') {
   native.AccessibilityInfo = { announceForAccessibility: (message) => announced.push(message) };
   const opened = []; native.Linking = { openURL: (url) => opened.push(url) };
   const t = (key) => key.split('.').reduce((value, part) => value?.[part], locale === 'pt' ? pt : en);
-  const imports = { react, 'react-native': native, '../utils/data': data, '../utils/tags': tags, '../utils/theme': theme, '../utils/i18nFields': fields, '../utils/eventIdentity': identity, '../i18n': { useLocale: () => ({ t, locale }) } };
+  const imports = { '../components/Text': 'Text', './Text': 'Text', './src/components/Text': { __esModule: true, default: 'Text', TextProvider: 'TextProvider' }, react, 'react-native': native, '../utils/data': data, '../utils/tags': tags, '../utils/theme': theme, '../utils/i18nFields': fields, '../utils/eventIdentity': identity, '../i18n': { useLocale: () => ({ t, locale }) } };
   const code = transformSync(readFileSync(new URL('../EventCard.js', import.meta.url), 'utf8'), { babelrc: false, configFile: false, plugins: ['@babel/plugin-transform-react-jsx', '@babel/plugin-transform-modules-commonjs'] }).code;
   const module = { exports: {} };
   new Function('require', 'module', 'exports', code)((name) => imports[name] || 'Modal', module, module.exports);
