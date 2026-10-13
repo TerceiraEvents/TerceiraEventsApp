@@ -1,6 +1,7 @@
 export default
 {
   "discovery": {
+    "result": "resultado",
     "reset": "Limpar filtros",
     "otherFilters": "Os outros filtros também se aplicam. Usa o Arquivo para eventos guardados que já terminaram.",
     "loadingSaved": "A ler eventos guardados…",

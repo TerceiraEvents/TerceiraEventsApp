@@ -134,7 +134,7 @@ export default function SpecialEventsScreen({ navigation, route }) {
         {feedState.cacheTimeUnknown && <Text accessibilityLiveRegion="polite" style={{ padding: 16 }}>{t('discovery.cacheTimeUnknown')}</Text>}
         {!!feedState.rejectedRecords && <Text accessibilityLiveRegion="polite">{t('discovery.partial', { count: feedState.rejectedRecords })}</Text>}
         {feedState.fetchedAt && <Text>{t('discovery.fetched')} {feedState.fetchedAt}</Text>}
-        <Text accessibilityLiveRegion="polite">{filtered.length} {t('discovery.results')}</Text>
+        <Text accessibilityLiveRegion="polite">{filtered.length} {t(filtered.length === 1 ? 'discovery.result' : 'discovery.results')}</Text>
         <View style={styles.dropdownRow}>
           <TouchableOpacity
             style={styles.rangeDropdown}

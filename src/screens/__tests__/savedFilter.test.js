@@ -4,6 +4,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import React from 'react';
+import en from '../../i18n/strings.en.js';
+import pt from '../../i18n/strings.pt.js';
 import * as data from '../../utils/data.js';
 import * as discovery from '../../utils/discovery.js';
 import * as theme from '../../utils/theme.js';
@@ -12,7 +14,7 @@ const require = createRequire(import.meta.url);
 const { transformSync } = require('@babel/core');
 function nodes(element) { return [element, ...React.Children.toArray(element?.props?.children).flatMap(nodes), ...(element?.props?.ListHeaderComponent ? nodes(element.props.ListHeaderComponent) : [])]; }
 
-test('actual Saved events filter reads IDs on focus, combines facets, refreshes removal and clears visibly', async () => {
+for (const catalog of [en, pt]) test(`actual Saved events filter and result count (${catalog === en ? 'EN' : 'PT'})`, async () => {
   const state = [], effects = [], focus = [];
   let cursor = 0, initial = true, saved = [], denied = false;
   const events = [{ id: 'keep', name: 'Saved free', date: '2099-01-01', tags: ['free'] }, { id: 'other', name: 'Unsaved free', date: '2099-01-01', tags: ['free'] }, { id: 'paid', name: 'Saved paid', date: '2099-01-01', tags: [] }];
@@ -20,7 +22,7 @@ test('actual Saved events filter reads IDs on focus, combines facets, refreshes 
   const react = { ...React, useState: (value) => { const index = cursor++; if (!(index in state)) state[index] = value; return [state[index], (next) => { state[index] = typeof next === 'function' ? next(state[index]) : next; }]; }, useEffect: (effect) => { if (initial) effects.push(effect); }, useCallback: (value) => value, useMemo: (compute) => compute() };
   const native = Object.fromEntries(['View', 'Text', 'FlatList', 'TouchableOpacity', 'RefreshControl', 'TextInput', 'Modal', 'Pressable', 'ScrollView'].map((name) => [name, name]));
   native.StyleSheet = { create: (styles) => styles };
-  const imports = { '../utils/eventIdentity': identity, react, 'react-native': native, '@react-navigation/native': { useFocusEffect: (effect) => { if (initial) focus.push(effect); } }, '../utils/storage': { getSavedEvents: async () => { if (denied) throw new Error('Unreadable'); return saved; } }, '../utils/data': { ...data, fetchSpecialEvents: async () => events, getSpecialFeedState: () => ({ status: 'current' }) }, '../utils/discovery': discovery, '../utils/tags': tags, '../utils/theme': theme, '../utils/eventRoute': {}, '../utils/notifications': {}, '../components/EventCard': () => null, '../components/LoadingView': 'Loading', '../i18n': { useLocale: () => ({ t: (key) => key }) } };
+  const imports = { '../utils/eventIdentity': identity, react, 'react-native': native, '@react-navigation/native': { useFocusEffect: (effect) => { if (initial) focus.push(effect); } }, '../utils/storage': { getSavedEvents: async () => { if (denied) throw new Error('Unreadable'); return saved; } }, '../utils/data': { ...data, fetchSpecialEvents: async () => events, getSpecialFeedState: () => ({ status: 'current' }) }, '../utils/discovery': discovery, '../utils/tags': tags, '../utils/theme': theme, '../utils/eventRoute': {}, '../utils/notifications': {}, '../components/EventCard': () => null, '../components/LoadingView': 'Loading', '../i18n': { useLocale: () => ({ t: (key) => ['discovery.result', 'discovery.results'].includes(key) ? catalog.discovery[key.split('.')[1]] : key }) } };
   const code = transformSync(readFileSync(new URL('../SpecialEventsScreen.js', import.meta.url), 'utf8'), { babelrc: false, configFile: false, plugins: ['@babel/plugin-transform-react-jsx', '@babel/plugin-transform-modules-commonjs'] }).code;
   const module = { exports: {} };
   new Function('require', 'module', 'exports', code)((name) => { assert.ok(name in imports, name); return imports[name]; }, module, module.exports);
@@ -34,8 +36,10 @@ test('actual Saved events filter reads IDs on focus, combines facets, refreshes 
   assert.equal(checkbox.props.accessibilityRole, 'checkbox');
   checkbox.props.onPress(); tree = render();
   assert.deepEqual(nodes(tree).find((node) => node?.type === 'FlatList').props.data.map((event) => event.id), ['keep', 'paid'], 'all-date selection exposes far-future saved IDs');
+  assert.ok(nodes(tree).some((node) => React.Children.toArray(node.props?.children).join('') === (catalog === en ? '2 results' : '2 resultados')));
   find(tree, 'discovery.free').props.onPress(); tree = render();
   assert.deepEqual(nodes(tree).find((node) => node?.type === 'FlatList').props.data.map((event) => event.id), ['keep']);
+  assert.ok(nodes(tree).some((node) => React.Children.toArray(node.props?.children).join('') === (catalog === en ? '1 result' : '1 resultado')));
   saved = [{ id: 'missing', event: { id: 'missing', name: 'Unavailable snapshot', date: '2099-01-01', tags: ['free'] } }];
   focus.forEach((effect) => effect()); await settle(); tree = render();
   const list = nodes(tree).find((node) => node?.type === 'FlatList');
