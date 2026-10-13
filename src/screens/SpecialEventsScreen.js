@@ -1,3 +1,4 @@
+import InlineEventCard from '../components/InlineEventCard';
 import TextInput from '../components/TextInput';
 import Text from '../components/Text';
 import useAzoresDay from '../hooks/useAzoresDay';
@@ -33,7 +34,6 @@ import { TAGS, getTagMeta } from '../utils/tags';
 import {
   rescheduleAllNotifications,
 } from '../utils/notifications';
-import EventCard from '../components/EventCard';
 import LoadingView from '../components/LoadingView';
 import { useLocale } from '../i18n';
 
@@ -69,6 +69,7 @@ export default function SpecialEventsScreen({ navigation, route }) {
   const [selectedTag, setSelectedTag] = useState('');
   const [tagPickerOpen, setTagPickerOpen] = useState(false);
   const [rangePickerOpen, setRangePickerOpen] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const listRef = useRef(null);
   const handledEntry = useRef(0);
   const [freshEntry, setFreshEntry] = useState(0);
@@ -147,21 +148,11 @@ export default function SpecialEventsScreen({ navigation, route }) {
 
   const filters = (
       <View style={styles.headerArea}>
-        <TouchableOpacity accessibilityRole="checkbox" accessibilityState={{ checked: savedOnly, disabled: savedIDs === null && !savedOnly }} disabled={savedIDs === null && !savedOnly} style={{ padding: 16, minWidth: 44, minHeight: 44 }} onPress={() => { if (!savedOnly) setRange('all'); setSavedOnly(!savedOnly); }}><Text>{t('discovery.saved')}</Text></TouchableOpacity>
-        {savedOnly && <Text style={{ padding: 8 }}>{t('discovery.localOnly')} {t('discovery.otherFilters')}</Text>}
-        {savedOnly && savedRefreshing && !savedReadError && <Text accessibilityLiveRegion="polite">{t('discovery.loadingSaved')}</Text>}
-        {savedReadError && <TouchableOpacity accessibilityRole="button" style={{ padding: 16 }} onPress={loadSaved}><Text accessibilityLiveRegion="polite">{t('discovery.savedUnknown')} · {t('discovery.retry')}</Text></TouchableOpacity>}
-        <TouchableOpacity accessibilityRole="button" style={{ padding: 16, minWidth: 44, minHeight: 44 }} onPress={() => { setSavedOnly(false); setRange('week'); setKind('event'); setLocality(''); setFree(false); setFamily(false); setSearch(''); setSelectedTag(''); }}><Text>{t('discovery.reset')}</Text></TouchableOpacity>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-          {['event', 'exhibition'].map((value) => <TouchableOpacity key={value} accessibilityRole="button" accessibilityState={{ selected: kind === value }} style={{ padding: 16, backgroundColor: kind === value ? colors.border : colors.card }} onPress={() => setKind(value)}><Text>{t(value === 'event' ? 'discovery.dated' : 'discovery.onView')}</Text></TouchableOpacity>)}
-          <TouchableOpacity accessibilityRole="button" style={{ padding: 16 }} onPress={() => navigation.navigate('Weekly')}><Text>{t('discovery.weekly')}</Text></TouchableOpacity>
-        </View>
         <Text style={styles.header}>{t('specialEvents.title')}</Text>
         {['cached', 'error'].includes(feedState.status) && <TouchableOpacity accessibilityRole="button" style={{ padding: 16 }} onPress={onRefresh}><Text accessibilityLiveRegion="polite">{t(`discovery.${feedState.status}`)} · {t('discovery.retry')}</Text></TouchableOpacity>}
         {feedState.refreshing && <Text accessibilityLiveRegion="polite" style={{ padding: 16 }}>{t('discovery.refreshing')}</Text>}
         {feedState.cacheTimeUnknown && <Text accessibilityLiveRegion="polite" style={{ padding: 16 }}>{t('discovery.cacheTimeUnknown')}</Text>}
         {!!feedState.rejectedRecords && <Text accessibilityLiveRegion="polite">{t('discovery.partial', { count: feedState.rejectedRecords })}</Text>}
-        {feedState.fetchedAt && <Text>{t('discovery.fetched')} {feedState.fetchedAt}</Text>}
         <Text accessibilityLiveRegion="polite">{filtered.length} {t(filtered.length === 1 ? 'discovery.result' : 'discovery.results')}</Text>
         <View style={styles.dropdownRow}>
           <TouchableOpacity
@@ -202,13 +193,6 @@ export default function SpecialEventsScreen({ navigation, route }) {
             </Text>
           </TouchableOpacity>
         </View>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-          {(localities.options.length ? ['', ...localities.options] : []).map((value) => <TouchableOpacity key={value} accessibilityRole="button" accessibilityState={{ selected: locality === value }} style={{ padding: 12, backgroundColor: locality === value ? colors.border : colors.card }} onPress={() => setLocality(value)}><Text>{t(`discovery.${value || 'allPlaces'}`)}</Text></TouchableOpacity>)}
-          <TouchableOpacity accessibilityRole="button" accessibilityState={{ selected: free }} style={{ padding: 12, backgroundColor: free ? colors.border : colors.card }} onPress={() => setFree(!free)}><Text>{t('discovery.free')}</Text></TouchableOpacity>
-          <TouchableOpacity accessibilityRole="button" accessibilityState={{ selected: family }} style={{ padding: 12, backgroundColor: family ? colors.border : colors.card }} onPress={() => setFamily(!family)}><Text>{t('discovery.family')}</Text></TouchableOpacity>
-          <TouchableOpacity accessibilityRole="button" style={{ padding: 12 }} onPress={() => { setSearch(''); setSelectedTag(''); setLocality(''); setFree(false); setFamily(false); setRange('week'); setKind('event'); }}><Text>{t('discovery.reset')}</Text></TouchableOpacity>
-        </View>
-        {!!localities.options.length && localities.confirmed < localities.total && <Text>{t('discovery.localityPartial')}</Text>}
         <TextInput
           style={styles.searchInput}
           value={search}
@@ -219,6 +203,25 @@ export default function SpecialEventsScreen({ navigation, route }) {
           clearButtonMode="while-editing"
           autoCorrect={false}
         />
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+          {['event', 'exhibition'].map((value) => <TouchableOpacity key={value} accessibilityRole="button" accessibilityState={{ selected: kind === value }} style={{ padding: 16, backgroundColor: kind === value ? colors.border : colors.card }} onPress={() => setKind(value)}><Text>{t(value === 'event' ? 'discovery.dated' : 'discovery.onView')}</Text></TouchableOpacity>)}
+        </View>
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel={t('discovery.filters')} accessibilityState={{ expanded: filtersOpen }} style={{ padding: 12, minHeight: 44 }} onPress={() => setFiltersOpen(!filtersOpen)}><Text>{t('discovery.filters') + (savedOnly || locality || free || family ? ' •' : '')}</Text></TouchableOpacity>
+        {filtersOpen && <View>
+        <TouchableOpacity accessibilityRole="checkbox" accessibilityState={{ checked: savedOnly, disabled: savedIDs === null && !savedOnly }} disabled={savedIDs === null && !savedOnly} style={{ padding: 16, minWidth: 44, minHeight: 44 }} onPress={() => setSavedOnly(!savedOnly)}><Text>{t('discovery.saved')}</Text></TouchableOpacity>
+        {savedOnly && <Text style={{ padding: 8 }}>{t('discovery.localOnly')} {t('discovery.otherFilters')}</Text>}
+        {savedOnly && savedRefreshing && !savedReadError && <Text accessibilityLiveRegion="polite">{t('discovery.loadingSaved')}</Text>}
+        {savedReadError && <TouchableOpacity accessibilityRole="button" style={{ padding: 16 }} onPress={loadSaved}><Text accessibilityLiveRegion="polite">{t('discovery.savedUnknown')} · {t('discovery.retry')}</Text></TouchableOpacity>}
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+          {(localities.options.length ? ['', ...localities.options] : []).map((value) => <TouchableOpacity key={value} accessibilityRole="button" accessibilityState={{ selected: locality === value }} style={{ padding: 12, backgroundColor: locality === value ? colors.border : colors.card }} onPress={() => setLocality(value)}><Text>{t(`discovery.${value || 'allPlaces'}`)}</Text></TouchableOpacity>)}
+          <TouchableOpacity accessibilityRole="button" accessibilityState={{ selected: free }} style={{ padding: 12, backgroundColor: free ? colors.border : colors.card }} onPress={() => setFree(!free)}><Text>{t('discovery.free')}</Text></TouchableOpacity>
+          <TouchableOpacity accessibilityRole="button" accessibilityState={{ selected: family }} style={{ padding: 12, backgroundColor: family ? colors.border : colors.card }} onPress={() => setFamily(!family)}><Text>{t('discovery.family')}</Text></TouchableOpacity>
+        </View>
+        {!!localities.options.length && localities.confirmed < localities.total && <Text>{t('discovery.localityPartial')}</Text>}
+          {feedState.fetchedAt && <Text>{t('discovery.fetched')} {feedState.fetchedAt}</Text>}
+        </View>}
+        {(savedOnly || locality || free || family || search || selectedTag) && <TouchableOpacity accessibilityRole="button" style={{ padding: 12, minHeight: 44 }} onPress={() => { setSavedOnly(false); setLocality(''); setFree(false); setFamily(false); setSearch(''); setSelectedTag(''); }}><Text>{t('discovery.reset')}</Text></TouchableOpacity>}
+
       </View>
   );
 
@@ -234,9 +237,8 @@ export default function SpecialEventsScreen({ navigation, route }) {
         renderItem={({ item }) => (
           <View>
           {savedOnly && savedItems.some((entry) => entry.id === item.id && entry.unavailable) && <Text style={{ padding: 16 }}>{t('discovery.unavailable')}</Text>}
-          <EventCard
+          <InlineEventCard
             event={item}
-            compact
             onOpen={() => navigation.navigate('EventDetail', eventDetailParams(item))}
           />
           </View>

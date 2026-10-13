@@ -1,6 +1,7 @@
 export default
 {
   "discovery": {
+    filters: 'Filtros',
     "savedFiltered": "Nenhum evento guardado corresponde a estes filtros.",
     "result": "resultado",
     "reset": "Limpar filtros",
@@ -79,13 +80,35 @@ export default
   },
   "home": {
     "title": "Eventos da Terceira",
+    "subtitle": "O que se passa na ilha Terceira",
     "intro": {
-      "p1": "A Terceira é conhecida como o \"parque de diversões\" dos Açores — uma ilha pequena cheia de concertos, festivais, touradas e festas todo o ano."
+      "p1": "A Terceira é conhecida como o \"parque de diversões\" dos Açores — uma ilha pequena cheia de concertos, festivais, touradas e festas todo o ano.",
+      "p2": "Esta aplicação ajuda-te a descobrir o que se passa pela Terceira: o programa de hoje, a semana que se aproxima e os locais que vale a pena conhecer."
+    },
+    "sections": {
+      "specialEvents": "Próximos eventos especiais",
+      "blog": "Do blog"
+    },
+    "buttons": {
+      "weekly": "Eventos Semanais",
+      "weeklySubtitle": "Diversão recorrente",
+      "specialEvents": "Eventos Especiais",
+      "specialEventsSubtitle": "O que há esta semana",
+      "venues": "Locais",
+      "venuesSubtitle": "Onde ir",
+      "blog": "Blog",
+      "blogSubtitle": "Notícias, guias e histórias",
+      "resources": "Recursos",
+      "resourcesSubtitle": "Outras formas de encontrar eventos",
+      "suggest": "Sugerir Evento",
+      "suggestSubtitle": "Submete um evento para revisão"
     },
     "links": {
       "today": "Todos os eventos de hoje",
       "tomorrow": "Todos os eventos de amanhã",
-      "weekend": "Todos os eventos deste fim de semana"
+      "weekend": "Todos os eventos deste fim de semana",
+      "allUpcoming": "Ver todos →",
+      "allPosts": "Ver todos →"
     }
   },
   "specialEvents": {

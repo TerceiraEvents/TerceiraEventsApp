@@ -1,3 +1,4 @@
+import * as changeReminder from '../../utils/changeReminder.js';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -17,7 +18,7 @@ test('detail retains event and calendar while failed Saved read exposes Retry an
   const native = { ScrollView: 'ScrollView', Text: 'Text', TouchableOpacity: 'TouchableOpacity', Alert: { alert: () => {} }, StyleSheet: { create: (value) => value } };
   const event = { id: 'known', name: 'Published event', date: '2026-10-17' };
   let failing = true;
-  const imports = { './fontHeader': { fontHeaderOptions: (options) => options }, './src/navigation/fontHeader': { fontHeaderOptions: (options) => options }, '../components/TextInput': 'TextInput', './TextInput': 'TextInput', '../utils/nativeFontMetrics': { hasNativeFontMetrics: false }, '../components/markdownRules': { markdownRules: {} }, '../components/Text': 'Text', './Text': 'Text', './src/components/Text': { __esModule: true, default: 'Text', TextProvider: 'TextProvider' }, '../hooks/useSpecialFeed': () => {},
+  const imports = { '../utils/changeReminder': changeReminder, './fontHeader': { fontHeaderOptions: (options) => options }, './src/navigation/fontHeader': { fontHeaderOptions: (options) => options }, '../components/TextInput': 'TextInput', './TextInput': 'TextInput', '../utils/nativeFontMetrics': { hasNativeFontMetrics: false }, '../components/markdownRules': { markdownRules: {} }, '../components/Text': 'Text', './Text': 'Text', './src/components/Text': { __esModule: true, default: 'Text', TextProvider: 'TextProvider' }, '../hooks/useSpecialFeed': () => {},
     react, 'react-native': native,
     '../i18n': { useLocale: () => ({ t: (key) => key }) },
     '../utils/data': { fetchSpecialEvents: async () => [event], getSpecialFeedState: () => ({ status: 'current' }), isEnded: () => false },

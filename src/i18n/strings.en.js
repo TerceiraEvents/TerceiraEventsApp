@@ -1,6 +1,7 @@
 export default
 {
   "discovery": {
+    filters: 'Filters',
     "savedFiltered": "No saved events match these filters.",
     "result": "result",
     "reset": "Clear filters",
@@ -79,13 +80,35 @@ export default
   },
   "home": {
     "title": "Terceira Events",
+    "subtitle": "What's happening on Terceira Island",
     "intro": {
-      "p1": "Terceira is known as \"the amusement park\" of the Azores — a small island packed with concerts, festivals, bullfights, and parties year-round."
+      "p1": "Terceira is known as \"the amusement park\" of the Azores — a small island packed with concerts, festivals, bullfights, and parties year-round.",
+      "p2": "This app helps you discover what's happening across Terceira: today's lineup, the week ahead, and venues worth knowing."
+    },
+    "sections": {
+      "specialEvents": "Upcoming special events",
+      "blog": "From the blog"
+    },
+    "buttons": {
+      "weekly": "Weekly Events",
+      "weeklySubtitle": "Recurring entertainment",
+      "specialEvents": "Special Events",
+      "specialEventsSubtitle": "What's on this week",
+      "venues": "Venues",
+      "venuesSubtitle": "Where to go",
+      "blog": "Blog",
+      "blogSubtitle": "News, guides, and stories",
+      "resources": "Resources",
+      "resourcesSubtitle": "Other ways to find events",
+      "suggest": "Suggest Event",
+      "suggestSubtitle": "Submit an event for review"
     },
     "links": {
       "today": "All events today",
       "tomorrow": "All events tomorrow",
-      "weekend": "All events this weekend"
+      "weekend": "All events this weekend",
+      "allUpcoming": "All upcoming →",
+      "allPosts": "All posts →"
     }
   },
   "specialEvents": {

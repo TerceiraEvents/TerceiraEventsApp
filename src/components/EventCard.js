@@ -127,7 +127,7 @@ export default function EventCard({ event, reminded, reminderUnavailable = false
         </View>
       )}
       <View style={styles.content}>
-        <Text style={styles.name}>{displayName}</Text>
+        {onOpen ? <TouchableOpacity accessibilityRole="link" accessibilityLabel={`${t('discovery.details')}: ${displayName}`} onPress={onOpen} style={{ minHeight: 44 }}><Text style={styles.name}>{displayName}</Text></TouchableOpacity> : <Text style={styles.name}>{displayName}</Text>}
         <View style={styles.actionRow}>
           <TouchableOpacity
             accessibilityRole="button" accessibilityLabel={t('discovery.share')} onPress={shareEvent}

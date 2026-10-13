@@ -1,3 +1,4 @@
+import { changeReminder } from '../utils/changeReminder';
 import Text from '../components/Text';
 import useSpecialFeed from '../hooks/useSpecialFeed';
 import { reminderDate, publishedEventTime } from '../utils/eventTime';
@@ -58,17 +59,13 @@ export default function EventDetailScreen({ route }) {
 
   const toggleReminder = async () => {
     try {
-      if (reminded) {
-        await removeEventReminder(event);
-        const [special, weekly] = await Promise.all([fetchSpecialEvents(), fetchWeeklyEvents()]);
-        await rescheduleAllNotifications(special, weekly);
-      } else {
-        if (!reminderDate(event, (await getSettings()).reminderLeadMinutes)) { Alert.alert(t('discovery.reminderTimeUnknown')); return; }
-        if (!await requestPermissions()) { Alert.alert(t('discovery.reminderPermissionDenied')); return; }
-        await setEventReminder(event);
-        if (!await scheduleOneReminder(event)) { await removeEventReminder(event); Alert.alert(t('discovery.reminderTimeUnknown')); return; }
-      }
-      setReminded(!reminded);
+      setReminded(await changeReminder(event, reminded, {
+        date: reminderDate, settings: getSettings, remove: removeEventReminder, store: setEventReminder,
+        permission: requestPermissions, schedule: scheduleOneReminder,
+        unresolved: () => Alert.alert(t('discovery.reminderTimeUnknown')),
+        denied: () => Alert.alert(t('discovery.reminderPermissionDenied')),
+        reschedule: async () => { const [special, weekly] = await Promise.all([fetchSpecialEvents(), fetchWeeklyEvents()]); await rescheduleAllNotifications(special, weekly); },
+      }));
     } catch { Alert.alert(t('discovery.storageError')); }
   };
 
