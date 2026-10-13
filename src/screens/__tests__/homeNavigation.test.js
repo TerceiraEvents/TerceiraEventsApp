@@ -1,3 +1,4 @@
+import * as identity from '../../utils/eventIdentity.js';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -13,7 +14,7 @@ for (const catalog of [en, pt]) {
     const react = { ...React, useState: (value) => [value, () => {}], useEffect: () => {}, useCallback: (value) => value };
     const native = Object.fromEntries(['ScrollView', 'Text', 'TouchableOpacity', 'View'].map((name) => [name, name]));
     const t = (key) => key.split('.').reduce((value, part) => value[part], catalog);
-    const imports = { '../hooks/useSpecialFeed': () => {}, react, 'react-native': native, '../i18n': { useLocale: () => ({ t }) }, '../utils/eventRoute': {}, '../utils/theme': { colors: {} }, '../utils/navigation': { homeFeedback: () => 'loading' }, '../utils/discovery': { shortcutWindow: () => ({ start: '2026-10-13', end: '2026-10-13' }) }, '../utils/data': { todayAzores: () => '2026-10-13', sortDatedEvents: (events) => events, sortExhibitions: (events) => events }, '../components/EventCard': () => null };
+    const imports = { '../hooks/useSpecialFeed': () => {}, '../utils/eventIdentity': identity, '@react-navigation/native': { useFocusEffect: () => {} }, '../utils/storage': { getSavedEvents: async () => [] }, react, 'react-native': native, '../i18n': { useLocale: () => ({ t }) }, '../utils/eventRoute': {}, '../utils/theme': { colors: {} }, '../utils/navigation': { homeFeedback: () => 'loading' }, '../utils/discovery': { shortcutWindow: () => ({ start: '2026-10-13', end: '2026-10-13' }) }, '../utils/data': { todayAzores: () => '2026-10-13', sortDatedEvents: (events) => events, sortExhibitions: (events) => events }, '../components/EventCard': () => null };
     const code = transformSync(readFileSync(new URL('../HomeScreen.js', import.meta.url), 'utf8'), { babelrc: false, configFile: false, plugins: ['@babel/plugin-transform-react-jsx', '@babel/plugin-transform-modules-commonjs'] }).code;
     const module = { exports: {} };
     new Function('require', 'module', 'exports', code)((name) => { assert.ok(name in imports, name); return imports[name]; }, module, module.exports);
@@ -32,7 +33,7 @@ for (const catalog of [en, pt]) {
   });
 }
 
-test('On View is consumed once, preserves ordinary Back, and reapplies the same repeated shortcut', () => {
+test('Exhibitions is consumed once, preserves ordinary Back, and reapplies the same repeated shortcut', () => {
   const state = [], setters = new Map();
   let cursor = 0, previous, pending;
   const react = { ...React, useState: (value) => {
@@ -47,7 +48,7 @@ test('On View is consumed once, preserves ordinary Back, and reapplies the same 
     previous = deps;
   }, useCallback: (value) => value, useMemo: (compute) => compute() };
   const native = { StyleSheet: { create: (styles) => styles } };
-  const imports = { '../hooks/useSpecialFeed': () => {}, react, 'react-native': native, '../utils/eventRoute': {}, '../utils/theme': { colors: {}, fonts: {} }, '../utils/data': { sortEventsByDate: (events) => events, sortExhibitions: (events) => events, applyEventFilters: (events) => events }, '../utils/discovery': {}, '../utils/tags': {}, '../utils/notifications': {}, '../components/EventCard': () => null, '../components/LoadingView': () => null, '../i18n': { useLocale: () => ({ t: (key) => key }) } };
+  const imports = { '../hooks/useSpecialFeed': () => {}, '../utils/eventIdentity': identity, '@react-navigation/native': { useFocusEffect: () => {} }, '../utils/storage': { getSavedEvents: async () => [] }, react, 'react-native': native, '../utils/eventRoute': {}, '../utils/theme': { colors: {}, fonts: {} }, '../utils/data': { sortEventsByDate: (events) => events, sortExhibitions: (events) => events, applyEventFilters: (events) => events }, '../utils/discovery': {}, '../utils/tags': {}, '../utils/notifications': {}, '../components/EventCard': () => null, '../components/LoadingView': () => null, '../i18n': { useLocale: () => ({ t: (key) => key }) } };
   const code = transformSync(readFileSync(new URL('../SpecialEventsScreen.js', import.meta.url), 'utf8'), { babelrc: false, configFile: false, plugins: ['@babel/plugin-transform-react-jsx', '@babel/plugin-transform-modules-commonjs'] }).code;
   const module = { exports: {} };
   new Function('require', 'module', 'exports', code)((name) => { assert.ok(name in imports, name); return imports[name]; }, module, module.exports);
@@ -76,7 +77,7 @@ test('On View is consumed once, preserves ordinary Back, and reapplies the same 
     render(); render();
     const button = nodes(home).find((node) => node?.type === 'TouchableOpacity' && nodes(node).some((child) => child?.props?.children === label));
     button.props.onPress(); render();
-    assert.ok(state.includes('event') && state.includes('all'), `${label} after On View opens dated upcoming events`);
+    assert.ok(state.includes('event') && state.includes('all'), `${label} after Exhibitions opens dated upcoming events`);
     render();
   }
 });

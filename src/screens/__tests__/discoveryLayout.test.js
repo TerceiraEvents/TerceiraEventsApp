@@ -1,3 +1,4 @@
+import * as identity from '../../utils/eventIdentity.js';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -15,7 +16,7 @@ function renderDiscovery() {
   const react = { ...React, useState: (value) => [stateIndex++ === 2 ? false : value, () => {}], useEffect: () => {}, useCallback: (fn) => fn, useMemo: (fn) => fn() };
   const native = Object.fromEntries(['View', 'Text', 'FlatList', 'TouchableOpacity', 'RefreshControl', 'TextInput', 'Modal', 'Pressable', 'ScrollView'].map((name) => [name, name]));
   native.StyleSheet = { create: (styles) => styles };
-  const imports = { '../hooks/useSpecialFeed': () => {}, react, 'react-native': native, '../utils/data': data, '../utils/discovery': discovery, '../utils/tags': tags, '../utils/theme': theme, '../i18n': { useLocale: () => ({ t: (key) => key }) } };
+  const imports = { '../hooks/useSpecialFeed': () => {}, '../utils/eventIdentity': identity, '@react-navigation/native': { useFocusEffect: () => {} }, '../utils/storage': { getSavedEvents: async () => [] }, react, 'react-native': native, '../utils/data': data, '../utils/discovery': discovery, '../utils/tags': tags, '../utils/theme': theme, '../i18n': { useLocale: () => ({ t: (key) => key }) } };
   const code = transformSync(readFileSync(new URL('../SpecialEventsScreen.js', import.meta.url), 'utf8'), { babelrc: false, configFile: false, plugins: ['@babel/plugin-transform-react-jsx', '@babel/plugin-transform-modules-commonjs'] }).code;
   const module = { exports: {} };
   new Function('require', 'module', 'exports', code)((name) => imports[name] || {}, module, module.exports);
@@ -62,8 +63,8 @@ test('actual primary tab options reserve large-label space without disabling sca
     const channels = inactive.slice(1).match(/../g).map((value) => parseInt(value, 16) / 255).map((value) => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4);
     const luminance = channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
     assert.ok(1.05 / (luminance + 0.05) >= 4.5, 'inactive normal-size tab labels need 4.5:1 contrast on white');
-    const label = options.tabBarLabel({ children: 'My Plans', color: 'green' });
-    assert.equal(label.props.children, 'My Plans');
+    const label = options.tabBarLabel({ children: 'Events', color: 'green' });
+    assert.equal(label.props.children, 'Events');
     assert.equal(label.props.numberOfLines, undefined);
     assert.notEqual(label.props.allowFontScaling, false);
   }

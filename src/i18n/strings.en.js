@@ -1,19 +1,25 @@
 export default
 {
   "discovery": {
-    "refreshing": "Showing saved event data while checking the current publication.",
+    "savedFiltered": "No saved events match these filters.",
+    "result": "result",
+    "reset": "Clear filters",
+    "otherFilters": "Other filters also apply. Use Archive for ended saved events.",
+    "loadingSaved": "Reading saved events…",
+
+    "localityPartial": "Locality coverage is partial. Choose All places to include events without confirmed locality.",
+    "savedUnknown": "Saved events could not be read. Retry before changing them.",
+    "refreshing": "Showing the available event list while checking for updates.",
     "cacheTimeUnknown": "The last successful fetch time of these cached records is unknown.",
     "artworkUnavailable": "Artwork unavailable. Event information remains available.",
     "artworkCredit": "Artwork credit:",
     "artworkSource": "Artwork source",
 
-    "localityPartial": "Locality coverage is partial. Choose All places to include events without confirmed locality.",
-    "savedUnknown": "Saved state could not be read. Retry before changing your plans.",
     "reminderStoredUnavailable": "This stored reminder cannot be scheduled because the published time is unresolved. Remove this request or check with the organizer.",
     "removeUnavailableReminder": "Remove unavailable reminder request",
     "reminderTimeUnknown": "A future, unambiguous published time is required to set this reminder. No reminder was set.",
-    "reminderPermissionDenied": "Notifications are not allowed. No reminder was set; your saved plans remain available.",
-    "reminderUnknown": "Reminder state could not be read. Your event and plans remain available.",
+    "reminderPermissionDenied": "Notifications are not allowed. No reminder was set; your saved events remain available.",
+    "reminderUnknown": "Reminder state could not be read. Your event and saved events remain available.",
     "detailUncertain": "This event is not in the available cache. Retry when connected to check the published record.",
     "partial": "Some published records cannot be displayed (%{count}). Available events remain listed.",
     "resources": "Resources",
@@ -24,7 +30,6 @@ export default
     "praia": "Praia",
     "other": "Other localities",
     "allPlaces": "All places",
-    "reset": "Reset filters",
     "source": "Published source",
     "booking": "Booking",
     "cached": "Using cached data. The network request failed.",
@@ -32,28 +37,28 @@ export default
     "retry": "Retry",
     "fetched": "Device fetched data at",
     "results": "results",
-    "explore": "Explore",
-    "saved": "My Plans",
+    "explore": "Events",
+    "saved": "Saved events",
     "more": "More",
     "details": "Event details",
     "search": "Find events",
     "today": "Today",
     "tomorrow": "Tomorrow",
     "weekend": "This weekend",
-    "onView": "On View",
-    "dated": "Dated events",
+    "onView": "Exhibitions",
+    "dated": "Events",
     "weekly": "Weekly regulars - published recurring schedules",
     "loading": "Loading events",
     "emptyDate": "No published events for these dates. Browse upcoming events below.",
     "timeUnknown": "Times: see details or check with organizer",
     "priceUnknown": "Admission: see details or check with organizer",
-    "save": "Save to My Plans",
-    "unsave": "Remove from My Plans",
+    "save": "Save event",
+    "unsave": "Unsave event",
     "savedEmpty": "No saved events yet. Save an event from its details.",
-    "localOnly": "Saved on this device only. Saving does not enable reminders.",
+    "localOnly": "Events you save on this device. They do not sync across devices. Saving does not enable reminders.",
     "unavailable": "This event is unavailable in the current dataset. Any displayed information is a saved snapshot.",
     "ended": "This event has ended.",
-    "storageError": "Could not read or save your plans. Please try again.",
+    "storageError": "Could not read or save your events. Please try again.",
     "share": "Share event",
     "calendar": "Add to calendar",
     "report": "Report event",
@@ -66,7 +71,7 @@ export default
   "tabs": {
     "home": "Home",
     "weekly": "Weekly",
-    "venues": "Venues",
+    "venues": "Places",
     "resources": "More",
     "settings": "Settings",
     "suggestEvent": "Suggest Event",
@@ -82,7 +87,7 @@ export default
     }
   },
   "specialEvents": {
-    "title": "Special Events",
+    "title": "Events",
     "selectDateRange": "Select date range",
     "filterByTag": "Filter by tag",
     "allTags": "🏷️ All tags",
@@ -137,7 +142,7 @@ export default
     "stackTitle": "Post"
   },
   "venues": {
-    "title": "Venues",
+    "title": "Places",
     "intro": "Bars, restaurants, cultural spaces, and other venues hosting events in Angra do Heroísmo.",
     "links": {
       "website": "Website",
@@ -148,7 +153,7 @@ export default
     }
   },
   "resources": {
-    "title": "Other Resources",
+    "title": "Resources",
     "intro": "We're not the only game in town. Here are other great ways to find out what's happening on Terceira.",
     "appStore": "Download on App Store",
     "playStore": "Download on Google Play",
@@ -181,7 +186,7 @@ export default
       "section": "Event Reminders",
       "leadTime": "Remind Me Before Event",
       "leadTimeDescription": "How long before an event to send the reminder notification",
-      "info": "Tap the bell icon on any special event to set a reminder. You'll get a notification before the event starts."
+      "info": "Tap the bell to set a reminder. The event must have a future start time."
     },
     "notifications": {
     "reminderChannel": "Event reminders",
