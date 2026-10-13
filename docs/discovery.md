@@ -30,3 +30,12 @@ Explore filters, search and results share one scroll surface. `tabBarHeight` res
 
 Saved state on detail pages remains unknown until storage is read successfully. Read failures expose Retry and disable the Saved toggle; event information, calendar and independent reminder state remain available.
 Detail cards place their full-width heading above a wrapping action row. The date badge grows with its text; calendar, share, report and reminder actions keep their own accessible buttons.
+
+
+## Cache-ready publication updates
+
+`fetchSpecialEvents(forceRefresh)` reads and validates installed YAML cache before waiting for publication. A non-forced cold load returns usable stored records promptly, with `status: stored`, unknown legacy fetch time and neutral publication-checking feedback. It starts one background request; `subscribeSpecialEvents(listener)` delivers cache-ready and settled records plus feed state, and returns an unsubscribe function. `useSpecialFeed(onUpdate)` keeps a mounted consumer's callback current and releases the subscription when it unmounts. Home, Events and exact details consume these updates; pending publication does not establish an empty date or a missing event.
+
+Forced refresh waits for the current request; concurrent forced/default cold callers coalesce into one disk read and one request. Known successful memory fetch time survives failure. Valid empty cache is distinct from unusable malformed/all-invalid cache; invalid bytes remain intact unless a valid publication replaces them. Cache clearing isolates later requests from earlier in-flight responses. Publication freshness is not organizer verification and no arbitrary stale threshold is implied.
+
+Production deferred-network tests cover prompt cold cache, force/coalescing, background success/failure, unknown-age feedback, absent identity while checking, malformed/no cache and generation isolation. Component tests exercise cache-ready updates on the actual Home/Events/detail JSX and hook callback/unsubscription behavior. Native slow/offline/error runs remain separate requirements; an exported bundle does not establish runtime or assistive-technology conformance.

@@ -1,6 +1,7 @@
 export default
 {
   "discovery": {
+    "refreshing": "A mostrar dados guardados enquanto se consulta a publicação.",
     "cacheTimeUnknown": "A hora da última obtenção destes dados guardados é desconhecida.",
     "localityPartial": "Nem todos os eventos têm localidade confirmada. Escolha Todos os locais para incluir os restantes.",
     "savedUnknown": "Não foi possível ler os planos guardados. Tente novamente antes de os alterar.",

@@ -1,6 +1,7 @@
 export default
 {
   "discovery": {
+    "refreshing": "Showing saved event data while checking the current publication.",
     "cacheTimeUnknown": "The last successful fetch time of these cached records is unknown.",
     "localityPartial": "Locality coverage is partial. Choose All places to include events without confirmed locality.",
     "savedUnknown": "Saved state could not be read. Retry before changing your plans.",
