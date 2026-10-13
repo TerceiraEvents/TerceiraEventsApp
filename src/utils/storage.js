@@ -73,7 +73,7 @@ export async function isEventReminded(event) {
 
 // Clean up reminders for events that have already passed
 export async function cleanupPastReminders() {
-  const reminders = await getRemindedEvents();
+  const reminders = await getRemindedEventsStrict();
   const today = todayAzores();
   const cleaned = new Set();
   for (const key of reminders) {

@@ -9,3 +9,5 @@ Single-event and batch reminders use the same local channel. Calendar drafts kee
 A stored reminder request with an unresolved published time appears unavailable. The detail screen explains why it cannot be scheduled and offers an explicit removal action. The stored request remains present until the user removes it.
 
 Reminder controls announce “Set reminder” or “Cancel reminder” and expose the selected state only for an active request with a resolvable time. An unavailable stored request announces its explicit removal action and is not selected.
+
+Reminder rescheduling reads and validates the stored reminder collection before writing the island-day cleanup or canceling pending requests. Malformed collections and storage read/write failures leave pending requests intact. Event details report unavailable reminder state with Retry when the strict read fails.

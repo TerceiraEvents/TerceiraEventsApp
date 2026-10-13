@@ -3,7 +3,6 @@ import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 import {
   getSettings,
-  getRemindedEvents,
   makeEventKey,
   cleanupPastReminders,
 } from './storage';
@@ -40,14 +39,10 @@ export async function requestPermissions() {
   return status === 'granted';
 }
 
-// Cancel all scheduled notifications and reschedule from scratch.
-// This is the safest approach when the calendar changes frequently.
 export async function rescheduleAllNotifications(specialEvents, weeklyEvents) {
-  await Notifications.cancelAllScheduledNotificationsAsync();
-  await cleanupPastReminders();
-
+  const remindedKeys = await cleanupPastReminders();
   const settings = await getSettings();
-  const remindedKeys = await getRemindedEvents();
+  await Notifications.cancelAllScheduledNotificationsAsync();
 
   if (settings.dailySummaryEnabled) {
     await scheduleDailySummaries(specialEvents, weeklyEvents, settings);
