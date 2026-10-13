@@ -11,7 +11,7 @@ const { transformSync } = require('@babel/core');
 const exact = 'terceiraevents://events?id=c0165462-a730-4823-999d-aeb71d9f1a69';
 
 function appLinking(nativeLinking) {
-  const imports = { '../components/Text': 'Text', './Text': 'Text', './src/components/Text': { __esModule: true, default: 'Text', TextProvider: 'TextProvider' },
+  const imports = { './fontHeader': { fontHeaderOptions: (options) => options }, './src/navigation/fontHeader': { fontHeaderOptions: (options) => options }, '../components/TextInput': 'TextInput', './TextInput': 'TextInput', '../utils/nativeFontMetrics': { hasNativeFontMetrics: false }, '../components/markdownRules': { markdownRules: {} }, '../components/Text': 'Text', './Text': 'Text', './src/components/Text': { __esModule: true, default: 'Text', TextProvider: 'TextProvider' },
     react: { ...React, useRef: () => ({ current: null }), useState: (value) => [value, () => {}], useEffect() {} },
     '@react-navigation/native': { NavigationContainer: 'NavigationContainer', getStateFromPath, getPathFromState },
     '@react-navigation/native-stack': { createNativeStackNavigator: () => ({ Navigator: 'Stack', Screen: 'Screen' }) },

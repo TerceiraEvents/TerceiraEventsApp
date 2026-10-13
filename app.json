@@ -61,7 +61,8 @@
           ]
         }
       ],
-      "expo-localization"
+      "expo-localization",
+      "./plugins/withFontScale"
     ],
     "owner": "chrisrackauckas",
     "locales": {

@@ -28,9 +28,9 @@ for (const catalog of [en, pt]) test(`actual primary tabs have explicit localize
 });
 
 test('actual tab glyphs keep their fixed icon budget while labels retain uncapped scaling', () => {
-  const names = ['React', 'useLocale', 'useWindowDimensions', 'useSafeAreaInsets', 'primaryRoutes', 'Tab', 'HomeScreen', 'SpecialEventsScreen', 'WeeklyScreen', 'VenuesScreen', 'SavedScreen', 'MoreScreen', 'Text', 'headerOptions', 'colors', 'tabBarHeight'];
+  const names = ['React', 'useLocale', 'useWindowDimensions', 'useSafeAreaInsets', 'primaryRoutes', 'Tab', 'HomeScreen', 'SpecialEventsScreen', 'WeeklyScreen', 'VenuesScreen', 'SavedScreen', 'MoreScreen', 'Text', 'fontHeaderOptions', 'headerOptions', 'colors', 'tabBarHeight'];
   for (const fontScale of [1, 2.353, 3]) for (const bottom of [0, 34]) {
-    const tree = new Function(...names, code + '\nreturn PrimaryTabs();')(React, () => ({ t: (key) => key }), () => ({ fontScale, width: 402 }), () => ({ bottom }), primaryRoutes, { Navigator: 'Navigator', Screen: 'Screen' }, 'Home', 'Events', 'Weekly', 'Venues', 'Saved', 'More', 'Text', () => ({}), {}, tabBarHeight);
+    const tree = new Function(...names, code + '\nreturn PrimaryTabs();')(React, () => ({ t: (key) => key }), () => ({ fontScale, width: 402 }), () => ({ bottom }), primaryRoutes, { Navigator: 'Navigator', Screen: 'Screen' }, 'Home', 'Events', 'Weekly', 'Venues', 'Saved', 'More', 'Text', (options) => options, () => ({}), {}, tabBarHeight);
     for (const route of Object.values(primaryRoutes)) {
       const options = tree.props.screenOptions({ route: { name: route } });
       const icon = options.tabBarIcon({ color: 'black', size: 24 });

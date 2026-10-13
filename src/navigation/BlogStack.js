@@ -1,3 +1,4 @@
+import { fontHeaderOptions } from './fontHeader';
 import Text from '../components/Text';
 import React from 'react';
 import { TouchableOpacity } from 'react-native';
@@ -16,7 +17,7 @@ export default function BlogStack({ navigation }) {
   const { t, locale } = useLocale();
   return (
     <Stack.Navigator
-      screenOptions={({ route }) => headerOptions(route.name)}
+      screenOptions={({ route }) => fontHeaderOptions(headerOptions(route.name))}
     >
       <Stack.Screen
         name={blogRoutes.index}

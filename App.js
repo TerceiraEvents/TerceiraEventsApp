@@ -1,3 +1,4 @@
+import { fontHeaderOptions } from './src/navigation/fontHeader';
 import Text, { TextProvider } from './src/components/Text';
 import React, { useEffect, useRef, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
@@ -47,7 +48,7 @@ function PrimaryTabs() {
   };
   return (
     <Tab.Navigator screenOptions={({ route }) => ({
-      ...headerOptions(route.name),
+      ...fontHeaderOptions(headerOptions(route.name)),
       tabBarActiveTintColor: colors.primary,
       tabBarInactiveTintColor: colors.textMuted,
       tabBarStyle: { height: tabBarHeight(fontScale, bottom) },
@@ -126,7 +127,7 @@ function AppShell() {
       onStateChange={updateHeader}
       onReady={updateHeader}>
       <StatusBar style={statusBarStyle} />
-      <Stack.Navigator screenOptions={({ route }) => headerOptions(route.name)}>
+      <Stack.Navigator screenOptions={({ route }) => fontHeaderOptions(headerOptions(route.name))}>
         <Stack.Screen name={rootRoutes.main} component={PrimaryTabs} options={{ headerShown: false }} />
         <Stack.Screen name={rootRoutes.detail} component={EventDetailScreen} options={{ title: t('discovery.details') }} />
         <Stack.Screen name={rootRoutes.weekly} component={WeeklyRouteAlias} options={{ headerShown: false }} />
