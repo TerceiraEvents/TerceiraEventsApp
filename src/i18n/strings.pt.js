@@ -57,7 +57,8 @@ export default
     "share": "Partilhar evento",
     "calendar": "Adicionar ao calendário",
     "report": "Reportar evento",
-    "reminder": "Alterar lembrete"
+    "setReminder": "Definir lembrete",
+    "cancelReminder": "Cancelar lembrete"
   },
   "app": {
     "name": "Eventos da Terceira"

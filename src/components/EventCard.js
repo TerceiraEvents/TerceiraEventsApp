@@ -153,7 +153,7 @@ export default function EventCard({ event, reminded, reminderUnavailable = false
           </TouchableOpacity>
           {onToggleReminder && (
             <TouchableOpacity
-              accessibilityRole="button" accessibilityLabel={t(reminderUnavailable ? 'discovery.removeUnavailableReminder' : 'discovery.reminder')} onPress={() => onToggleReminder(event)}
+              accessibilityRole="button" accessibilityLabel={t(reminderUnavailable ? 'discovery.removeUnavailableReminder' : reminded ? 'discovery.cancelReminder' : 'discovery.setReminder')} accessibilityState={{ selected: reminded === true && !reminderUnavailable }} onPress={() => onToggleReminder(event)}
               style={[styles.bellButton, reminded && !reminderUnavailable && styles.bellActive]}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
