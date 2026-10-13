@@ -114,6 +114,7 @@ export default
     }
   },
   "blog": {
+    "back": "Back",
     "title": "Blog",
     "intro": "News, guides, and stories about life on Terceira.",
     "readMore": "Read more →",

@@ -114,6 +114,7 @@ export default
     }
   },
   "blog": {
+    "back": "Voltar",
     "title": "Blog",
     "intro": "Notícias, guias e histórias sobre a vida na Terceira.",
     "readMore": "Ler mais →",
