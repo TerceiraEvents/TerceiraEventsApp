@@ -1,4 +1,4 @@
-export const primaryRoutes = { home: 'Home', events: 'Events', venues: 'Venues', more: 'More' };
+export const primaryRoutes = { home: 'Home', events: 'Events', weekly: 'Weekly', venues: 'Venues', more: 'More' };
 export const blogRoutes = { index: 'BlogIndex', post: 'Post' };
 export const rootRoutes = { main: 'Main', detail: 'EventDetail', weekly: 'Weekly', blog: 'Blog', resources: 'Resources', settings: 'Settings', suggest: 'SuggestEvent' };
 

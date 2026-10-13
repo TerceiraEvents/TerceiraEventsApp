@@ -46,3 +46,14 @@ test('consumed Saved intent does not serialize an undefined selection as saved=0
   const state = { routes: [{ name: 'Main', state: { routes: [{ name: 'Events', params: { saved: undefined, range: undefined } }] } }] };
   assert(!linking.getPathFromState(state, linking.config).includes('saved='));
 });
+
+
+test('Weekly links open the primary tab and serialize one canonical URL', () => {
+  for (const path of ['weekly/', 'Weekly', 'pt/weekly/', 'pt/Weekly']) {
+    const state = linking.getStateFromPath(path, linking.config);
+    assert.equal(state.routes.length, 1);
+    assert.equal(state.routes[0].name, 'Main');
+    assert.equal(state.routes[0].state.routes[0].name, 'Weekly');
+    assert.equal(linking.getPathFromState(state, linking.config), '/weekly');
+  }
+});

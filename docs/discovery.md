@@ -1,6 +1,6 @@
 # Event discovery
 
-Primary destinations are Home, Events, Places, and More. More provides Blog, Resources, Settings, and Suggest an Event. Events separates dated events and Exhibitions and provides access to weekly published schedules.
+Primary destinations are Home, Events, Weekly, Places, and More. More provides Blog, Resources, Settings, and Suggest an Event. Events separates dated events and Exhibitions. Weekly provides published recurring schedules with the primary tabs visible. The Home Weekly shortcut, Events weekly action, `/weekly/` and `/pt/weekly/` links, and root Weekly navigation entries open this primary destination.
 
 The shared dataset's explicit `id` identifies an event. Website links use `https://eventosterceira.pt/events/?id=<id>`; Portuguese links use `/pt/events/?id=<id>`. The application accepts these routes and `terceiraevents://events?id=<id>`. Universal-link association files and native platform association configuration are required for operating-system delivery of HTTPS links. The custom scheme works with builds containing the declared scheme. An ID absent from the dataset opens an unavailable state.
 

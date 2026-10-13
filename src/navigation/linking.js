@@ -2,7 +2,7 @@ export function createLinking({ prefixes, parsePath, serializeState }) {
   const config = {
     screens: {
       EventDetail: 'events/',
-      Main: { screens: { Home: '', Events: { path: 'special/', parse: { saved: (value) => value === '1' || value === 'true' }, stringify: { saved: (value) => value ? '1' : '0' } } } },
+      Main: { screens: { Home: '', Weekly: 'weekly/', Events: { path: 'special/', parse: { saved: (value) => value === '1' || value === 'true' }, stringify: { saved: (value) => value ? '1' : '0' } } } },
     },
   };
   function cleanState(state) {
@@ -18,6 +18,9 @@ export function createLinking({ prefixes, parsePath, serializeState }) {
   }
   function getStateFromPath(path, options) {
     const pathname = path.split(/[?#]/, 1)[0].replace(/^\//, '');
+    if (/^(?:pt\/)?weekly\/?$/i.test(pathname)) {
+      return { routes: [{ name: 'Main', state: { routes: [{ name: 'Weekly' }] } }] };
+    }
     if (/^(?:pt\/)?saved\/?$/.test(pathname)) {
       return { routes: [{ name: 'Main', state: { routes: [{ name: 'Events', params: { saved: true, range: 'all' } }] } }] };
     }

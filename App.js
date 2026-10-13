@@ -20,6 +20,7 @@ import { LocaleProvider, t, useLocale } from './src/i18n';
 
 import HomeScreen from './src/screens/HomeScreen';
 import WeeklyScreen from './src/screens/WeeklyScreen';
+import WeeklyRouteAlias from './src/navigation/WeeklyRouteAlias';
 import SpecialEventsScreen from './src/screens/SpecialEventsScreen';
 import VenuesScreen from './src/screens/VenuesScreen';
 import ResourcesScreen from './src/screens/ResourcesScreen';
@@ -37,6 +38,7 @@ function PrimaryTabs() {
   const icons = {
     [primaryRoutes.home]: '⌂',
     [primaryRoutes.events]: '◇',
+    [primaryRoutes.weekly]: '▦',
     [primaryRoutes.venues]: '⌖',
     [primaryRoutes.more]: '☰',
   };
@@ -52,6 +54,7 @@ function PrimaryTabs() {
     })}>
       <Tab.Screen name={primaryRoutes.home} component={HomeScreen} options={{ title: t('tabs.home'), tabBarAccessibilityLabel: t('tabs.home') }} />
       <Tab.Screen name={primaryRoutes.events} component={SpecialEventsScreen} options={{ title: t('discovery.explore'), tabBarAccessibilityLabel: t('discovery.explore') }} />
+      <Tab.Screen name={primaryRoutes.weekly} component={WeeklyScreen} options={{ title: t('tabs.weekly'), tabBarAccessibilityLabel: t('tabs.weekly') }} />
       <Tab.Screen name={primaryRoutes.venues} component={VenuesScreen} options={{ title: t('tabs.venues'), tabBarAccessibilityLabel: t('tabs.venues') }} />
       <Tab.Screen name={primaryRoutes.more} component={MoreScreen} options={{ title: t('discovery.more'), tabBarAccessibilityLabel: t('discovery.more') }} />
     </Tab.Navigator>
@@ -120,7 +123,7 @@ function AppShell() {
       <Stack.Navigator screenOptions={({ route }) => headerOptions(route.name)}>
         <Stack.Screen name={rootRoutes.main} component={PrimaryTabs} options={{ headerShown: false }} />
         <Stack.Screen name={rootRoutes.detail} component={EventDetailScreen} options={{ title: t('discovery.details') }} />
-        <Stack.Screen name={rootRoutes.weekly} component={WeeklyScreen} options={{ title: t('tabs.weekly') }} />
+        <Stack.Screen name={rootRoutes.weekly} component={WeeklyRouteAlias} options={{ headerShown: false }} />
         <Stack.Screen name={rootRoutes.blog} component={BlogStack} options={{ headerShown: false }} />
         <Stack.Screen name={rootRoutes.resources} component={ResourcesScreen} options={{ title: t('discovery.resources') }} />
         <Stack.Screen name={rootRoutes.settings} component={SettingsScreen} options={{ title: t('tabs.settings') }} />
