@@ -3,6 +3,10 @@ export default
   "discovery": {
     "refreshing": "Showing saved event data while checking the current publication.",
     "cacheTimeUnknown": "The last successful fetch time of these cached records is unknown.",
+    "artworkUnavailable": "Artwork unavailable. Event information remains available.",
+    "artworkCredit": "Artwork credit:",
+    "artworkSource": "Artwork source",
+
     "localityPartial": "Locality coverage is partial. Choose All places to include events without confirmed locality.",
     "savedUnknown": "Saved state could not be read. Retry before changing your plans.",
     "reminderUnknown": "Reminder state could not be read. Your event and plans remain available.",
@@ -111,6 +115,7 @@ export default
     }
   },
   "blog": {
+    "back": "Back",
     "title": "Blog",
     "intro": "News, guides, and stories about life on Terceira.",
     "readMore": "Read more →",
