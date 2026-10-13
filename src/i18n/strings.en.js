@@ -142,7 +142,7 @@ export default
     "stackTitle": "Post"
   },
   "venues": {
-    "title": "Venues",
+    "title": "Places",
     "intro": "Bars, restaurants, cultural spaces, and other venues hosting events in Angra do Heroísmo.",
     "links": {
       "website": "Website",
@@ -153,7 +153,7 @@ export default
     }
   },
   "resources": {
-    "title": "Other Resources",
+    "title": "Resources",
     "intro": "We're not the only game in town. Here are other great ways to find out what's happening on Terceira.",
     "appStore": "Download on App Store",
     "playStore": "Download on Google Play",

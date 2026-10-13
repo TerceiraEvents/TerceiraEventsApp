@@ -7,7 +7,7 @@ Built with [React Native](https://reactnative.dev/) and [Expo](https://expo.dev/
 ## Features
 
 - **Weekly Events** — Recurring entertainment organized by day of the week
-- **Special Events** — This week's events, full upcoming calendar, and archive
+- **Events** — This week's events, full upcoming calendar, and archive
 - **Venues** — Directory of 12 venues with addresses, maps, hours, and contact info
 - **Resources** — External event sources, Instagram accounts, and Facebook pages to follow
 - **Pull to refresh** — Fetches the latest event data from GitHub

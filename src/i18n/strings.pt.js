@@ -153,7 +153,7 @@ export default
     }
   },
   "resources": {
-    "title": "Outros Recursos",
+    "title": "Recursos",
     "intro": "Não somos os únicos por cá. Aqui ficam outras boas formas de saber o que se passa na Terceira.",
     "appStore": "Descarregar na App Store",
     "playStore": "Descarregar no Google Play",
