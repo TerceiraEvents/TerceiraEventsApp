@@ -13,8 +13,8 @@ export default
     "artworkSource": "Fonte do cartaz",
 
     "reminderTimeUnknown": "É necessária uma hora publicada futura e sem ambiguidade para definir este lembrete. Não foi definido nenhum lembrete.",
-    "reminderPermissionDenied": "As notificações não estão autorizadas. Não foi definido nenhum lembrete; os planos guardados continuam disponíveis.",
-    "reminderUnknown": "Não foi possível ler o estado do lembrete. O evento e os planos continuam disponíveis.",
+    "reminderPermissionDenied": "As notificações não estão autorizadas. Não foi definido nenhum lembrete; os eventos guardados continuam disponíveis.",
+    "reminderUnknown": "Não foi possível ler o estado do lembrete. O evento e os eventos guardados continuam disponíveis.",
     "detailUncertain": "Este evento não consta dos dados guardados disponíveis. Tente novamente com ligação para consultar a publicação.",
     "partial": "Alguns registos publicados não podem ser apresentados (%{count}). Os eventos disponíveis continuam listados.",
     "resources": "Recursos",
