@@ -417,6 +417,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   searchInput: {
+    minHeight: 44,
     backgroundColor: colors.card,
     borderRadius: 10,
     borderWidth: 1,
@@ -428,6 +429,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   rangeDropdown: {
+    minHeight: 44,
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
@@ -451,6 +453,7 @@ const styles = StyleSheet.create({
     color: colors.white,
   },
   tagDropdown: {
+    minHeight: 44,
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',

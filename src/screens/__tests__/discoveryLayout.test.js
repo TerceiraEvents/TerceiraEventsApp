@@ -96,3 +96,14 @@ test('expanded filters have one canonical Clear that retains date and catalog', 
   assert.equal(state[4], 'today'); assert.equal(state[8], 'exhibition');
   assert.deepEqual([state[5], state[6], state[7], state[9], state[13], state[14]], ['', false, false, false, '', '']);
 });
+
+test('date, tag and editable search reserve at least 44 points without limiting large text', () => {
+  const header = children(children(renderDiscovery()).find(node => node.type === 'FlatList').props.ListHeaderComponent);
+  const controls = header.filter(node => ['specialEvents.selectDateRange', 'specialEvents.filterByTag'].includes(node.props?.accessibilityLabel) || node.type === 'TextInput');
+  assert.equal(controls.length, 3);
+  for (const control of controls) {
+    const style = Object.assign({}, ...[control.props.style].flat());
+    assert.ok(style.minHeight >= 44, `${control.type} target must reserve 44 points`);
+    assert.equal(style.height, undefined, 'large text can grow beyond its minimum');
+  }
+});
