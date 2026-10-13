@@ -87,7 +87,7 @@ export default
     }
   },
   "specialEvents": {
-    "title": "Special Events",
+    "title": "Events",
     "selectDateRange": "Select date range",
     "filterByTag": "Filter by tag",
     "allTags": "🏷️ All tags",

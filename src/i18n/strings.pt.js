@@ -87,7 +87,7 @@ export default
     }
   },
   "specialEvents": {
-    "title": "Eventos Especiais",
+    "title": "Eventos",
     "selectDateRange": "Selecionar período",
     "filterByTag": "Filtrar por etiqueta",
     "allTags": "🏷️ Todas as etiquetas",
