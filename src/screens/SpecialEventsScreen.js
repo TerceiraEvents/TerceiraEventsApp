@@ -1,3 +1,4 @@
+import useAzoresDay from '../hooks/useAzoresDay';
 import { useFocusEffect } from '@react-navigation/native';
 import { reconcileSaved } from '../utils/eventIdentity';
 import { getSavedEvents } from '../utils/storage';
@@ -50,6 +51,7 @@ const RANGE_BY_KEY = Object.fromEntries(RANGE_DEFS.map((r) => [r.key, r]));
 
 export default function SpecialEventsScreen({ navigation, route }) {
   const { t } = useLocale();
+  const azoresDay = useAzoresDay();
   const [events, setEvents] = useState([]);
   const [feedState, setFeedState] = useState({ status: 'loading' });
   const [loading, setLoading] = useState(true);
@@ -130,11 +132,11 @@ export default function SpecialEventsScreen({ navigation, route }) {
   const sortedEvents = useMemo(() => sortEventsByDate(savedOnly ? savedItems.map((entry) => entry.event).filter(Boolean) : events), [events, savedOnly, savedItems]);
 
   const filtered = useMemo(() => {
-    let base = sortedEvents.filter((e) => isInRange(e, range) && eventKind(e) === kind);
+    let base = sortedEvents.filter((e) => isInRange(e, range, azoresDay) && eventKind(e) === kind);
     if (kind === 'exhibition') base = sortExhibitions(base);
     if (range === 'archive') base = base.reverse();
     return applyEventFilters(base, { search, selectedTag }).filter((event) => matchesDiscoveryOptions(event, { locality, free, family, savedOnly, savedIDs }));
-  }, [sortedEvents, range, search, selectedTag, kind, locality, free, family, savedOnly, savedIDs]);
+  }, [sortedEvents, range, search, selectedTag, kind, locality, free, family, savedOnly, savedIDs, azoresDay]);
 
   if (loading) return <LoadingView />;
 

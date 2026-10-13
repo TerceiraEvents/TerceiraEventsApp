@@ -1,9 +1,10 @@
+import useAzoresDay from '../hooks/useAzoresDay';
 import useSpecialFeed from '../hooks/useSpecialFeed';
 import { eventDetailParams } from '../utils/eventRoute';
 import React, { useCallback, useEffect, useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { useLocale } from '../i18n';
-import { fetchSpecialEvents, getSpecialFeedState, eventKind, eventDateRange, sortDatedEvents, sortExhibitions, isActive, todayAzores } from '../utils/data';
+import { fetchSpecialEvents, getSpecialFeedState, eventKind, eventDateRange, sortDatedEvents, sortExhibitions, isActive } from '../utils/data';
 import { homeFeedback } from '../utils/navigation';
 import { shortcutWindow } from '../utils/discovery';
 import EventCard from '../components/EventCard';
@@ -11,6 +12,7 @@ import { colors } from '../utils/theme';
 
 export default function HomeScreen({ navigation }) {
   const { t } = useLocale();
+  const azoresDay = useAzoresDay();
   const [events, setEvents] = useState([]);
   const [selection, setSelection] = useState('today');
   const [loading, setLoading] = useState(true);
@@ -22,11 +24,11 @@ export default function HomeScreen({ navigation }) {
     finally { setLoading(false); }
   }, []);
   useEffect(() => { load(); }, [load]);
-  const window = shortcutWindow(selection, todayAzores());
-  const dated = sortDatedEvents(events.filter((event) => eventKind(event) === 'event' && isActive(event)));
+  const window = shortcutWindow(selection, azoresDay);
+  const dated = sortDatedEvents(events.filter((event) => eventKind(event) === 'event' && isActive(event, azoresDay)));
   const selected = dated.filter((event) => { const range = eventDateRange(event); return range && range.start <= window.end && range.end >= window.start; });
   const feedback = homeFeedback(feedState.status, selected.length, loading);
-  const onView = sortExhibitions(events.filter((event) => eventKind(event) === 'exhibition' && isActive(event))).slice(0, 3);
+  const onView = sortExhibitions(events.filter((event) => eventKind(event) === 'exhibition' && isActive(event, azoresDay))).slice(0, 3);
   const openCatalog = (kind, range) => navigation.navigate('Events', { kind, range, resetFilters: true });
   const open = (event) => navigation.navigate('EventDetail', eventDetailParams(event));
   return <ScrollView style={{ backgroundColor: colors.background }} contentContainerStyle={{ paddingVertical: 16 }}>

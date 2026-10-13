@@ -21,7 +21,7 @@ function render(screen, catalog) {
     'react-native': native, '@react-navigation/native': { useFocusEffect: () => {} },
     '../i18n': { useLocale: () => ({ locale: catalog === en ? 'en' : 'pt', t: key => key.split('.').reduce((value, part) => value?.[part], catalog) || key }), LOCALE_CHOICES: [] },
     '../utils/data': { ...data, venues: [], resources: [], instagramAccounts: [], facebookPages: [] }, '../utils/theme': theme, '../utils/tags': tags, '../utils/discovery': discovery, '../utils/navigation': navigation, '../utils/eventIdentity': identity,
-    '../hooks/useSpecialFeed': () => {}, '../utils/storage': {}, '../utils/notifications': {}, '../utils/posts': {}, '../utils/eventRoute': {}, '../utils/i18nFields': {},
+    '../hooks/useAzoresDay': () => '2026-10-13', '../hooks/useSpecialFeed': () => {}, '../utils/storage': {}, '../utils/notifications': {}, '../utils/posts': {}, '../utils/eventRoute': {}, '../utils/i18nFields': {},
   };
   const code = transformSync(readFileSync(new URL(`../${screen}.js`, import.meta.url), 'utf8'), { babelrc: false, configFile: false, plugins: ['@babel/plugin-transform-react-jsx', '@babel/plugin-transform-modules-commonjs'] }).code;
   const module = { exports: {} }; new Function('require', 'module', 'exports', code)(name => imports[name] || 'Component', module, module.exports);

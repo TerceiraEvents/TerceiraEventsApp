@@ -21,14 +21,14 @@ function nodes(element) { return [element, ...React.Children.toArray(element?.pr
 const text = element => nodes(element).filter(node => node?.type === 'Text').map(node => React.Children.toArray(node.props.children).join('')).join(' ');
 const button = (tree, label) => nodes(tree).find(node => node?.type === 'TouchableOpacity' && (node.props.accessibilityLabel === label || text(node).includes(label)));
 const list = tree => nodes(tree).find(node => node?.type === 'FlatList');
-function screen(file, catalog, props) {
+function screen(file, catalog, props, clock = { value: today }) {
   const slots = [], deps = [], pending = []; let cursor = 0, focus, offset = 0; const scrollCalls = []; let committedIDs = [];
   const same = (left, right) => left && right && left.length === right.length && left.every((value, index) => Object.is(value, right[index]));
   const memo = (compute, dependencies) => { const index = cursor++; if (!same(deps[index], dependencies)) { slots[index] = compute(); deps[index] = dependencies; } return slots[index]; };
   const react = { ...React, useRef: value => memo(() => ({ current: value }), []), useState: value => { const index = cursor++; if (!(index in slots)) slots[index] = typeof value === 'function' ? value() : value; return [slots[index], next => { slots[index] = typeof next === 'function' ? next(slots[index]) : next; }]; }, useEffect: (effect, dependencies) => { const index = cursor++; if (!same(deps[index], dependencies)) { pending.push(effect); deps[index] = dependencies; } }, useCallback: (callback, dependencies) => memo(() => callback, dependencies), useMemo: memo };
   const native = Object.fromEntries(['ScrollView', 'View', 'Text', 'TouchableOpacity', 'FlatList', 'RefreshControl', 'TextInput', 'Modal', 'Pressable'].map(name => [name, name])); native.StyleSheet = { create: styles => styles };
   const t = key => key.split('.').reduce((value, part) => value?.[part], catalog) || key;
-  const imports = { react, 'react-native': native, '@react-navigation/native': { useFocusEffect: callback => { if (focus !== callback) { pending.push(callback); focus = callback; } } }, '../hooks/useSpecialFeed': () => {}, '../utils/eventIdentity': identity, '../utils/eventRoute': eventRoute, '../utils/theme': theme, '../utils/discovery': discovery, '../utils/tags': tags, '../utils/navigation': { homeFeedback }, '../utils/storage': { getSavedEvents: async () => [{ id: events[0].id, event: events[0] }] }, '../utils/notifications': {}, '../utils/data': { ...data, todayAzores: () => today, isActive: event => data.isInRange(event, 'all', today), isInRange: (event, range) => data.isInRange(event, range, today), fetchSpecialEvents: async () => events, getSpecialFeedState: () => ({ status: 'current' }) }, '../i18n': { useLocale: () => ({ t }) }, '../components/EventCard': 'EventCard', '../components/LoadingView': 'Loading' };
+  const imports = { react, 'react-native': native, '@react-navigation/native': { useFocusEffect: callback => { if (focus !== callback) { pending.push(callback); focus = callback; } } }, '../hooks/useSpecialFeed': () => {}, '../hooks/useAzoresDay': () => clock.value, '../utils/eventIdentity': identity, '../utils/eventRoute': eventRoute, '../utils/theme': theme, '../utils/discovery': discovery, '../utils/tags': tags, '../utils/navigation': { homeFeedback }, '../utils/storage': { getSavedEvents: async () => [{ id: events[0].id, event: events[0] }] }, '../utils/notifications': {}, '../utils/data': { ...data, todayAzores: () => clock.value, isActive: (event, day) => data.isInRange(event, 'all', day || clock.value), isInRange: (event, range, day) => data.isInRange(event, range, day || clock.value), fetchSpecialEvents: async () => events, getSpecialFeedState: () => ({ status: 'current' }) }, '../i18n': { useLocale: () => ({ t }) }, '../components/EventCard': 'EventCard', '../components/LoadingView': 'Loading' };
   const code = transformSync(readFileSync(new URL(file, import.meta.url), 'utf8'), { babelrc: false, configFile: false, plugins: ['@babel/plugin-transform-react-jsx', '@babel/plugin-transform-modules-commonjs'] }).code;
   const module = { exports: {} }; new Function('require', 'module', 'exports', code)(name => { assert.ok(name in imports, name); return imports[name]; }, module, module.exports);
   const render = () => { cursor = 0; const tree = module.exports.default(props); const currentList = list(tree); if (currentList) { committedIDs = currentList.props.data.map(event => event.id); if (currentList.props.ref) currentList.props.ref.current = { scrollToOffset: options => { offset = options.offset; scrollCalls.push({ ...options, ids: committedIDs }); } }; } return tree; };
@@ -94,4 +94,14 @@ for (const selection of ['today', 'tomorrow', 'weekend', 'all', 'exhibition']) t
     assert.equal(explore.getOffset(), 222, 'Back retains native scroll position');
     assert.equal(explore.scrollCalls.length, 1, 'Back does not repeat fresh-entry reset');
     assert.equal(button(tree, explore.t('discovery.free')).props.accessibilityState.selected, true);
+});
+
+
+test('mounted Today results recompute when the Azores day changes without data or filter changes', async () => {
+  const clock = { value: today }; const route = { params: { kind: 'event', range: 'today', resetFilters: true } };
+  const explore = screen('../SpecialEventsScreen.js', en, { route, navigation: { setParams: params => Object.assign(route.params, params) } }, clock);
+  let tree = await explore.settle();
+  assert.equal(list(tree).props.data.length, 6);
+  clock.value = '2026-10-14'; tree = explore.render();
+  assert.deepEqual(list(tree).props.data.map(event => event.id), ['tomorrow-0', 'tomorrow-1']);
 });
