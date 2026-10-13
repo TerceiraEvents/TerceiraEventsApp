@@ -1,8 +1,9 @@
+import { reminderDate } from '../utils/eventTime';
 import React, { useCallback, useEffect, useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, Alert, StyleSheet } from 'react-native';
 import { useLocale } from '../i18n';
 import { fetchSpecialEvents, fetchWeeklyEvents, getSpecialFeedState, isEnded } from '../utils/data';
-import { getSavedEvents, toggleSavedEvent, getRemindedEventsStrict, makeEventKey, setEventReminder, removeEventReminder } from '../utils/storage';
+import { getSettings, getSavedEvents, toggleSavedEvent, getRemindedEventsStrict, makeEventKey, setEventReminder, removeEventReminder } from '../utils/storage';
 import { loadDetailData } from '../utils/detailData';
 import { eventId, resolveEventDetail } from '../utils/eventIdentity';
 import { requestPermissions, scheduleOneReminder, rescheduleAllNotifications } from '../utils/notifications';
@@ -52,9 +53,10 @@ export default function EventDetailScreen({ route }) {
         const [special, weekly] = await Promise.all([fetchSpecialEvents(), fetchWeeklyEvents()]);
         await rescheduleAllNotifications(special, weekly);
       } else {
-        if (!await requestPermissions()) return;
+        if (!reminderDate(event, (await getSettings()).reminderLeadMinutes)) { Alert.alert(t('discovery.reminderTimeUnknown')); return; }
+        if (!await requestPermissions()) { Alert.alert(t('discovery.reminderPermissionDenied')); return; }
         await setEventReminder(event);
-        await scheduleOneReminder(event);
+        if (!await scheduleOneReminder(event)) { await removeEventReminder(event); Alert.alert(t('discovery.reminderTimeUnknown')); return; }
       }
       setReminded(!reminded);
     } catch { Alert.alert(t('discovery.storageError')); }

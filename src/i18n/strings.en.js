@@ -8,6 +8,8 @@ export default
     "cacheTimeUnknown": "The last successful fetch time of these cached records is unknown.",
     "localityPartial": "Locality coverage is partial. Choose All places to include events without confirmed locality.",
     "savedUnknown": "Saved state could not be read. Retry before changing your plans.",
+    "reminderTimeUnknown": "A future, unambiguous published time is required to set this reminder. No reminder was set.",
+    "reminderPermissionDenied": "Notifications are not allowed. No reminder was set; your saved plans remain available.",
     "reminderUnknown": "Reminder state could not be read. Your event and plans remain available.",
     "detailUncertain": "This event is not in the available cache. Retry when connected to check the published record.",
     "partial": "Some published records cannot be displayed (%{count}). Available events remain listed.",
@@ -178,6 +180,7 @@ export default
       "info": "Tap the bell icon on any special event to set a reminder. You'll get a notification before the event starts."
     },
     "notifications": {
+    "reminderChannel": "Event reminders",
       "disabledTitle": "Notifications Disabled",
       "disabledBody": "Please enable notifications in your device settings to receive daily summaries."
     },
@@ -242,6 +245,12 @@ export default
     }
   },
   "eventCard": {
+    "calendarReviewTitle": "Review calendar draft",
+    "calendarAllDayDraft": "This is an all-day draft covering the published dates. Times may be in the details. Review and edit the schedule before saving.",
+    "calendarDurationDraft": "The source gives a start time but no end time. This draft uses a one-hour placeholder duration. Review and edit it before saving.",
+    "calendarTimeUnresolved": "The published date or time cannot be resolved uniquely in Atlantic/Azores. Check the organizer before adding it.",
+    "calendarCancel": "Cancel",
+    "calendarReview": "Review draft",
     "calendarPermissionTitle": "Permission denied",
     "calendarPermissionBody": "Calendar access is required to add events.",
     "calendarErrorTitle": "Error",
@@ -280,6 +289,7 @@ export default
     "open": "Open Terceira Events"
   },
   "notifications": {
+    "reminderChannel": "Event reminders",
     "reminderTitle": "Reminder: %{name}",
     "atTime": "at %{time}",
     "andMore": "...and %{count} more",

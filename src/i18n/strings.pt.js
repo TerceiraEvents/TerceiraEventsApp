@@ -8,6 +8,8 @@ export default
     "cacheTimeUnknown": "A hora da última obtenção destes dados guardados é desconhecida.",
     "localityPartial": "Nem todos os eventos têm localidade confirmada. Escolha Todos os locais para incluir os restantes.",
     "savedUnknown": "Não foi possível ler os planos guardados. Tente novamente antes de os alterar.",
+    "reminderTimeUnknown": "É necessária uma hora publicada futura e sem ambiguidade para definir este lembrete. Não foi definido nenhum lembrete.",
+    "reminderPermissionDenied": "As notificações não estão autorizadas. Não foi definido nenhum lembrete; os planos guardados continuam disponíveis.",
     "reminderUnknown": "Não foi possível ler o estado do lembrete. O evento e os planos continuam disponíveis.",
     "detailUncertain": "Este evento não consta dos dados guardados disponíveis. Tente novamente com ligação para consultar a publicação.",
     "partial": "Alguns registos publicados não podem ser apresentados (%{count}). Os eventos disponíveis continuam listados.",
@@ -178,6 +180,7 @@ export default
       "info": "Toca no ícone do sino em qualquer evento especial para definires um lembrete. Vais receber uma notificação antes do evento começar."
     },
     "notifications": {
+    "reminderChannel": "Lembretes de eventos",
       "disabledTitle": "Notificações Desativadas",
       "disabledBody": "Ativa as notificações nas definições do dispositivo para receberes resumos diários."
     },
@@ -242,6 +245,12 @@ export default
     }
   },
   "eventCard": {
+    "calendarReviewTitle": "Rever rascunho do calendário",
+    "calendarAllDayDraft": "Este rascunho ocupa os dias publicados. Os detalhes podem incluir horários. Reveja e ajuste o programa antes de guardar.",
+    "calendarDurationDraft": "A fonte indica a hora de início, mas não a de fim. Este rascunho usa uma duração provisória de uma hora. Reveja e ajuste antes de guardar.",
+    "calendarTimeUnresolved": "A data ou hora publicada não pode ser determinada sem ambiguidade em Atlantic/Azores. Confirme com o organizador antes de adicionar.",
+    "calendarCancel": "Cancelar",
+    "calendarReview": "Rever rascunho",
     "calendarPermissionTitle": "Permissão negada",
     "calendarPermissionBody": "É necessário acesso ao calendário para adicionar eventos.",
     "calendarErrorTitle": "Erro",
@@ -280,6 +289,7 @@ export default
     "open": "Abrir Eventos da Terceira"
   },
   "notifications": {
+    "reminderChannel": "Lembretes de eventos",
     "reminderTitle": "Lembrete: %{name}",
     "atTime": "às %{time}",
     "andMore": "...e mais %{count}",

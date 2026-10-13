@@ -1,5 +1,6 @@
+import { reminderDate } from './eventTime';
 import * as Notifications from 'expo-notifications';
-import * as Device from 'expo-device';
+import { Platform } from 'react-native';
 import {
   getSettings,
   getRemindedEvents,
@@ -25,10 +26,13 @@ Notifications.setNotificationHandler({
   }),
 });
 
+const REMINDER_CHANNEL = 'event-reminders';
+async function ensureReminderChannel() {
+  if (Platform.OS === 'android') await Notifications.setNotificationChannelAsync(REMINDER_CHANNEL, { name: t('notifications.reminderChannel'), importance: Notifications.AndroidImportance.DEFAULT });
+}
+
 export async function requestPermissions() {
-  if (!Device.isDevice) {
-    return false;
-  }
+  await ensureReminderChannel();
   const { status: existing } = await Notifications.getPermissionsAsync();
   if (existing === 'granted') return true;
 
@@ -143,7 +147,7 @@ async function scheduleDailySummaries(
 
 // Schedule reminder notifications for reminded events
 async function scheduleEventReminders(specialEvents, settings, remindedKeys) {
-  const leadMs = settings.reminderLeadMinutes * 60 * 1000;
+  if (remindedKeys.size) await ensureReminderChannel();
   const locale = getLocale();
 
   for (const event of specialEvents) {
@@ -153,26 +157,8 @@ async function scheduleEventReminders(specialEvents, settings, remindedKeys) {
     const eventDate = parseEventDate(event.date);
     if (!eventDate) continue;
 
-    // Build the trigger time from date + time
-    const triggerDate = new Date(eventDate);
-    if (event.time) {
-      const parts = event.time.match(/(\d{1,2}):(\d{2})/);
-      if (parts) {
-        triggerDate.setHours(parseInt(parts[1], 10), parseInt(parts[2], 10), 0, 0);
-      } else {
-        // No parseable time, default to noon
-        triggerDate.setHours(12, 0, 0, 0);
-      }
-    } else {
-      // No time specified, remind at 9am on the event day
-      triggerDate.setHours(9, 0, 0, 0);
-    }
-
-    // Subtract lead time
-    const notifyAt = new Date(triggerDate.getTime() - leadMs);
-
-    // Don't schedule if already passed
-    if (notifyAt <= new Date()) continue;
+    const notifyAt = reminderDate(event, settings.reminderLeadMinutes);
+    if (!notifyAt) continue;
 
     const formatted = formatDate(eventDate, locale);
     const timeStr = event.time
@@ -185,7 +171,7 @@ async function scheduleEventReminders(specialEvents, settings, remindedKeys) {
         body: `${event.venue}${timeStr}\n${formatted.weekday}, ${formatted.month} ${formatted.day}`,
         data: { type: 'event_reminder', eventKey: key },
       },
-      trigger: { date: notifyAt, type: 'date' },
+      trigger: { date: notifyAt, type: 'date', channelId: REMINDER_CHANNEL },
     });
   }
 }
@@ -195,25 +181,13 @@ async function scheduleEventReminders(specialEvents, settings, remindedKeys) {
 // rescheduleAllNotifications will clean up.
 export async function scheduleOneReminder(event) {
   const settings = await getSettings();
-  const leadMs = settings.reminderLeadMinutes * 60 * 1000;
   const eventDate = parseEventDate(event.date);
-  if (!eventDate) return;
+  if (!eventDate) return false;
 
-  const triggerDate = new Date(eventDate);
-  if (event.time) {
-    const parts = event.time.match(/(\d{1,2}):(\d{2})/);
-    if (parts) {
-      triggerDate.setHours(parseInt(parts[1], 10), parseInt(parts[2], 10), 0, 0);
-    } else {
-      triggerDate.setHours(12, 0, 0, 0);
-    }
-  } else {
-    triggerDate.setHours(9, 0, 0, 0);
-  }
+  const notifyAt = reminderDate(event, settings.reminderLeadMinutes);
+  if (!notifyAt) return false;
 
-  const notifyAt = new Date(triggerDate.getTime() - leadMs);
-  if (notifyAt <= new Date()) return;
-
+  await ensureReminderChannel();
   const locale = getLocale();
   const formatted = formatDate(eventDate, locale);
   const timeStr = event.time
@@ -226,6 +200,7 @@ export async function scheduleOneReminder(event) {
       body: `${event.venue}${timeStr}\n${formatted.weekday}, ${formatted.month} ${formatted.day}`,
       data: { type: 'event_reminder', eventKey: makeEventKey(event) },
     },
-    trigger: { date: notifyAt, type: 'date' },
+    trigger: { date: notifyAt, type: 'date', channelId: REMINDER_CHANNEL },
   });
+  return true;
 }
