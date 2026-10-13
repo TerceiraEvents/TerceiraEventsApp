@@ -70,6 +70,7 @@ export default function EventDetailScreen({ route }) {
           <Text accessibilityLiveRegion="polite">{t(`discovery.${feedState.status}`)} · {t('discovery.retry')}</Text>
         </TouchableOpacity>
       )}
+      {feedState.cacheTimeUnknown && <Text accessibilityLiveRegion="polite" style={{ padding: 16 }}>{t('discovery.cacheTimeUnknown')}</Text>}
       {!!feedState.rejectedRecords && <Text style={styles.notice}>{t('discovery.partial', { count: feedState.rejectedRecords })}</Text>}
       {feedState.status === 'cached' && !event && <Text style={styles.notice}>{t('discovery.detailUncertain')}</Text>}
       {unavailable && <Text style={styles.notice}>{t('discovery.unavailable')}</Text>}

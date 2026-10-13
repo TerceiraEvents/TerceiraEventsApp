@@ -1,6 +1,11 @@
 export default
 {
   "discovery": {
+    "cacheTimeUnknown": "A hora da última obtenção destes dados guardados é desconhecida.",
+    "artworkUnavailable": "Cartaz indisponível. A informação do evento continua disponível.",
+    "artworkCredit": "Crédito do cartaz:",
+    "artworkSource": "Fonte do cartaz",
+
     "localityPartial": "Nem todos os eventos têm localidade confirmada. Escolha Todos os locais para incluir os restantes.",
     "savedUnknown": "Não foi possível ler os planos guardados. Tente novamente antes de os alterar.",
     "reminderTimeUnknown": "É necessária uma hora publicada futura e sem ambiguidade para definir este lembrete. Não foi definido nenhum lembrete.",
@@ -111,6 +116,7 @@ export default
     }
   },
   "blog": {
+    "back": "Voltar",
     "title": "Blog",
     "intro": "Notícias, guias e histórias sobre a vida na Terceira.",
     "readMore": "Ler mais →",
