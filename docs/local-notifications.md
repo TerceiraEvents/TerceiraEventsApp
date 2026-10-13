@@ -7,3 +7,5 @@ Android's `event-reminders` channel is created before the runtime permission req
 Single-event and batch reminders use the same local channel. Calendar drafts keep their separate OS-editor permission flow. Physical-device delivery and simulator delivery require native validation; source tests do not establish OS delivery.
 
 A stored reminder request with an unresolved published time appears unavailable. The detail screen explains why it cannot be scheduled and offers an explicit removal action. The stored request remains present until the user removes it.
+
+Reminder controls announce “Set reminder” or “Cancel reminder” and expose the selected state only for an active request with a resolvable time. An unavailable stored request announces its explicit removal action and is not selected.

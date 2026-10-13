@@ -62,7 +62,8 @@ export default
     "share": "Share event",
     "calendar": "Add to calendar",
     "report": "Report event",
-    "reminder": "Toggle reminder"
+    "setReminder": "Set reminder",
+    "cancelReminder": "Cancel reminder"
   },
   "app": {
     "name": "Terceira Events"

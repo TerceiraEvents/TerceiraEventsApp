@@ -42,7 +42,7 @@ test('broken artwork retains event information and announces failure in EN/PT', 
     const failure = nodes(tree).find((node) => node.props?.children === result.t('discovery.artworkUnavailable'));
     assert.equal(failure.props.accessibilityLiveRegion, 'polite');
     assert.deepEqual(result.announced, []);
-    for (const key of ['share', 'calendar', 'report', 'reminder', 'poster']) {
+    for (const key of ['share', 'calendar', 'report', 'setReminder', 'poster']) {
       const action = nodes(tree).find((node) => node.props?.accessibilityLabel === result.t(`discovery.${key}`));
       assert.equal(typeof action?.props.onPress, 'function', `retains ${key}`);
     }

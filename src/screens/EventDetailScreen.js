@@ -100,7 +100,7 @@ export default function EventDetailScreen({ route }) {
           }}
         ><Text>{t(saved === null ? 'discovery.savedUnknown' : saved ? 'discovery.unsave' : 'discovery.save')}</Text></TouchableOpacity>
         {reminded === true && !publishedEventTime(event).start && <Text style={styles.notice}>{t('discovery.reminderStoredUnavailable')}</Text>}
-        <EventCard reminderUnavailable={reminded === true && !publishedEventTime(event).start} event={event} calendarEnabled={!isEnded(event)} reminded={reminded} onToggleReminder={isEnded(event) || reminded === null ? undefined : toggleReminder} />
+        <EventCard reminderUnavailable={reminded === true && !publishedEventTime(event).start} event={event} calendarEnabled={!isEnded(event)} reminded={reminded} onToggleReminder={reminded === null || (isEnded(event) && !reminded) ? undefined : toggleReminder} />
         <Text style={styles.notice}>{t('discovery.localOnly')}</Text>
       </>}
     </ScrollView>

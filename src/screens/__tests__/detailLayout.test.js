@@ -24,7 +24,7 @@ test('detail title has full card width independently of all four actions', () =>
   const tree = module.exports.default({ event: { name: title, date: '2026-06-12' }, calendarEnabled: true, onToggleReminder: () => {} });
   const parent = nodes(tree).find((element) => React.Children.toArray(element?.props?.children).some((child) => child.props?.children === title));
   assert.equal(React.Children.toArray(parent.props.children).filter((child) => child.type === 'TouchableOpacity').length, 0);
-  const actions = nodes(tree).filter((node) => ['discovery.share', 'discovery.calendar', 'discovery.report', 'discovery.reminder'].includes(node.props?.accessibilityLabel));
+  const actions = nodes(tree).filter((node) => ['discovery.share', 'discovery.calendar', 'discovery.report', 'discovery.setReminder'].includes(node.props?.accessibilityLabel));
   assert.equal(actions.length, 4);
   assert.ok(actions.every((node) => typeof node.props.onPress === 'function'));
   const badge = nodes(tree).find((node) => node.props?.style?.backgroundColor === theme.colors.primary);
