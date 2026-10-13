@@ -13,7 +13,7 @@ import pt from '../../i18n/strings.pt.js';
 const require = createRequire(import.meta.url);
 const { transformSync } = require('@babel/core');
 function nodes(element) { return [element, ...React.Children.toArray(element?.props?.children).flatMap(nodes)]; }
-function render(event, locale = 'en', platform = 'android') {
+function render(event, locale = 'en', platform = 'android', compact = false) {
   const state = []; let cursor = 0;
   const react = { ...React, useState: (initial) => { const index = cursor++; if (!(index in state)) state[index] = initial; return [state[index], (value) => { state[index] = value; }]; } };
   const native = Object.fromEntries(['View', 'Text', 'TouchableOpacity', 'Image'].map((name) => [name, name]));
@@ -26,7 +26,7 @@ function render(event, locale = 'en', platform = 'android') {
   const code = transformSync(readFileSync(new URL('../EventCard.js', import.meta.url), 'utf8'), { babelrc: false, configFile: false, plugins: ['@babel/plugin-transform-react-jsx', '@babel/plugin-transform-modules-commonjs'] }).code;
   const module = { exports: {} };
   new Function('require', 'module', 'exports', code)((name) => imports[name] || 'Modal', module, module.exports);
-  const rerender = () => { cursor = 0; return module.exports.default({ event, calendarEnabled: true, onToggleReminder: () => {} }); };
+  const rerender = () => { cursor = 0; return module.exports.default({ event, compact, calendarEnabled: true, onToggleReminder: () => {} }); };
   return { tree: rerender(), rerender, opened, announced, t };
 }
 
@@ -93,4 +93,23 @@ test('present rejected artwork shows failure without a full-size unsafe link', (
       assert.equal(all.some((node) => node.props?.accessibilityLabel === result.t('discovery.poster')), false);
     }
   }
+});
+
+for (const locale of ['en', 'pt']) for (const compact of [false, true]) test(`event date ranges and locality are readable (${locale}, compact=${compact})`, () => {
+  const event = { name: 'Published event', date: '2026-10-17', end_date: '2026-10-18', time: '17:30', venue: 'Library', locality: 'angra' };
+  const original = JSON.stringify(event);
+  const result = render(event, locale, 'android', compact);
+  const text = nodes(result.tree).filter(node => node.type === 'Text').map(node => React.Children.toArray(node.props.children).join(''));
+  const month = locale === 'pt' ? 'out' : 'Oct';
+  const readable = `17 ${month} 2026 – 18 ${month} 2026`;
+  assert.ok(text.includes(`${readable} · 17:30`), 'published range uses readable localized month names');
+  assert.ok(text.includes('Library · Angra'), 'canonical locality code has its published display label');
+  assert.ok(!text.some(value => value.includes('2026-10-17') || value.includes(' · angra')));
+  if (compact) assert.ok(result.tree.props.accessibilityLabel.includes(readable));
+  assert.equal(JSON.stringify(event), original, 'formatting does not mutate calendar/link data');
+  event.end_date = event.date; event.locality = 'praia';
+  const single = render(event, locale, 'android', compact);
+  const singleText = nodes(single.tree).filter(node => node.type === 'Text').map(node => React.Children.toArray(node.props.children).join(''));
+  assert.ok(singleText.includes(`17 ${month} 2026 · 17:30`));
+  assert.ok(singleText.includes('Library · Praia'));
 });

@@ -1,6 +1,7 @@
 export default
 {
   "discovery": {
+    filters: 'Filters',
     "savedFiltered": "No saved events match these filters.",
     "result": "result",
     "reset": "Clear filters",
@@ -71,7 +72,7 @@ export default
   "tabs": {
     "home": "Home",
     "weekly": "Weekly",
-    "venues": "Places",
+    "venues": "Venues",
     "resources": "More",
     "settings": "Settings",
     "suggestEvent": "Suggest Event",
@@ -79,13 +80,35 @@ export default
   },
   "home": {
     "title": "Terceira Events",
+    "subtitle": "What's happening on Terceira Island",
     "intro": {
-      "p1": "Terceira is known as \"the amusement park\" of the Azores — a small island packed with concerts, festivals, bullfights, and parties year-round."
+      "p1": "Terceira is known as \"the amusement park\" of the Azores — a small island packed with concerts, festivals, bullfights, and parties year-round.",
+      "p2": "This app helps you discover what's happening across Terceira: today's lineup, the week ahead, and venues worth knowing."
+    },
+    "sections": {
+      "specialEvents": "Events",
+      "blog": "From the blog"
+    },
+    "buttons": {
+      "weekly": "Weekly Events",
+      "weeklySubtitle": "Recurring entertainment",
+      "specialEvents": "Events",
+      "specialEventsSubtitle": "What's on this week",
+      "venues": "Venues",
+      "venuesSubtitle": "Where to go",
+      "blog": "Blog",
+      "blogSubtitle": "News, guides, and stories",
+      "resources": "Resources",
+      "resourcesSubtitle": "Other ways to find events",
+      "suggest": "Suggest Event",
+      "suggestSubtitle": "Submit an event for review"
     },
     "links": {
       "today": "All events today",
       "tomorrow": "All events tomorrow",
-      "weekend": "All events this weekend"
+      "weekend": "All events this weekend",
+      "allUpcoming": "All upcoming →",
+      "allPosts": "All posts →"
     }
   },
   "specialEvents": {
@@ -148,7 +171,7 @@ export default
     "stackTitle": "Post"
   },
   "venues": {
-    "title": "Places",
+    "title": "Venues",
     "intro": "Bars, restaurants, cultural spaces, and other venues hosting events in Angra do Heroísmo.",
     "links": {
       "website": "Website",

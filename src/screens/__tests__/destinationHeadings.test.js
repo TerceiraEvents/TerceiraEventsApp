@@ -16,7 +16,7 @@ function nodes(element) { return [element, ...React.Children.toArray(element?.pr
 function render(screen, catalog) {
   const native = Object.fromEntries(['View', 'Text', 'ScrollView', 'FlatList', 'TouchableOpacity', 'TextInput', 'Modal', 'Pressable', 'RefreshControl', 'Switch', 'ActivityIndicator', 'KeyboardAvoidingView'].map(name => [name, name]));
   native.StyleSheet = { create: value => value }; native.Platform = { OS: 'ios' };
-  const imports = { './fontHeader': { fontHeaderOptions: (options) => options }, './src/navigation/fontHeader': { fontHeaderOptions: (options) => options }, '../components/TextInput': 'TextInput', './TextInput': 'TextInput', '../utils/nativeFontMetrics': { hasNativeFontMetrics: false }, '../components/markdownRules': { markdownRules: {} }, '../components/Text': 'Text', './Text': 'Text', './src/components/Text': { __esModule: true, default: 'Text', TextProvider: 'TextProvider' },
+  const imports = { '../components/CategoryPill': 'CategoryPill', './fontHeader': { fontHeaderOptions: (options) => options }, './src/navigation/fontHeader': { fontHeaderOptions: (options) => options }, '../components/TextInput': 'TextInput', './TextInput': 'TextInput', '../utils/nativeFontMetrics': { hasNativeFontMetrics: false }, '../components/markdownRules': { markdownRules: {} }, '../components/Text': 'Text', './Text': 'Text', './src/components/Text': { __esModule: true, default: 'Text', TextProvider: 'TextProvider' },
     react: { ...React, useRef: value => ({ current: value }), useState: value => [value === true ? false : value === null && screen === 'SettingsScreen' ? {} : value, () => {}], useEffect: () => {}, useCallback: value => value, useMemo: compute => compute() },
     'react-native': native, '@react-navigation/native': { useFocusEffect: () => {} },
     '../i18n': { useLocale: () => ({ locale: catalog === en ? 'en' : 'pt', t: key => key.split('.').reduce((value, part) => value?.[part], catalog) || key }), LOCALE_CHOICES: [] },
@@ -27,8 +27,8 @@ function render(screen, catalog) {
   const module = { exports: {} }; new Function('require', 'module', 'exports', code)(name => imports[name] || 'Component', module, module.exports);
   return nodes(module.exports.default({ navigation: {}, route: {} }));
 }
-for (const catalog of [en, pt]) test(`rendered Places heading matches its ${catalog === en ? 'EN' : 'PT'} tab label`, () => {
-  assert.ok(render('VenuesScreen', catalog).some(node => node?.type === 'Text' && node.props.children === catalog.tabs.venues));
+for (const catalog of [en, pt]) test(`rendered Venues heading matches its ${catalog === en ? 'EN' : 'PT'} tab label`, () => {
+  assert.ok(render('VenuesScreen', catalog).some(node => node?.type === 'Text' && node.props.children === (catalog === en ? 'Venues' : 'Locais')));
 });
 
 for (const catalog of [en, pt]) test(`rendered primary and shortcut destination heading inventory (${catalog === en ? 'EN' : 'PT'})`, () => {
@@ -43,7 +43,7 @@ for (const catalog of [en, pt]) test(`rendered primary and shortcut destination 
   ];
   for (const [screen, heading] of entries) assert.ok(render(screen, catalog).some(node => node?.type === 'Text' && node.props.children === heading), `${screen}: ${heading}`);
   const home = render('HomeScreen', catalog);
-  for (const label of [catalog.tabs.weekly, catalog.discovery.onView, catalog.tabs.blog, catalog.discovery.resources, catalog.tabs.settings, catalog.tabs.suggestEvent]) assert.ok(home.some(node => node?.type === 'Text' && node.props.children === label), `Home shortcut: ${label}`);
+  for (const label of [catalog.tabs.weekly, catalog.discovery.onView, catalog.home.buttons.blog, catalog.home.buttons.resources, catalog.home.buttons.venues, catalog.home.buttons.suggest]) assert.ok(home.some(node => node?.type === 'Text' && node.props.children === label), `Home shortcut: ${label}`);
   assert.ok(render('SpecialEventsScreen', catalog).some(node => node?.type === 'Text' && node.props.children === catalog.discovery.onView), 'Exhibitions shortcut names the visible discovery kind control');
   assert.equal(catalog.weekly.title, catalog === en ? 'Weekly Events' : 'Eventos Semanais');
   assert.equal(catalog.suggest.title, catalog === en ? 'Suggest an Event' : 'Sugerir um Evento');
