@@ -8,6 +8,8 @@ export default
 
     "localityPartial": "Locality coverage is partial. Choose All places to include events without confirmed locality.",
     "savedUnknown": "Saved state could not be read. Retry before changing your plans.",
+    "reminderStoredUnavailable": "This stored reminder cannot be scheduled because the published time is unresolved. Remove this request or check with the organizer.",
+    "removeUnavailableReminder": "Remove unavailable reminder request",
     "reminderTimeUnknown": "A future, unambiguous published time is required to set this reminder. No reminder was set.",
     "reminderPermissionDenied": "Notifications are not allowed. No reminder was set; your saved plans remain available.",
     "reminderUnknown": "Reminder state could not be read. Your event and plans remain available.",

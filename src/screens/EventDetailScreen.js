@@ -1,4 +1,4 @@
-import { reminderDate } from '../utils/eventTime';
+import { reminderDate, publishedEventTime } from '../utils/eventTime';
 import React, { useCallback, useEffect, useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, Alert, StyleSheet } from 'react-native';
 import { useLocale } from '../i18n';
@@ -89,7 +89,8 @@ export default function EventDetailScreen({ route }) {
             catch { Alert.alert(t('discovery.storageError')); }
           }}
         ><Text>{t(saved === null ? 'discovery.savedUnknown' : saved ? 'discovery.unsave' : 'discovery.save')}</Text></TouchableOpacity>
-        <EventCard event={event} calendarEnabled={!isEnded(event)} reminded={reminded} onToggleReminder={isEnded(event) || reminded === null ? undefined : toggleReminder} />
+        {reminded === true && !publishedEventTime(event).start && <Text style={styles.notice}>{t('discovery.reminderStoredUnavailable')}</Text>}
+        <EventCard reminderUnavailable={reminded === true && !publishedEventTime(event).start} event={event} calendarEnabled={!isEnded(event)} reminded={reminded} onToggleReminder={isEnded(event) || reminded === null ? undefined : toggleReminder} />
         <Text style={styles.notice}>{t('discovery.localOnly')}</Text>
       </>}
     </ScrollView>
