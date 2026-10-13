@@ -18,8 +18,8 @@ const definition = ast.program.body.find(node => node.type === 'FunctionDeclarat
 const code = transformSync(source.slice(definition.start, definition.end), { babelrc: false, configFile: false, plugins: ['@babel/plugin-transform-react-jsx'] }).code;
 function render(catalog, fontScale = 1, bottom = 0, width = 402, left = 0, right = 0) {
   const t = key => key.split('.').reduce((value, part) => value[part], catalog);
-  const names = ['React', 'useLocale', 'useWindowDimensions', 'useSafeAreaInsets', 'primaryRoutes', 'Tab', 'HomeScreen', 'SpecialEventsScreen', 'WeeklyScreen', 'VenuesScreen', 'MoreScreen', 'Text', 'headerOptions', 'colors', 'tabBarHeight'];
-  return new Function(...names, code + '\nreturn PrimaryTabs();')(React, () => ({ t }), () => ({ fontScale, width }), () => ({ bottom, left, right }), primaryRoutes, { Navigator: 'Navigator', Screen: 'Screen' }, 'Home', 'Events', 'WeeklyContent', 'Places', 'More', 'Text', () => ({}), {}, tabBarHeight);
+  const names = ['React', 'useLocale', 'useWindowDimensions', 'useSafeAreaInsets', 'primaryRoutes', 'Tab', 'HomeScreen', 'SpecialEventsScreen', 'WeeklyScreen', 'VenuesScreen', 'MoreScreen', 'Text', 'fontHeaderOptions', 'headerOptions', 'colors', 'tabBarHeight'];
+  return new Function(...names, code + '\nreturn PrimaryTabs();')(React, () => ({ t }), () => ({ fontScale, width }), () => ({ bottom, left, right }), primaryRoutes, { Navigator: 'Navigator', Screen: 'Screen' }, 'Home', 'Events', 'WeeklyContent', 'Places', 'More', 'Text', (options) => options, () => ({}), {}, tabBarHeight);
 }
 
 test('actual primary navigator reaches Weekly directly from every primary destination', () => {

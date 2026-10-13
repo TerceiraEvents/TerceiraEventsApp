@@ -1,3 +1,4 @@
+import TextInput from '../components/TextInput';
 import Text from '../components/Text';
 import useAzoresDay from '../hooks/useAzoresDay';
 import { useFocusEffect } from '@react-navigation/native';
@@ -12,7 +13,6 @@ import {
   FlatList,
   TouchableOpacity,
   RefreshControl,
-  TextInput,
   Modal,
   Pressable,
   ScrollView,

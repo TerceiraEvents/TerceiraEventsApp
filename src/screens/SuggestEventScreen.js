@@ -1,10 +1,10 @@
+import TextInput from '../components/TextInput';
 import Text from '../components/Text';
 import React, { useState } from 'react';
 import {
   View,
   StyleSheet,
   ScrollView,
-  TextInput,
   TouchableOpacity,
   Alert,
   ActivityIndicator,

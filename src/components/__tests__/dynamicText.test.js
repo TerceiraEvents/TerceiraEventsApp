@@ -5,6 +5,7 @@ import { createRequire } from 'node:module';
 import React from 'react';
 import * as discovery from '../../utils/discovery.js';
 import * as navigation from '../../utils/navigation.js';
+import * as metrics from '../../utils/fontMetrics.js';
 const require = createRequire(import.meta.url);
 const { transformSync } = require('@babel/core');
 function load(path, imports) {
@@ -15,9 +16,9 @@ function load(path, imports) {
 }
 function fixture() {
   let scale = 1; let subscriptions = 0;
-  const react = { ...React, createContext: () => ({ Provider: 'FontScaleProvider' }), forwardRef: (render) => render, useContext: () => scale };
-  const native = { Text: 'NativeText', useWindowDimensions: () => { subscriptions++; return { fontScale: scale }; } };
-  const text = load('../Text.js', { react, 'react-native': native });
+  const react = { ...React, createContext: (value) => ({ Provider: 'FontScaleProvider', value }), forwardRef: (render) => render, useContext: (context) => typeof context.value === 'number' ? scale : context.value };
+  const native = { StyleSheet: { flatten: (style) => style }, Text: 'NativeText', useWindowDimensions: () => { subscriptions++; return { fontScale: scale }; } };
+  const text = load('../Text.js', { react, 'react-native': native, '../utils/fontMetrics': metrics, '../utils/nativeFontMetrics': { hasNativeFontMetrics: false } });
   return { text, setScale: (value) => { scale = value; }, subscriptions: () => subscriptions };
 }
 
@@ -25,17 +26,17 @@ test('text hosts refresh only on font-scale changes and preserve props/ref witho
   const { text, setScale } = fixture();
   const ref = {}; const style = { fontSize: 28 }; const onLayout = () => {};
   const props = { style, children: 'Published title', accessibilityRole: 'header', onLayout, allowFontScaling: true };
-  const first = text.default(props, ref);
-  assert.equal(first.key, text.default(props, ref).key);
+  const first = text.default(props, ref).props.children;
+  assert.equal(first.key, text.default(props, ref).props.children.key);
   setScale(2.143);
-  const enlarged = text.default(props, ref);
+  const enlarged = text.default(props, ref).props.children;
   assert.notEqual(enlarged.key, first.key);
   for (const [name, value] of Object.entries(props)) assert.equal(enlarged.props[name], value);
   assert.equal(enlarged.props.ref, ref);
   assert.equal(enlarged.props.style.fontSize, 28);
-  const fixed = text.default({ ...props, allowFontScaling: false }, ref);
+  const fixed = text.default({ ...props, allowFontScaling: false }, ref).props.children;
   setScale(1);
-  assert.equal(text.default({ ...props, allowFontScaling: false }, ref).key, fixed.key);
+  assert.equal(text.default({ ...props, allowFontScaling: false }, ref).props.children.key, fixed.key);
 });
 
 test('one provider subscription updates text without replacing its screen or navigation children', () => {
@@ -63,7 +64,7 @@ test('actual mounted Home title uses refreshed text while retaining the selected
   const home = load('../../screens/HomeScreen.js', imports).default;
   const nodes = (element) => [element, ...React.Children.toArray(element?.props?.children).flatMap(nodes)];
   const calls = []; const render = () => home({ navigation: { navigate: (...args) => calls.push(args) } });
-  const titleHost = () => { const title = nodes(render()).find((node) => node.props?.children === 'home.title'); return title.type(title.props, null); };
+  const titleHost = () => { const title = nodes(render()).find((node) => node.props?.children === 'home.title'); const result = title.type(title.props, null); return result.type === 'NativeText' ? result : result.props.children; };
   const first = titleHost();
   nodes(render()).find((node) => node.type === 'Button' && node.props.children.props.children === 'discovery.tomorrow').props.onPress();
   setScale(2.143);
@@ -77,7 +78,7 @@ test('actual mounted Home title uses refreshed text while retaining the selected
 
 test('actual Post refreshes Markdown content while retaining its ScrollView and published record', () => {
   const { text, setScale } = fixture();
-  const imports = { react: React, '../components/Text': { __esModule: true, default: text.default, useFontScale: text.useFontScale }, 'react-native': { ScrollView: 'ScrollView', View: 'View', TouchableOpacity: 'Button', StyleSheet: { create: (styles) => styles }, Linking: {} }, 'react-native-markdown-display': 'Markdown', '../utils/data': { formatPostDate: () => 'Published day' }, '../utils/theme': { colors: {}, fonts: {} }, '../i18n': { useLocale: () => ({ t: (key) => key, locale: 'en' }) }, '../utils/i18nFields': { localizedField: (record, key) => record[key] }, '../components/CategoryPill': 'CategoryPill' };
+  const imports = { '../utils/nativeFontMetrics': { hasNativeFontMetrics: false }, '../components/markdownRules': { markdownRules: {} }, react: React, '../components/Text': { __esModule: true, default: text.default, useFontScale: text.useFontScale }, 'react-native': { ScrollView: 'ScrollView', View: 'View', TouchableOpacity: 'Button', StyleSheet: { create: (styles) => styles }, Linking: {} }, 'react-native-markdown-display': 'Markdown', '../utils/data': { formatPostDate: () => 'Published day' }, '../utils/theme': { colors: {}, fonts: {} }, '../i18n': { useLocale: () => ({ t: (key) => key, locale: 'en' }) }, '../utils/i18nFields': { localizedField: (record, key) => record[key] }, '../components/CategoryPill': 'CategoryPill' };
   const post = load('../../screens/PostScreen.js', imports).default;
   const route = { params: { post: { title: 'Published title', body: 'Published **Markdown** body', date: '2026-10-13' } } };
   const first = post({ route });

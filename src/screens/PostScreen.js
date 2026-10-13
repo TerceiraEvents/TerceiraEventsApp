@@ -1,3 +1,5 @@
+import { markdownRules } from '../components/markdownRules';
+import { hasNativeFontMetrics } from '../utils/nativeFontMetrics';
 import Text, { useFontScale } from '../components/Text';
 import React from 'react';
 import {
@@ -42,7 +44,7 @@ export default function PostScreen({ route }) {
           {localizedField(post, 'subtitle', locale)}
         </Text>
       ) : null}
-      <Markdown key={fontScale} style={mdStyles}>
+      <Markdown key={fontScale} rules={hasNativeFontMetrics ? markdownRules : undefined} style={mdStyles}>
         {localizedField(post, 'body', locale) || ''}
       </Markdown>
       {post.source_url ? (
