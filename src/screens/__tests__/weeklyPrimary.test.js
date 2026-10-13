@@ -103,19 +103,25 @@ test('actual five-tab labels expose localized names and uncapped wrapping', () =
 });
 
 
-test('actual labels receive full safe tab-cell width rather than an inset percentage', () => {
+test('actual weighted tab cells give Events and Weekly extra width without shrinking labels', () => {
   for (const [width, left, right] of [[320, 0, 0], [402, 0, 0], [411.4286, 0, 0], [402, 16, 16]]) {
     const tree = render(pt, 2.143, 34, width, left, right);
     const screens = React.Children.toArray(tree.props.children);
+    const options = screens.map(screen => tree.props.screenOptions({ route: { name: screen.props.name } }));
+    const weights = options.map(value => value.tabBarItemStyle?.flex ?? 1);
+    assert.ok(weights[1] > weights[0] && weights[2] > weights[0], 'longer Events and Weekly labels need larger cells');
+    assert.ok(weights[1] > weights[4] && weights[2] > weights[4]);
+    const total = weights.reduce((sum, value) => sum + value, 0);
     let edge = left;
-    for (const screen of screens) {
-      const label = tree.props.screenOptions({ route: { name: screen.props.name } }).tabBarLabel({ children: screen.props.options.title, color: 'black' });
-      assert.ok(Number.isFinite(label.props.style.width), 'label must receive actual full-cell dimensions');
-      assert.equal(label.props.style.width, (width - left - right) / screens.length);
-      assert.ok(edge >= left && edge + label.props.style.width <= width - right + Number.EPSILON * width);
+    for (const [index, screen] of screens.entries()) {
+      const label = options[index].tabBarLabel({ children: screen.props.options.title, color: 'black' });
+      const cellWidth = (width - left - right) * weights[index] / total;
+      assert.equal(label.props.style.width, cellWidth, 'text uses the same share as its public item flex');
+      assert.ok(cellWidth >= 44);
+      assert.ok(edge >= left && edge + cellWidth <= width - right + Number.EPSILON * width);
       assert.equal(label.props.numberOfLines, undefined);
       assert.notEqual(label.props.allowFontScaling, false);
-      edge += label.props.style.width;
+      edge += cellWidth;
     }
   }
 });
