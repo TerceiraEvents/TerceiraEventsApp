@@ -13,7 +13,7 @@ const require = createRequire(import.meta.url);
 const { transformSync } = require('@babel/core');
 function renderDiscovery() {
   let stateIndex = 0;
-  const react = { ...React, useState: (value) => [stateIndex++ === 2 ? false : value, () => {}], useEffect: () => {}, useCallback: (fn) => fn, useMemo: (fn) => fn() };
+  const react = { ...React, useRef: value => ({ current: value }), useState: (value) => [stateIndex++ === 2 ? false : value, () => {}], useEffect: () => {}, useCallback: (fn) => fn, useMemo: (fn) => fn() };
   const native = Object.fromEntries(['View', 'Text', 'FlatList', 'TouchableOpacity', 'RefreshControl', 'TextInput', 'Modal', 'Pressable', 'ScrollView'].map((name) => [name, name]));
   native.StyleSheet = { create: (styles) => styles };
   const imports = { '../hooks/useSpecialFeed': () => {}, '../utils/eventIdentity': identity, '@react-navigation/native': { useFocusEffect: () => {} }, '../utils/storage': { getSavedEvents: async () => [] }, react, 'react-native': native, '../utils/data': data, '../utils/discovery': discovery, '../utils/tags': tags, '../utils/theme': theme, '../i18n': { useLocale: () => ({ t: (key) => key }) } };

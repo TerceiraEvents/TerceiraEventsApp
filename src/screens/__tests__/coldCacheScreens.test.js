@@ -16,7 +16,7 @@ function nodes(element) { return [element, ...React.Children.toArray(element?.pr
 for (const screen of ['HomeScreen', 'SpecialEventsScreen', 'EventDetailScreen']) {
   test(`${screen} renders cache-ready records before a publication response`, () => {
     const state = []; const subscriptions = []; let cursor = 0;
-    const react = { ...React, useState: (initial) => { const index = cursor++; if (!(index in state)) state[index] = initial; return [state[index], (value) => { state[index] = value; }]; }, useCallback: (callback) => callback, useEffect: () => {}, useMemo: (callback) => callback() };
+    const react = { ...React, useRef: value => ({ current: value }), useState: (initial) => { const index = cursor++; if (!(index in state)) state[index] = initial; return [state[index], (value) => { state[index] = value; }]; }, useCallback: (callback) => callback, useEffect: () => {}, useMemo: (callback) => callback() };
     const native = Object.fromEntries(['View', 'Text', 'ScrollView', 'FlatList', 'TouchableOpacity', 'RefreshControl', 'TextInput', 'Modal', 'Pressable'].map((name) => [name, name]));
     native.StyleSheet = { create: (styles) => styles };
     const imports = { '@react-navigation/native': { useFocusEffect: () => {} }, '../utils/storage': { getSavedEvents: async () => [] }, react, 'react-native': native, '../hooks/useSpecialFeed': (callback) => subscriptions.push(callback), '../utils/data': data, '../utils/eventIdentity': identity, '../utils/discovery': discovery, '../utils/navigation': navigation, '../utils/tags': tags, '../utils/theme': theme, '../components/EventCard': 'EventCard', '../components/LoadingView': 'LoadingView', '../i18n': { useLocale: () => ({ t: (key) => key }) } };

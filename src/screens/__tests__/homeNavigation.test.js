@@ -11,7 +11,7 @@ const { transformSync } = require('@babel/core');
 function nodes(element) { return [element, ...React.Children.toArray(element?.props?.children).flatMap(nodes)]; }
 for (const catalog of [en, pt]) {
   test(`Home exposes every secondary destination before any interaction (${catalog === en ? 'EN' : 'PT'})`, () => {
-    const react = { ...React, useState: (value) => [value, () => {}], useEffect: () => {}, useCallback: (value) => value };
+    const react = { ...React, useRef: value => ({ current: value }), useState: (value) => [value, () => {}], useEffect: () => {}, useCallback: (value) => value };
     const native = Object.fromEntries(['ScrollView', 'Text', 'TouchableOpacity', 'View'].map((name) => [name, name]));
     const t = (key) => key.split('.').reduce((value, part) => value[part], catalog);
     const imports = { '../hooks/useSpecialFeed': () => {}, '../utils/eventIdentity': identity, '@react-navigation/native': { useFocusEffect: () => {} }, '../utils/storage': { getSavedEvents: async () => [] }, react, 'react-native': native, '../i18n': { useLocale: () => ({ t }) }, '../utils/eventRoute': {}, '../utils/theme': { colors: {} }, '../utils/navigation': { homeFeedback: () => 'loading' }, '../utils/discovery': { shortcutWindow: () => ({ start: '2026-10-13', end: '2026-10-13' }) }, '../utils/data': { todayAzores: () => '2026-10-13', sortDatedEvents: (events) => events, sortExhibitions: (events) => events }, '../components/EventCard': () => null };
@@ -36,14 +36,14 @@ for (const catalog of [en, pt]) {
 test('Exhibitions is consumed once, preserves ordinary Back, and reapplies the same repeated shortcut', () => {
   const state = [], setters = new Map();
   let cursor = 0, previous, pending;
-  const react = { ...React, useState: (value) => {
+  const react = { ...React, useRef: value => ({ current: value }), useState: (value) => {
     const index = cursor++;
     if (!(index in state)) state[index] = value;
     const setter = (next) => { state[index] = next; };
     setters.set(value, setter);
     return [state[index], setter];
   }, useEffect: (effect, deps) => {
-    if (deps.length < 2) return;
+    if (!deps.includes(navigation)) return;
     if (!previous || deps.some((value, index) => !Object.is(value, previous[index]))) pending = effect;
     previous = deps;
   }, useCallback: (value) => value, useMemo: (compute) => compute() };

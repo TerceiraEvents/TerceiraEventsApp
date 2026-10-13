@@ -3,7 +3,7 @@ import { reconcileSaved } from '../utils/eventIdentity';
 import { getSavedEvents } from '../utils/storage';
 import useSpecialFeed from '../hooks/useSpecialFeed';
 import { eventDetailParams } from '../utils/eventRoute';
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   View,
   Text,
@@ -67,10 +67,14 @@ export default function SpecialEventsScreen({ navigation, route }) {
   const [selectedTag, setSelectedTag] = useState('');
   const [tagPickerOpen, setTagPickerOpen] = useState(false);
   const [rangePickerOpen, setRangePickerOpen] = useState(false);
+  const listRef = useRef(null);
+  const handledEntry = useRef(0);
+  const [freshEntry, setFreshEntry] = useState(0);
 
   useEffect(() => {
     const fresh = route?.params?.resetFilters === true;
     if (fresh) {
+      setFreshEntry(value => value + 1);
       setSavedOnly(false); setSearch(''); setSelectedTag(''); setLocality(''); setFree(false); setFamily(false);
       setTagPickerOpen(false); setRangePickerOpen(false);
     }
@@ -81,6 +85,13 @@ export default function SpecialEventsScreen({ navigation, route }) {
     if (route?.params?.saved === true) setSavedOnly(true);
     if (fresh || ['event', 'exhibition'].includes(route?.params?.kind) || explicitRange || route?.params?.saved === true) navigation.setParams({ kind: undefined, range: undefined, saved: undefined, resetFilters: undefined });
   }, [navigation, route?.params?.kind, route?.params?.range, route?.params?.saved, route?.params?.resetFilters]);
+
+  useEffect(() => {
+    if (freshEntry > handledEntry.current && !loading && listRef.current) {
+      listRef.current.scrollToOffset({ offset: 0, animated: false });
+      handledEntry.current = freshEntry;
+    }
+  }, [freshEntry, loading]);
 
   const loadSaved = useCallback(async () => {
     setSavedRefreshing(true);
@@ -213,6 +224,7 @@ export default function SpecialEventsScreen({ navigation, route }) {
     <View style={styles.container}>
 
       <FlatList
+        ref={listRef}
         ListHeaderComponent={filters}
         keyboardShouldPersistTaps="handled"
         data={filtered}

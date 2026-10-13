@@ -22,18 +22,18 @@ const text = element => nodes(element).filter(node => node?.type === 'Text').map
 const button = (tree, label) => nodes(tree).find(node => node?.type === 'TouchableOpacity' && (node.props.accessibilityLabel === label || text(node).includes(label)));
 const list = tree => nodes(tree).find(node => node?.type === 'FlatList');
 function screen(file, catalog, props) {
-  const slots = [], deps = [], pending = []; let cursor = 0, focus;
+  const slots = [], deps = [], pending = []; let cursor = 0, focus, offset = 0; const scrollCalls = []; let committedIDs = [];
   const same = (left, right) => left && right && left.length === right.length && left.every((value, index) => Object.is(value, right[index]));
   const memo = (compute, dependencies) => { const index = cursor++; if (!same(deps[index], dependencies)) { slots[index] = compute(); deps[index] = dependencies; } return slots[index]; };
-  const react = { ...React, useState: value => { const index = cursor++; if (!(index in slots)) slots[index] = typeof value === 'function' ? value() : value; return [slots[index], next => { slots[index] = typeof next === 'function' ? next(slots[index]) : next; }]; }, useEffect: (effect, dependencies) => { const index = cursor++; if (!same(deps[index], dependencies)) { pending.push(effect); deps[index] = dependencies; } }, useCallback: (callback, dependencies) => memo(() => callback, dependencies), useMemo: memo };
+  const react = { ...React, useRef: value => memo(() => ({ current: value }), []), useState: value => { const index = cursor++; if (!(index in slots)) slots[index] = typeof value === 'function' ? value() : value; return [slots[index], next => { slots[index] = typeof next === 'function' ? next(slots[index]) : next; }]; }, useEffect: (effect, dependencies) => { const index = cursor++; if (!same(deps[index], dependencies)) { pending.push(effect); deps[index] = dependencies; } }, useCallback: (callback, dependencies) => memo(() => callback, dependencies), useMemo: memo };
   const native = Object.fromEntries(['ScrollView', 'View', 'Text', 'TouchableOpacity', 'FlatList', 'RefreshControl', 'TextInput', 'Modal', 'Pressable'].map(name => [name, name])); native.StyleSheet = { create: styles => styles };
   const t = key => key.split('.').reduce((value, part) => value?.[part], catalog) || key;
   const imports = { react, 'react-native': native, '@react-navigation/native': { useFocusEffect: callback => { if (focus !== callback) { pending.push(callback); focus = callback; } } }, '../hooks/useSpecialFeed': () => {}, '../utils/eventIdentity': identity, '../utils/eventRoute': eventRoute, '../utils/theme': theme, '../utils/discovery': discovery, '../utils/tags': tags, '../utils/navigation': { homeFeedback }, '../utils/storage': { getSavedEvents: async () => [{ id: events[0].id, event: events[0] }] }, '../utils/notifications': {}, '../utils/data': { ...data, todayAzores: () => today, isActive: event => data.isInRange(event, 'all', today), isInRange: (event, range) => data.isInRange(event, range, today), fetchSpecialEvents: async () => events, getSpecialFeedState: () => ({ status: 'current' }) }, '../i18n': { useLocale: () => ({ t }) }, '../components/EventCard': 'EventCard', '../components/LoadingView': 'Loading' };
   const code = transformSync(readFileSync(new URL(file, import.meta.url), 'utf8'), { babelrc: false, configFile: false, plugins: ['@babel/plugin-transform-react-jsx', '@babel/plugin-transform-modules-commonjs'] }).code;
   const module = { exports: {} }; new Function('require', 'module', 'exports', code)(name => { assert.ok(name in imports, name); return imports[name]; }, module, module.exports);
-  const render = () => { cursor = 0; return module.exports.default(props); };
+  const render = () => { cursor = 0; const tree = module.exports.default(props); const currentList = list(tree); if (currentList) { committedIDs = currentList.props.data.map(event => event.id); if (currentList.props.ref) currentList.props.ref.current = { scrollToOffset: options => { offset = options.offset; scrollCalls.push({ ...options, ids: committedIDs }); } }; } return tree; };
   const settle = async () => { for (let index = 0; index < 4; index++) { render(); pending.splice(0).forEach(effect => effect()); await new Promise(setImmediate); } return render(); };
-  return { render, settle, t, focus: () => pending.push(focus) };
+  return { render, settle, t, setOffset: value => { offset = value; }, getOffset: () => offset, scrollCalls, focus: () => pending.push(focus) };
 }
 function dateAction(tree) { return React.Children.toArray(tree.props.children).filter(node => node.type === 'TouchableOpacity')[1]; }
 
@@ -64,6 +64,7 @@ for (const selection of ['today', 'tomorrow', 'weekend', 'all', 'exhibition']) t
     button(tree, en.specialEvents.allTags).props.onPress(); tree = explore.render();
     button(tree, 'Music').props.onPress(); tree = explore.render();
     assert.equal(list(tree).props.data.length, 0, 'prior Saved/locality/search/facets hide catalog rows');
+    explore.setOffset(333);
     const home = screen('../HomeScreen.js', en, { navigation: { navigate: (name, params) => { assert.equal(name, 'Events'); Object.assign(route.params, params); } } }); let homeTree = await home.settle();
     if (selection === 'all') button(homeTree, home.t('discovery.search')).props.onPress();
     else if (selection === 'exhibition') button(homeTree, home.t('discovery.onView')).props.onPress();
@@ -71,6 +72,10 @@ for (const selection of ['today', 'tomorrow', 'weekend', 'all', 'exhibition']) t
     tree = await explore.settle();
     const expected = events.filter(event => selection === 'exhibition' ? event.kind === 'exhibition' : event.kind === 'event' && (selection === 'all' || (selection === 'today' ? event.id.startsWith('today-') : selection === 'tomorrow' ? event.id.startsWith('tomorrow-') : event.id.startsWith('weekend-')))).map(event => event.id).sort();
     assert.deepEqual(list(tree).props.data.map(event => event.id).sort(), expected, selection);
+    assert.equal(explore.getOffset(), 0, 'explicit Home entry reaches list top');
+    assert.equal(explore.scrollCalls.length, 1);
+    assert.deepEqual(explore.scrollCalls[0].ids.slice().sort(), expected, 'scroll occurs after new filtered data commits');
+    assert.equal(explore.scrollCalls[0].animated, false);
     assert.equal(button(tree, explore.t('discovery.saved')).props.accessibilityState.checked, false);
     assert.equal(nodes(tree).find(node => node.type === 'TextInput').props.value, '');
     assert.ok(button(tree, en.specialEvents.allTags));
@@ -84,7 +89,9 @@ for (const selection of ['today', 'tomorrow', 'weekend', 'all', 'exhibition']) t
     assert.ok(before.length);
     nodes(list(tree).props.renderItem({ item: list(tree).props.data[0] })).find(node => node.type === 'EventCard').props.onOpen();
     assert.equal(calls.at(-1)[0], 'EventDetail');
-    explore.focus(); tree = await explore.settle();
+    explore.setOffset(222); explore.focus(); tree = await explore.settle();
     assert.deepEqual(list(tree).props.data.map(event => event.id), before);
+    assert.equal(explore.getOffset(), 222, 'Back retains native scroll position');
+    assert.equal(explore.scrollCalls.length, 1, 'Back does not repeat fresh-entry reset');
     assert.equal(button(tree, explore.t('discovery.free')).props.accessibilityState.selected, true);
 });

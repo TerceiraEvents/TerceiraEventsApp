@@ -17,7 +17,7 @@ function render(screen, catalog) {
   const native = Object.fromEntries(['View', 'Text', 'ScrollView', 'FlatList', 'TouchableOpacity', 'TextInput', 'Modal', 'Pressable', 'RefreshControl', 'Switch', 'ActivityIndicator', 'KeyboardAvoidingView'].map(name => [name, name]));
   native.StyleSheet = { create: value => value }; native.Platform = { OS: 'ios' };
   const imports = {
-    react: { ...React, useState: value => [value === true ? false : value === null && screen === 'SettingsScreen' ? {} : value, () => {}], useEffect: () => {}, useCallback: value => value, useMemo: compute => compute() },
+    react: { ...React, useRef: value => ({ current: value }), useState: value => [value === true ? false : value === null && screen === 'SettingsScreen' ? {} : value, () => {}], useEffect: () => {}, useCallback: value => value, useMemo: compute => compute() },
     'react-native': native, '@react-navigation/native': { useFocusEffect: () => {} },
     '../i18n': { useLocale: () => ({ locale: catalog === en ? 'en' : 'pt', t: key => key.split('.').reduce((value, part) => value?.[part], catalog) || key }), LOCALE_CHOICES: [] },
     '../utils/data': { ...data, venues: [], resources: [], instagramAccounts: [], facebookPages: [] }, '../utils/theme': theme, '../utils/tags': tags, '../utils/discovery': discovery, '../utils/navigation': navigation, '../utils/eventIdentity': identity,
