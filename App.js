@@ -35,7 +35,7 @@ function PrimaryTabs() {
   const { t } = useLocale();
   const { fontScale, width } = useWindowDimensions();
   const { bottom, left = 0, right = 0 } = useSafeAreaInsets();
-  const tabWeights = { [primaryRoutes.home]: 0.9, [primaryRoutes.events]: 1.15, [primaryRoutes.weekly]: 1.15, [primaryRoutes.venues]: 1, [primaryRoutes.more]: 0.8 };
+  const tabWeights = { [primaryRoutes.home]: 0.85, [primaryRoutes.events]: 1.07, [primaryRoutes.weekly]: 1.35, [primaryRoutes.venues]: 0.98, [primaryRoutes.more]: 0.75 };
   const totalWeight = Object.values(tabWeights).reduce((sum, value) => sum + value, 0);
   const icons = {
     [primaryRoutes.home]: '⌂',
