@@ -111,6 +111,7 @@ test('actual weighted tab cells give Events and Weekly extra width without shrin
     const weights = options.map(value => value.tabBarItemStyle?.flex ?? 1);
     assert.ok(weights[1] > weights[0] && weights[2] > weights[0], 'longer Events and Weekly labels need larger cells');
     assert.ok(weights[1] > weights[4] && weights[2] > weights[4]);
+    assert.ok(weights[2] > weights[1], 'Semanais requires the largest measured label budget');
     const total = weights.reduce((sum, value) => sum + value, 0);
     let edge = left;
     for (const [index, screen] of screens.entries()) {
