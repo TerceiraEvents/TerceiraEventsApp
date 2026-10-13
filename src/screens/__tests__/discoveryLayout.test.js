@@ -13,10 +13,10 @@ const require = createRequire(import.meta.url);
 const { transformSync } = require('@babel/core');
 function renderDiscovery() {
   let stateIndex = 0;
-  const react = { ...React, useState: (value) => [stateIndex++ === 2 ? false : value, () => {}], useEffect: () => {}, useCallback: (fn) => fn, useMemo: (fn) => fn() };
+  const react = { ...React, useRef: value => ({ current: value }), useState: (value) => [stateIndex++ === 2 ? false : value, () => {}], useEffect: () => {}, useCallback: (fn) => fn, useMemo: (fn) => fn() };
   const native = Object.fromEntries(['View', 'Text', 'FlatList', 'TouchableOpacity', 'RefreshControl', 'TextInput', 'Modal', 'Pressable', 'ScrollView'].map((name) => [name, name]));
   native.StyleSheet = { create: (styles) => styles };
-  const imports = { '../hooks/useSpecialFeed': () => {}, '../utils/eventIdentity': identity, '@react-navigation/native': { useFocusEffect: () => {} }, '../utils/storage': { getSavedEvents: async () => [] }, react, 'react-native': native, '../utils/data': data, '../utils/discovery': discovery, '../utils/tags': tags, '../utils/theme': theme, '../i18n': { useLocale: () => ({ t: (key) => key }) } };
+  const imports = { '../hooks/useAzoresDay': () => '2026-10-13', '../hooks/useSpecialFeed': () => {}, '../utils/eventIdentity': identity, '@react-navigation/native': { useFocusEffect: () => {} }, '../utils/storage': { getSavedEvents: async () => [] }, react, 'react-native': native, '../utils/data': data, '../utils/discovery': discovery, '../utils/tags': tags, '../utils/theme': theme, '../i18n': { useLocale: () => ({ t: (key) => key }) } };
   const code = transformSync(readFileSync(new URL('../SpecialEventsScreen.js', import.meta.url), 'utf8'), { babelrc: false, configFile: false, plugins: ['@babel/plugin-transform-react-jsx', '@babel/plugin-transform-modules-commonjs'] }).code;
   const module = { exports: {} };
   new Function('require', 'module', 'exports', code)((name) => imports[name] || {}, module, module.exports);
@@ -38,7 +38,7 @@ test('actual primary tab options reserve large-label space without disabling sca
   const header = await import('../../navigation/headerTheme.js');
   const layout = await import('../../utils/tabLayout.js');
   for (const fontScale of [1, 2, 3]) {
-    const imports = { '../hooks/useSpecialFeed': () => {},
+    const imports = { '../hooks/useAzoresDay': () => '2026-10-13', '../hooks/useSpecialFeed': () => {},
       react: React,
       'react-native': { Text: 'Text', useWindowDimensions: () => ({ fontScale, width: 402 }) },
       'react-native-safe-area-context': { useSafeAreaInsets: () => ({ bottom: 24 }) },

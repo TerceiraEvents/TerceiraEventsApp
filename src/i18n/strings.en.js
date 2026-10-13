@@ -83,7 +83,9 @@ export default
       "p1": "Terceira is known as \"the amusement park\" of the Azores — a small island packed with concerts, festivals, bullfights, and parties year-round."
     },
     "links": {
-      "allUpcoming": "All upcoming →"
+      "today": "All events today",
+      "tomorrow": "All events tomorrow",
+      "weekend": "All events this weekend"
     }
   },
   "specialEvents": {
@@ -97,6 +99,10 @@ export default
       "filterByTag": "Filter by tag"
     },
     "ranges": {
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "weekend": "This weekend",
+
       "thisWeek": "Next 7 days",
       "thisMonth": "Next 31 days",
       "thisYear": "Next 365 days",

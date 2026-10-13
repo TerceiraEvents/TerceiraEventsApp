@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { validateEventDataset, validateWeeklyDataset, inspectEventDataset } from './feedState.js';
 import { normalizeEventTags } from './tags.js';
+import { shortcutWindow } from './discovery.js';
 
 const SPECIAL_EVENTS_URL =
   'https://raw.githubusercontent.com/TerceiraEvents/EventosTerceira.pt/main/_data/special_events.yml';
@@ -352,9 +353,7 @@ export function eventOccursOn(event, isoDate) {
   return Boolean(range && date && range.start <= date && date <= range.end);
 }
 
-// Test whether an event falls inside a given date range. Mirrors the
-// website's range filter (rolling windows of 7 / 31 / 365 days from today).
-// `archive` is past-only; everything else is upcoming-only.
+/** Match upcoming date shortcuts or rolling 7/31/365-day windows; Archive matches past events. */
 export function isInRange(event, range, today = todayAzores()) {
   const start = isoCalendarDate(event?.date);
   const end = endDateOf(event);
@@ -362,6 +361,10 @@ export function isInRange(event, range, today = todayAzores()) {
   if (range === 'archive') return end < today;
   if (end < today) return false;
   if (range === 'all') return true;
+  if (['today', 'tomorrow', 'weekend'].includes(range)) {
+    const window = shortcutWindow(range, today);
+    return start <= window.end && end >= window.start;
+  }
   const days = RANGE_DAYS[range];
   if (!days) return true;
   return start < addDays(today, days);

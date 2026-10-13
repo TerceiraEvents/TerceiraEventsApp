@@ -1,9 +1,10 @@
+import useAzoresDay from '../hooks/useAzoresDay';
 import { useFocusEffect } from '@react-navigation/native';
 import { reconcileSaved } from '../utils/eventIdentity';
 import { getSavedEvents } from '../utils/storage';
 import useSpecialFeed from '../hooks/useSpecialFeed';
 import { eventDetailParams } from '../utils/eventRoute';
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   View,
   Text,
@@ -37,6 +38,9 @@ import LoadingView from '../components/LoadingView';
 import { useLocale } from '../i18n';
 
 const RANGE_DEFS = [
+  { key: 'today', i18nKey: 'today', emoji: '📅' },
+  { key: 'tomorrow', i18nKey: 'tomorrow', emoji: '📅' },
+  { key: 'weekend', i18nKey: 'weekend', emoji: '📅' },
   { key: 'week', i18nKey: 'thisWeek', emoji: '📅' },
   { key: 'month', i18nKey: 'thisMonth', emoji: '📆' },
   { key: 'year', i18nKey: 'thisYear', emoji: '🗓️' },
@@ -47,6 +51,7 @@ const RANGE_BY_KEY = Object.fromEntries(RANGE_DEFS.map((r) => [r.key, r]));
 
 export default function SpecialEventsScreen({ navigation, route }) {
   const { t } = useLocale();
+  const azoresDay = useAzoresDay();
   const [events, setEvents] = useState([]);
   const [feedState, setFeedState] = useState({ status: 'loading' });
   const [loading, setLoading] = useState(true);
@@ -64,15 +69,31 @@ export default function SpecialEventsScreen({ navigation, route }) {
   const [selectedTag, setSelectedTag] = useState('');
   const [tagPickerOpen, setTagPickerOpen] = useState(false);
   const [rangePickerOpen, setRangePickerOpen] = useState(false);
+  const listRef = useRef(null);
+  const handledEntry = useRef(0);
+  const [freshEntry, setFreshEntry] = useState(0);
 
   useEffect(() => {
+    const fresh = route?.params?.resetFilters === true;
+    if (fresh) {
+      setFreshEntry(value => value + 1);
+      setSavedOnly(false); setSearch(''); setSelectedTag(''); setLocality(''); setFree(false); setFamily(false);
+      setTagPickerOpen(false); setRangePickerOpen(false);
+    }
     if (['event', 'exhibition'].includes(route?.params?.kind)) setKind(route.params.kind);
     const explicitRange = RANGE_DEFS.some((option) => option.key === route?.params?.range);
     if (explicitRange) setRange(route.params.range);
     else if (route?.params?.saved === true) setRange('all');
     if (route?.params?.saved === true) setSavedOnly(true);
-    if (['event', 'exhibition'].includes(route?.params?.kind) || explicitRange || route?.params?.saved === true) navigation.setParams({ kind: undefined, range: undefined, saved: undefined });
-  }, [navigation, route?.params?.kind, route?.params?.range, route?.params?.saved]);
+    if (fresh || ['event', 'exhibition'].includes(route?.params?.kind) || explicitRange || route?.params?.saved === true) navigation.setParams({ kind: undefined, range: undefined, saved: undefined, resetFilters: undefined });
+  }, [navigation, route?.params?.kind, route?.params?.range, route?.params?.saved, route?.params?.resetFilters]);
+
+  useEffect(() => {
+    if (freshEntry > handledEntry.current && !loading && listRef.current) {
+      listRef.current.scrollToOffset({ offset: 0, animated: false });
+      handledEntry.current = freshEntry;
+    }
+  }, [freshEntry, loading]);
 
   const loadSaved = useCallback(async () => {
     setSavedRefreshing(true);
@@ -111,17 +132,17 @@ export default function SpecialEventsScreen({ navigation, route }) {
   const sortedEvents = useMemo(() => sortEventsByDate(savedOnly ? savedItems.map((entry) => entry.event).filter(Boolean) : events), [events, savedOnly, savedItems]);
 
   const filtered = useMemo(() => {
-    let base = sortedEvents.filter((e) => isInRange(e, range) && eventKind(e) === kind);
+    let base = sortedEvents.filter((e) => isInRange(e, range, azoresDay) && eventKind(e) === kind);
     if (kind === 'exhibition') base = sortExhibitions(base);
     if (range === 'archive') base = base.reverse();
     return applyEventFilters(base, { search, selectedTag }).filter((event) => matchesDiscoveryOptions(event, { locality, free, family, savedOnly, savedIDs }));
-  }, [sortedEvents, range, search, selectedTag, kind, locality, free, family, savedOnly, savedIDs]);
+  }, [sortedEvents, range, search, selectedTag, kind, locality, free, family, savedOnly, savedIDs, azoresDay]);
 
   if (loading) return <LoadingView />;
 
   const localities = localityCoverage(events);
   const activeTag = selectedTag ? getTagMeta(selectedTag) : null;
-  const activeRange = RANGE_BY_KEY[range] || RANGE_DEFS[0];
+  const activeRange = RANGE_BY_KEY[range] || RANGE_BY_KEY.week;
   const activeRangeLabel = t(`specialEvents.ranges.${activeRange.i18nKey}`);
 
   const filters = (
@@ -205,6 +226,7 @@ export default function SpecialEventsScreen({ navigation, route }) {
     <View style={styles.container}>
 
       <FlatList
+        ref={listRef}
         ListHeaderComponent={filters}
         keyboardShouldPersistTaps="handled"
         data={filtered}
