@@ -7,11 +7,11 @@ export default
 
     "localityPartial": "Nem todos os eventos têm localidade confirmada. Escolha Todos os locais para incluir os restantes.",
     "savedUnknown": "Não foi possível ler os eventos guardados. Tente novamente antes de os alterar.",
+    "cacheTimeUnknown": "A hora da última obtenção destes dados guardados é desconhecida.",
     "artworkUnavailable": "Cartaz indisponível. A informação do evento continua disponível.",
     "artworkCredit": "Crédito do cartaz:",
     "artworkSource": "Fonte do cartaz",
 
-    "cacheTimeUnknown": "A hora da última obtenção destes dados guardados é desconhecida.",
     "reminderTimeUnknown": "É necessária uma hora publicada futura e sem ambiguidade para definir este lembrete. Não foi definido nenhum lembrete.",
     "reminderPermissionDenied": "As notificações não estão autorizadas. Não foi definido nenhum lembrete; os planos guardados continuam disponíveis.",
     "reminderUnknown": "Não foi possível ler o estado do lembrete. O evento e os planos continuam disponíveis.",

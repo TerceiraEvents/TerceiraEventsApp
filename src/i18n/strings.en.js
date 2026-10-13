@@ -7,11 +7,11 @@ export default
 
     "localityPartial": "Locality coverage is partial. Choose All places to include events without confirmed locality.",
     "savedUnknown": "Saved events could not be read. Retry before changing them.",
+    "cacheTimeUnknown": "The last successful fetch time of these cached records is unknown.",
     "artworkUnavailable": "Artwork unavailable. Event information remains available.",
     "artworkCredit": "Artwork credit:",
     "artworkSource": "Artwork source",
 
-    "cacheTimeUnknown": "The last successful fetch time of these cached records is unknown.",
     "reminderTimeUnknown": "A future, unambiguous published time is required to set this reminder. No reminder was set.",
     "reminderPermissionDenied": "Notifications are not allowed. No reminder was set; your saved events remain available.",
     "reminderUnknown": "Reminder state could not be read. Your event and saved events remain available.",
