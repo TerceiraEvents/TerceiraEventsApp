@@ -104,7 +104,7 @@ test('actual five-tab labels expose localized names and uncapped wrapping', () =
 
 
 test('actual weighted tab cells give Events and Weekly extra width without shrinking labels', () => {
-  for (const [width, left, right] of [[320, 0, 0], [402, 0, 0], [411.4286, 0, 0], [402, 16, 16]]) {
+  for (const [width, left, right, barLeft, barRight] of [[320, 0, 0, 0, 320], [402, 0, 0, 0, 402], [411.4286, 0, 0, 0, 411.4286], [402, 16, 16, 16, 386], [914, 48, 0, 48, 866], [914, 0, 48, 48, 866]]) {
     const tree = render(pt, 2.143, 34, width, left, right);
     const screens = React.Children.toArray(tree.props.children);
     const options = screens.map(screen => tree.props.screenOptions({ route: { name: screen.props.name } }));
@@ -113,13 +113,15 @@ test('actual weighted tab cells give Events and Weekly extra width without shrin
     assert.ok(weights[1] > weights[4] && weights[2] > weights[4]);
     assert.ok(weights[2] > weights[1], 'Semanais requires the largest measured label budget');
     const total = weights.reduce((sum, value) => sum + value, 0);
-    let edge = left;
+    const labels = options.map((value, index) => value.tabBarLabel({ children: screens[index].props.options.title, color: 'black' }));
+    assert.ok(labels.reduce((sum, label) => sum + label.props.style.width, 0) <= barRight - barLeft + Number.EPSILON * width, 'combined label widths stay inside observed bar bounds');
+    let edge = barLeft;
     for (const [index, screen] of screens.entries()) {
       const label = options[index].tabBarLabel({ children: screen.props.options.title, color: 'black' });
-      const cellWidth = (width - left - right) * weights[index] / total;
+      const cellWidth = (barRight - barLeft) * weights[index] / total;
       assert.equal(label.props.style.width, cellWidth, 'text uses the same share as its public item flex');
       assert.ok(cellWidth >= 44);
-      assert.ok(edge >= left && edge + cellWidth <= width - right + Number.EPSILON * width);
+      assert.ok(edge >= barLeft && edge + cellWidth <= barRight + Number.EPSILON * width);
       assert.equal(label.props.numberOfLines, undefined);
       assert.notEqual(label.props.allowFontScaling, false);
       edge += cellWidth;

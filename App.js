@@ -52,7 +52,7 @@ function PrimaryTabs() {
       tabBarStyle: { height: tabBarHeight(fontScale, bottom) },
       tabBarLabelPosition: 'below-icon',
       tabBarItemStyle: { flex: tabWeights[route.name] },
-      tabBarLabel: ({ children, color }) => <Text style={{ color, fontSize: 12, lineHeight: 18, textAlign: 'center', width: (width - left - right) * tabWeights[route.name] / totalWeight }}>{children}</Text>,
+      tabBarLabel: ({ children, color }) => <Text style={{ color, fontSize: 12, lineHeight: 18, textAlign: 'center', width: (width - 2 * Math.max(left, right)) * tabWeights[route.name] / totalWeight }}>{children}</Text>,
       tabBarIcon: ({ color, size }) => <Text accessibilityElementsHidden allowFontScaling={false} style={{ color, fontSize: size }}>{icons[route.name]}</Text>,
     })}>
       <Tab.Screen name={primaryRoutes.home} component={HomeScreen} options={{ title: t('tabs.home'), tabBarAccessibilityLabel: t('tabs.home') }} />
