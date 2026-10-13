@@ -1,6 +1,7 @@
 export default
 {
   "discovery": {
+    "refreshing": "A mostrar dados guardados enquanto se consulta a publicação.",
     "cacheTimeUnknown": "A hora da última obtenção destes dados guardados é desconhecida.",
     "artworkUnavailable": "Cartaz indisponível. A informação do evento continua disponível.",
     "artworkCredit": "Crédito do cartaz:",
