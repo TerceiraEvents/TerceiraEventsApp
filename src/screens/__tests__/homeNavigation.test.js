@@ -21,7 +21,7 @@ for (const catalog of [en, pt]) {
     const calls = [];
     const tree = module.exports.default({ navigation: { navigate: (...args) => calls.push(args) } });
     const buttons = nodes(tree).filter((node) => node?.type === 'TouchableOpacity');
-    for (const [label, route, params] of [['discovery.search', 'Events', { kind: 'event', range: 'all' }], ['home.links.allUpcoming', 'Events', { kind: 'event', range: 'all' }], ['tabs.weekly', 'Weekly'], ['discovery.onView', 'Events', { kind: 'exhibition', range: 'all' }], ['tabs.blog', 'Blog'], ['discovery.resources', 'Resources'], ['tabs.settings', 'Settings'], ['tabs.suggestEvent', 'SuggestEvent']]) {
+    for (const [label, route, params] of [['discovery.search', 'Events', { kind: 'event', range: 'all', resetFilters: true }], ['home.links.today', 'Events', { kind: 'event', range: 'today', resetFilters: true }], ['tabs.weekly', 'Weekly'], ['discovery.onView', 'Events', { kind: 'exhibition', range: 'all', resetFilters: true }], ['tabs.blog', 'Blog'], ['discovery.resources', 'Resources'], ['tabs.settings', 'Settings'], ['tabs.suggestEvent', 'SuggestEvent']]) {
       const button = buttons.find((node) => nodes(node).some((child) => child?.type === 'Text' && child.props.children === t(label)));
       assert.ok(button, `visible ${t(label)}`);
       assert.equal(button.props.accessibilityRole, 'button');
@@ -72,12 +72,12 @@ test('Exhibitions is consumed once, preserves ordinary Back, and reapplies the s
   const homeModule = { exports: {} };
   new Function('require', 'module', 'exports', homeCode)((name) => homeImports[name], homeModule, homeModule.exports);
   const home = homeModule.exports.default({ navigation: { navigate: (name, params) => { assert.equal(name, 'Events'); route.params = { ...params }; } } });
-  for (const label of ['home.links.allUpcoming', 'discovery.search']) {
+  for (const [label, expectedRange] of [['home.links.today', 'today'], ['discovery.search', 'all']]) {
     Object.assign(route.params, { kind: 'exhibition', range: 'all' });
     render(); render();
     const button = nodes(home).find((node) => node?.type === 'TouchableOpacity' && nodes(node).some((child) => child?.props?.children === label));
     button.props.onPress(); render();
-    assert.ok(state.includes('event') && state.includes('all'), `${label} after Exhibitions opens dated upcoming events`);
+    assert.ok(state.includes('event') && state.includes(expectedRange), `${label} after Exhibitions opens dated upcoming events`);
     render();
   }
 });

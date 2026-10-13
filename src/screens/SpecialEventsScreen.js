@@ -37,6 +37,9 @@ import LoadingView from '../components/LoadingView';
 import { useLocale } from '../i18n';
 
 const RANGE_DEFS = [
+  { key: 'today', i18nKey: 'today', emoji: '📅' },
+  { key: 'tomorrow', i18nKey: 'tomorrow', emoji: '📅' },
+  { key: 'weekend', i18nKey: 'weekend', emoji: '📅' },
   { key: 'week', i18nKey: 'thisWeek', emoji: '📅' },
   { key: 'month', i18nKey: 'thisMonth', emoji: '📆' },
   { key: 'year', i18nKey: 'thisYear', emoji: '🗓️' },
@@ -66,13 +69,18 @@ export default function SpecialEventsScreen({ navigation, route }) {
   const [rangePickerOpen, setRangePickerOpen] = useState(false);
 
   useEffect(() => {
+    const fresh = route?.params?.resetFilters === true;
+    if (fresh) {
+      setSavedOnly(false); setSearch(''); setSelectedTag(''); setLocality(''); setFree(false); setFamily(false);
+      setTagPickerOpen(false); setRangePickerOpen(false);
+    }
     if (['event', 'exhibition'].includes(route?.params?.kind)) setKind(route.params.kind);
     const explicitRange = RANGE_DEFS.some((option) => option.key === route?.params?.range);
     if (explicitRange) setRange(route.params.range);
     else if (route?.params?.saved === true) setRange('all');
     if (route?.params?.saved === true) setSavedOnly(true);
-    if (['event', 'exhibition'].includes(route?.params?.kind) || explicitRange || route?.params?.saved === true) navigation.setParams({ kind: undefined, range: undefined, saved: undefined });
-  }, [navigation, route?.params?.kind, route?.params?.range, route?.params?.saved]);
+    if (fresh || ['event', 'exhibition'].includes(route?.params?.kind) || explicitRange || route?.params?.saved === true) navigation.setParams({ kind: undefined, range: undefined, saved: undefined, resetFilters: undefined });
+  }, [navigation, route?.params?.kind, route?.params?.range, route?.params?.saved, route?.params?.resetFilters]);
 
   const loadSaved = useCallback(async () => {
     setSavedRefreshing(true);
@@ -121,7 +129,7 @@ export default function SpecialEventsScreen({ navigation, route }) {
 
   const localities = localityCoverage(events);
   const activeTag = selectedTag ? getTagMeta(selectedTag) : null;
-  const activeRange = RANGE_BY_KEY[range] || RANGE_DEFS[0];
+  const activeRange = RANGE_BY_KEY[range] || RANGE_BY_KEY.week;
   const activeRangeLabel = t(`specialEvents.ranges.${activeRange.i18nKey}`);
 
   const filters = (

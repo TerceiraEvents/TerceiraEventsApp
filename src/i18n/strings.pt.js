@@ -83,7 +83,9 @@ export default
       "p1": "A Terceira é conhecida como o \"parque de diversões\" dos Açores — uma ilha pequena cheia de concertos, festivais, touradas e festas todo o ano."
     },
     "links": {
-      "allUpcoming": "Ver todos →"
+      "today": "Todos os eventos de hoje",
+      "tomorrow": "Todos os eventos de amanhã",
+      "weekend": "Todos os eventos deste fim de semana"
     }
   },
   "specialEvents": {
@@ -97,6 +99,10 @@ export default
       "filterByTag": "Filtrar por etiqueta"
     },
     "ranges": {
+      "today": "Hoje",
+      "tomorrow": "Amanhã",
+      "weekend": "Este fim de semana",
+
       "thisWeek": "Próximos 7 dias",
       "thisMonth": "Próximos 31 dias",
       "thisYear": "Próximos 365 dias",
