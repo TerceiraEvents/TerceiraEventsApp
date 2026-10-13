@@ -7,7 +7,6 @@ import { handleNotificationNavigation, rootRoutes, primaryRoutes } from './src/u
 import { headerOptions, statusBarStyleForRoute } from './src/navigation/headerTheme';
 import { createLinking } from './src/navigation/linking';
 import EventDetailScreen from './src/screens/EventDetailScreen';
-import SavedScreen from './src/screens/SavedScreen';
 import MoreScreen from './src/screens/MoreScreen';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Text, useWindowDimensions } from 'react-native';
@@ -39,7 +38,6 @@ function PrimaryTabs() {
     [primaryRoutes.home]: '⌂',
     [primaryRoutes.events]: '◇',
     [primaryRoutes.venues]: '⌖',
-    [primaryRoutes.saved]: '♡',
     [primaryRoutes.more]: '☰',
   };
   return (
@@ -55,7 +53,6 @@ function PrimaryTabs() {
       <Tab.Screen name={primaryRoutes.home} component={HomeScreen} options={{ title: t('tabs.home'), tabBarAccessibilityLabel: t('tabs.home') }} />
       <Tab.Screen name={primaryRoutes.events} component={SpecialEventsScreen} options={{ title: t('discovery.explore'), tabBarAccessibilityLabel: t('discovery.explore') }} />
       <Tab.Screen name={primaryRoutes.venues} component={VenuesScreen} options={{ title: t('tabs.venues'), tabBarAccessibilityLabel: t('tabs.venues') }} />
-      <Tab.Screen name={primaryRoutes.saved} component={SavedScreen} options={{ title: t('discovery.saved'), tabBarAccessibilityLabel: t('discovery.saved') }} />
       <Tab.Screen name={primaryRoutes.more} component={MoreScreen} options={{ title: t('discovery.more'), tabBarAccessibilityLabel: t('discovery.more') }} />
     </Tab.Navigator>
   );

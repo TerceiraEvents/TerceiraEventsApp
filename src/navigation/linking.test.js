@@ -19,3 +19,10 @@ test('detail URLs serialize only identity and never navigation snapshots', () =>
   assert.equal(path, '/events?id=one');
   assert.equal(path.includes('object'), false);
 });
+
+test('saved links select the visible Saved events filter rather than a removed tab', () => {
+  for (const path of ['saved/', 'pt/saved/']) {
+    const state = linking.getStateFromPath(path, linking.config);
+    assert.deepEqual(state.routes[0].state.routes, [{ name: 'Events', params: { saved: true, range: 'all' } }]);
+  }
+});

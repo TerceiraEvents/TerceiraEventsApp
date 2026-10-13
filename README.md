@@ -44,7 +44,9 @@ Updates to the website data are automatically reflected in the app.
 
 ## Navigation
 
-Home presents visible shortcuts to Weekly, On View, Blog, Resources, Settings and Suggest Event below its date shortcuts. The five bottom tabs remain available; Home shortcuts wrap with 44px minimum targets and localized labels. On View opens the exhibition filter across all dates. Find events and All upcoming open dated events across all upcoming dates. Shortcut selections are consumed once; normal tab Back retains user filters.
+Home presents visible shortcuts to Weekly, Exhibitions, Blog, Resources, Settings and Suggest Event below its date shortcuts. The four bottom tabs remain available; Home shortcuts wrap with 44px minimum targets and localized labels. Exhibitions opens the exhibition filter across all dates. Find events and All upcoming open dated events across all upcoming dates. Shortcut selections are consumed once; normal tab Back retains user filters.
+
+Saved events is a filter in Events, combined with the date/type/facets. Enabling it selects all upcoming dates. IDs are stored on this device without cross-device sync; Archive includes ended records. Existing saved URLs open this visible filter.
 
 ## License
 

@@ -15,9 +15,9 @@ export function shortcutWindow(key, today) {
   return { start: today, end: today };
 }
 
-export function matchesDiscoveryOptions(event, { locality = '', free = false, family = false } = {}) {
+export function matchesDiscoveryOptions(event, { locality = '', free = false, family = false, savedOnly = false, savedIDs = [] } = {}) {
   const tags = new Set(normalizeEventTags(event));
-  return (!locality || event.locality === locality) && (!free || tags.has('free')) && (!family || tags.has('kid-friendly'));
+  return (!savedOnly || (savedIDs || []).includes(event.id)) && (!locality || event.locality === locality) && (!free || tags.has('free')) && (!family || tags.has('kid-friendly'));
 }
 
 export function localityCoverage(events) {

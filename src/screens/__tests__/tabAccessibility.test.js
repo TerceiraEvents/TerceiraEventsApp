@@ -14,11 +14,13 @@ const definition = ast.program.body.find((node) => node.type === 'FunctionDeclar
 const code = transformSync(source.slice(definition.start, definition.end), { babelrc: false, configFile: false, plugins: ['@babel/plugin-transform-react-jsx'] }).code;
 for (const catalog of [en, pt]) test(`actual primary tabs have explicit localized spoken labels (${catalog === en ? 'EN' : 'PT'})`, () => {
   const t = (key) => key.split('.').reduce((value, part) => value[part], catalog);
-  const names = ['React', 'useLocale', 'useWindowDimensions', 'useSafeAreaInsets', 'primaryRoutes', 'Tab', 'HomeScreen', 'SpecialEventsScreen', 'VenuesScreen', 'SavedScreen', 'MoreScreen'];
-  const tree = new Function(...names, code + '\nreturn PrimaryTabs();')(React, () => ({ t }), () => ({ fontScale: 1 }), () => ({ bottom: 0 }), primaryRoutes, { Navigator: 'Navigator', Screen: 'Screen' }, 'Home', 'Events', 'Venues', 'Saved', 'More');
+  const names = ['React', 'useLocale', 'useWindowDimensions', 'useSafeAreaInsets', 'primaryRoutes', 'Tab', 'HomeScreen', 'SpecialEventsScreen', 'VenuesScreen', 'MoreScreen'];
+  const tree = new Function(...names, code + '\nreturn PrimaryTabs();')(React, () => ({ t }), () => ({ fontScale: 1 }), () => ({ bottom: 0 }), primaryRoutes, { Navigator: 'Navigator', Screen: 'Screen' }, 'Home', 'Events', 'Venues', 'More');
   const screens = React.Children.toArray(tree.props.children);
-  assert.equal(screens.length, 5);
-  for (const [index, key] of ['tabs.home', 'discovery.explore', 'tabs.venues', 'discovery.saved', 'discovery.more'].entries()) {
+  assert.equal(screens.length, 4);
+  for (const [index, key] of ['tabs.home', 'discovery.explore', 'tabs.venues', 'discovery.more'].entries()) {
+    const literal = catalog === en ? ['Home', 'Events', 'Venues', 'More'] : ['Início', 'Eventos', 'Locais', 'Mais'];
+    assert.equal(screens[index].props.options.title, literal[index]);
     assert.equal(screens[index].props.options.tabBarAccessibilityLabel, t(key));
     assert.equal(screens[index].props.options.tabBarAccessibilityLabel, screens[index].props.options.title);
   }

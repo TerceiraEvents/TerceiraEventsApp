@@ -15,7 +15,7 @@ function renderDiscovery() {
   const react = { ...React, useState: (value) => [stateIndex++ === 2 ? false : value, () => {}], useEffect: () => {}, useCallback: (fn) => fn, useMemo: (fn) => fn() };
   const native = Object.fromEntries(['View', 'Text', 'FlatList', 'TouchableOpacity', 'RefreshControl', 'TextInput', 'Modal', 'Pressable', 'ScrollView'].map((name) => [name, name]));
   native.StyleSheet = { create: (styles) => styles };
-  const imports = { react, 'react-native': native, '../utils/data': data, '../utils/discovery': discovery, '../utils/tags': tags, '../utils/theme': theme, '../i18n': { useLocale: () => ({ t: (key) => key }) } };
+  const imports = { '@react-navigation/native': { useFocusEffect: () => {} }, '../utils/storage': { getSavedEvents: async () => [] }, react, 'react-native': native, '../utils/data': data, '../utils/discovery': discovery, '../utils/tags': tags, '../utils/theme': theme, '../i18n': { useLocale: () => ({ t: (key) => key }) } };
   const code = transformSync(readFileSync(new URL('../SpecialEventsScreen.js', import.meta.url), 'utf8'), { babelrc: false, configFile: false, plugins: ['@babel/plugin-transform-react-jsx', '@babel/plugin-transform-modules-commonjs'] }).code;
   const module = { exports: {} };
   new Function('require', 'module', 'exports', code)((name) => imports[name] || {}, module, module.exports);

@@ -1,3 +1,5 @@
+import { useFocusEffect } from '@react-navigation/native';
+import { getSavedEvents } from '../utils/storage';
 import { eventDetailParams } from '../utils/eventRoute';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
@@ -52,6 +54,9 @@ export default function SpecialEventsScreen({ navigation, route }) {
   const [free, setFree] = useState(false);
   const [family, setFamily] = useState(false);
   const [kind, setKind] = useState('event');
+  const [savedOnly, setSavedOnly] = useState(false);
+  const [savedIDs, setSavedIDs] = useState(null);
+  const [savedReadError, setSavedReadError] = useState(false);
   const [search, setSearch] = useState('');
   const [selectedTag, setSelectedTag] = useState('');
   const [tagPickerOpen, setTagPickerOpen] = useState(false);
@@ -60,8 +65,16 @@ export default function SpecialEventsScreen({ navigation, route }) {
   useEffect(() => {
     if (['event', 'exhibition'].includes(route?.params?.kind)) setKind(route.params.kind);
     if (route?.params?.range === 'all') setRange('all');
-    if (['event', 'exhibition'].includes(route?.params?.kind) || route?.params?.range === 'all') navigation.setParams({ kind: undefined, range: undefined });
-  }, [navigation, route?.params?.kind, route?.params?.range]);
+    if (route?.params?.saved === true) setSavedOnly(true);
+    if (['event', 'exhibition'].includes(route?.params?.kind) || route?.params?.range === 'all' || route?.params?.saved === true) navigation.setParams({ kind: undefined, range: undefined, saved: undefined });
+  }, [navigation, route?.params?.kind, route?.params?.range, route?.params?.saved]);
+
+  const loadSaved = useCallback(async () => {
+    setSavedIDs(null);
+    try { setSavedIDs((await getSavedEvents()).map((entry) => entry.id)); setSavedReadError(false); }
+    catch { setSavedReadError(true); }
+  }, []);
+  useFocusEffect(useCallback(() => { loadSaved(); }, [loadSaved]));
 
   const loadEvents = useCallback(async (forceRefresh = false) => {
     const all = await fetchSpecialEvents(forceRefresh);
@@ -92,8 +105,8 @@ export default function SpecialEventsScreen({ navigation, route }) {
     let base = sortedEvents.filter((e) => isInRange(e, range) && eventKind(e) === kind);
     if (kind === 'exhibition') base = sortExhibitions(base);
     if (range === 'archive') base = base.reverse();
-    return applyEventFilters(base, { search, selectedTag }).filter((event) => matchesDiscoveryOptions(event, { locality, free, family }));
-  }, [sortedEvents, range, search, selectedTag, kind, locality, free, family]);
+    return applyEventFilters(base, { search, selectedTag }).filter((event) => matchesDiscoveryOptions(event, { locality, free, family, savedOnly, savedIDs }));
+  }, [sortedEvents, range, search, selectedTag, kind, locality, free, family, savedOnly, savedIDs]);
 
   if (loading) return <LoadingView />;
 
@@ -104,6 +117,11 @@ export default function SpecialEventsScreen({ navigation, route }) {
 
   const filters = (
       <View style={styles.headerArea}>
+        <TouchableOpacity accessibilityRole="checkbox" accessibilityState={{ checked: savedOnly, disabled: savedIDs === null && !savedOnly }} disabled={savedIDs === null && !savedOnly} style={{ padding: 16, minWidth: 44, minHeight: 44 }} onPress={() => { if (!savedOnly) setRange('all'); setSavedOnly(!savedOnly); }}><Text>{t('discovery.saved')}</Text></TouchableOpacity>
+        {savedOnly && <Text style={{ padding: 8 }}>{t('discovery.localOnly')} {t('discovery.otherFilters')}</Text>}
+        {savedOnly && savedIDs === null && !savedReadError && <Text accessibilityLiveRegion="polite">{t('discovery.loadingSaved')}</Text>}
+        {savedReadError && <TouchableOpacity accessibilityRole="button" style={{ padding: 16 }} onPress={loadSaved}><Text accessibilityLiveRegion="polite">{t('discovery.savedUnknown')} · {t('discovery.retry')}</Text></TouchableOpacity>}
+        <TouchableOpacity accessibilityRole="button" style={{ padding: 16, minWidth: 44, minHeight: 44 }} onPress={() => { setSavedOnly(false); setRange('week'); setKind('event'); setLocality(''); setFree(false); setFamily(false); setSearch(''); setSelectedTag(''); }}><Text>{t('discovery.reset')}</Text></TouchableOpacity>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
           {['event', 'exhibition'].map((value) => <TouchableOpacity key={value} accessibilityRole="button" accessibilityState={{ selected: kind === value }} style={{ padding: 16, backgroundColor: kind === value ? colors.border : colors.card }} onPress={() => setKind(value)}><Text>{t(value === 'event' ? 'discovery.dated' : 'discovery.onView')}</Text></TouchableOpacity>)}
           <TouchableOpacity accessibilityRole="button" style={{ padding: 16 }} onPress={() => navigation.navigate('Weekly')}><Text>{t('discovery.weekly')}</Text></TouchableOpacity>
