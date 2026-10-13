@@ -7,6 +7,7 @@ export default
 
     "localityPartial": "Locality coverage is partial. Choose All places to include events without confirmed locality.",
     "savedUnknown": "Saved state could not be read. Retry before changing your plans.",
+    "reminderTimeUnknown": "A future, unambiguous published time is required to set this reminder. No reminder was set.",
     "reminderUnknown": "Reminder state could not be read. Your event and plans remain available.",
     "detailUncertain": "This event is not in the available cache. Retry when connected to check the published record.",
     "partial": "Some published records cannot be displayed (%{count}). Available events remain listed.",
@@ -241,6 +242,12 @@ export default
     }
   },
   "eventCard": {
+    "calendarReviewTitle": "Review calendar draft",
+    "calendarAllDayDraft": "This is an all-day draft covering the published dates. Times may be in the details. Review and edit the schedule before saving.",
+    "calendarDurationDraft": "The source gives a start time but no end time. This draft uses a one-hour placeholder duration. Review and edit it before saving.",
+    "calendarTimeUnresolved": "The published date or time cannot be resolved uniquely in Atlantic/Azores. Check the organizer before adding it.",
+    "calendarCancel": "Cancel",
+    "calendarReview": "Review draft",
     "calendarPermissionTitle": "Permission denied",
     "calendarPermissionBody": "Calendar access is required to add events.",
     "calendarErrorTitle": "Error",
