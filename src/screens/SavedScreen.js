@@ -37,6 +37,7 @@ export default function SavedScreen({ navigation }) {
           <Text accessibilityLiveRegion="polite">{t(`discovery.${feedState.status}`)} · {t('discovery.retry')}</Text>
         </TouchableOpacity>
       )}
+      {feedState.cacheTimeUnknown && <Text accessibilityLiveRegion="polite" style={{ padding: 16 }}>{t('discovery.cacheTimeUnknown')}</Text>}
       {!!feedState.rejectedRecords && <Text style={styles.notice}>{t('discovery.partial', { count: feedState.rejectedRecords })}</Text>}
       {storageError && <TouchableOpacity accessibilityRole="button" style={styles.notice} onPress={() => load()}><Text accessibilityRole="alert">{t('discovery.storageError')} · {t('discovery.retry')}</Text></TouchableOpacity>}
       {!storageError && !items.length && <Text style={styles.notice}>{t('discovery.savedEmpty')}</Text>}

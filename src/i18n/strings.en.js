@@ -1,6 +1,7 @@
 export default
 {
   "discovery": {
+    "cacheTimeUnknown": "The last successful fetch time of these cached records is unknown.",
     "artworkUnavailable": "Artwork unavailable. Event information remains available.",
     "artworkCredit": "Artwork credit:",
     "artworkSource": "Artwork source",

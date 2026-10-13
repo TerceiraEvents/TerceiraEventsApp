@@ -13,7 +13,7 @@ const STORAGE_KEY_SPECIAL = 'terceiraevents_cache_special';
 const STORAGE_KEY_WEEKLY = 'terceiraevents_cache_weekly';
 
 let cachedSpecialEvents = null;
-let specialFeedState = { status: 'loading', fetchedAt: null };
+let specialFeedState = { status: 'loading', fetchedAt: null, cacheTimeUnknown: false };
 export function getSpecialFeedState() { return { ...specialFeedState }; }
 let cachedWeeklyEvents = null;
 
@@ -46,17 +46,19 @@ export async function fetchSpecialEvents(forceRefresh = false) {
     const parsed = inspectEventDataset(yamlLoad(text));
     if (parsed.rejectedRecords && !parsed.events.length) throw new Error('No usable event records');
     cachedSpecialEvents = parsed.events;
-    specialFeedState = { status: 'current', fetchedAt: new Date().toISOString(), rejectedRecords: parsed.rejectedRecords };
+    specialFeedState = { status: 'current', fetchedAt: new Date().toISOString(), cacheTimeUnknown: false, rejectedRecords: parsed.rejectedRecords };
     await saveToStorage(STORAGE_KEY_SPECIAL, text);
     return cachedSpecialEvents;
   } catch (error) {
     console.error('Failed to fetch special events:', error);
+    const fetchedAt = cachedSpecialEvents ? specialFeedState.fetchedAt : null;
     const stored = cachedSpecialEvents || await loadFromStorage(STORAGE_KEY_SPECIAL, (value) => {
       const parsed = inspectEventDataset(value);
+      if (parsed.rejectedRecords && !parsed.events.length) throw new Error('No usable cached event records');
       specialFeedState.rejectedRecords = parsed.rejectedRecords;
       return parsed.events;
     });
-    specialFeedState = { status: stored ? 'cached' : 'error', fetchedAt: null, rejectedRecords: specialFeedState.rejectedRecords || 0 };
+    specialFeedState = { status: stored ? 'cached' : 'error', fetchedAt, cacheTimeUnknown: Boolean(stored) && !fetchedAt, rejectedRecords: specialFeedState.rejectedRecords || 0 };
     if (stored) {
       cachedSpecialEvents = stored;
       return cachedSpecialEvents;
@@ -86,7 +88,7 @@ export async function fetchWeeklyEvents() {
 }
 
 export function clearCache() {
-  specialFeedState = { status: 'loading', fetchedAt: null, rejectedRecords: 0 };
+  specialFeedState = { status: 'loading', fetchedAt: null, cacheTimeUnknown: false, rejectedRecords: 0 };
   cachedSpecialEvents = null;
   cachedWeeklyEvents = null;
 }
