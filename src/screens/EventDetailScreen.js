@@ -54,7 +54,7 @@ export default function EventDetailScreen({ route }) {
         await rescheduleAllNotifications(special, weekly);
       } else {
         if (!reminderDate(event, (await getSettings()).reminderLeadMinutes)) { Alert.alert(t('discovery.reminderTimeUnknown')); return; }
-        if (!await requestPermissions()) return;
+        if (!await requestPermissions()) { Alert.alert(t('discovery.reminderPermissionDenied')); return; }
         await setEventReminder(event);
         if (!await scheduleOneReminder(event)) { await removeEventReminder(event); Alert.alert(t('discovery.reminderTimeUnknown')); return; }
       }
