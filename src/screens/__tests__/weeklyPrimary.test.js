@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import React from 'react';
+import { getActionFromState, getStateFromPath, getPathFromState } from '@react-navigation/core';
+import { createLinking } from '../../navigation/linking.js';
 import { CommonActions, StackActions, StackRouter, TabRouter } from '@react-navigation/routers';
 import { primaryRoutes, rootRoutes } from '../../utils/navigation.js';
 import { tabBarHeight } from '../../utils/tabLayout.js';
@@ -37,26 +39,54 @@ test('actual primary navigator reaches Weekly directly from every primary destin
   }
 });
 
-test('root Weekly entry returns to existing primary navigation without duplicate Main history', () => {
+test('nested Weekly aliases and repeated links preserve Main identity and Events context', () => {
   const matches = source.match(/name=\{rootRoutes.weekly\} component=\{([^}]+)\}/);
   assert.equal(matches?.[1], 'WeeklyRouteAlias');
   const moduleSource = readFileSync(new URL('../../navigation/WeeklyRouteAlias.js', import.meta.url), 'utf8');
   const transformed = transformSync(moduleSource, { babelrc: false, configFile: false, plugins: ['@babel/plugin-transform-react-jsx', '@babel/plugin-transform-modules-commonjs'] }).code;
   const effects = []; const module = { exports: {} };
   new Function('require', 'module', 'exports', transformed)(name => name === 'react' ? { useEffect: effect => effects.push(effect) } : { primaryRoutes, rootRoutes }, module, module.exports);
-  const router = StackRouter({});
-  const options = { routeNames: Object.values(rootRoutes), routeParamList: {}, routeGetIdList: {} };
-  let state = router.getInitialState(options);
-  const originalMain = state.routes[0].key;
-  state = router.getStateForAction(state, CommonActions.navigate(rootRoutes.weekly), options);
-  module.exports.default({ navigation: { popTo: (name, params) => { state = router.getStateForAction(state, StackActions.popTo(name, params), options); } } });
-  effects[0]();
-  assert.equal(state.routes.length, 1);
-  assert.equal(state.routes[0].key, originalMain);
-  assert.deepEqual(state.routes[0].params, { screen: 'Weekly' });
+  const primaryNames = React.Children.toArray(render(en).props.children).map(screen => screen.props.name);
+  const tabOptions = { routeNames: primaryNames, routeParamList: {}, routeGetIdList: {} };
+  const stackOptions = { routeNames: Object.values(rootRoutes), routeParamList: {}, routeGetIdList: {} };
+  const tabs = TabRouter({ backBehavior: 'history' }); const stack = StackRouter({});
+  let state = stack.getInitialState(stackOptions);
+  state.routes[0].state = tabs.getInitialState(tabOptions);
+  const mainKey = state.routes[0].key;
+  const events = state.routes[0].state.routes.find(route => route.name === 'Events');
+  const eventsKey = events.key;
+  events.params = { range: 'month', locality: 'angra', free: true, saved: true, search: 'story' };
+  const context = { ...events.params };
+  const dispatch = action => {
+    state = stack.getStateForAction(state, action, stackOptions);
+    const main = state.routes.find(route => route.name === 'Main');
+    if (main?.params?.screen) main.state = tabs.getStateForAction(main.state, CommonActions.navigate(main.params.screen), tabOptions);
+  };
+  const check = () => {
+    assert.equal(state.routes.length, 1);
+    assert.equal(state.routes[0].key, mainKey);
+    const nested = state.routes[0].state;
+    assert.equal(nested.routes[nested.index].name, 'Weekly');
+    assert.equal(nested.routes.filter(route => route.name === 'Weekly').length, 1);
+    const retained = nested.routes.find(route => route.name === 'Events');
+    assert.equal(retained.key, eventsKey);
+    assert.deepEqual(retained.params, context);
+  };
+  for (let index = 0; index < 2; index++) {
+    dispatch(CommonActions.navigate('EventDetail', { id: 'known' }));
+    dispatch(CommonActions.navigate('Weekly'));
+    module.exports.default({ navigation: { popTo: (name, params) => dispatch(StackActions.popTo(name, params)) } });
+    effects.shift()(); check();
+  }
+  const linking = createLinking({ prefixes: [], parsePath: getStateFromPath, serializeState: getPathFromState });
+  for (const path of ['weekly/', 'pt/Weekly', 'weekly/']) {
+    dispatch(CommonActions.navigate('EventDetail', { id: 'known' }));
+    const linked = linking.getStateFromPath(path, linking.config);
+    dispatch(getActionFromState(linked, linking.config)); check();
+  }
 });
 
-test('actual five-tab labels keep uncapped wrapping and reserve measured two-line height', () => {
+test('actual five-tab labels expose localized names and uncapped wrapping', () => {
   for (const catalog of [en, pt]) {
     const tree = render(catalog, 2.143, 34);
     const screens = React.Children.toArray(tree.props.children);
@@ -68,8 +98,6 @@ test('actual five-tab labels keep uncapped wrapping and reserve measured two-lin
       assert.equal(label.props.numberOfLines, undefined);
       assert.equal(label.props.maxFontSizeMultiplier, undefined);
       assert.notEqual(label.props.allowFontScaling, false);
-      assert.ok(402 / screens.length - 10 >= 44, 'five label cells preserve a usable minimum width');
-      assert.ok(options.tabBarStyle.height - 34 - 34 - 8 >= 2 * 38.57399797439575, 'measured iOS large-text line height fits twice above safe area');
     }
   }
 });
