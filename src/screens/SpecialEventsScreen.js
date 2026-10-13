@@ -203,7 +203,9 @@ export default function SpecialEventsScreen({ navigation, route }) {
         ListEmptyComponent={
           <View style={styles.empty}>
             <Text style={styles.emptyText}>
-              {search || selectedTag || locality || free || family
+              {feedState.refreshing
+                ? t('discovery.refreshing')
+                : search || selectedTag || locality || free || family
                 ? t('specialEvents.empty.filtered')
                 : range === 'archive'
                   ? t('specialEvents.empty.archive')

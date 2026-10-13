@@ -35,6 +35,10 @@ for (const screen of ['HomeScreen', 'SpecialEventsScreen', 'EventDetailScreen'])
       const list = all.find((node) => node.type === 'FlatList');
       assert.equal(list.props.data[0].id, 'one');
       assert.ok(nodes(list.props.ListHeaderComponent).some((node) => node.props?.children === 'discovery.refreshing'));
+      subscriptions[0]([], { status: 'stored', refreshing: true, cacheTimeUnknown: true });
+      const empty = nodes(render()).find((node) => node.type === 'FlatList').props.ListEmptyComponent;
+      assert.ok(nodes(empty).some((node) => node.props?.children === 'discovery.refreshing'));
+      assert.equal(nodes(empty).some((node) => String(node.props?.children).startsWith('specialEvents.empty.')), false);
     } else {
       assert.equal(all.find((node) => node.type === 'EventCard').props.event.id, 'one');
       assert.ok(all.some((node) => node.props?.children === 'discovery.refreshing'));
