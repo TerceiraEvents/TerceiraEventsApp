@@ -33,8 +33,9 @@ const Tab = createBottomTabNavigator();
 
 function PrimaryTabs() {
   const { t } = useLocale();
-  const { fontScale } = useWindowDimensions();
-  const { bottom } = useSafeAreaInsets();
+  const { fontScale, width } = useWindowDimensions();
+  const { bottom, left = 0, right = 0 } = useSafeAreaInsets();
+  const labelWidth = (width - left - right) / Object.values(primaryRoutes).length;
   const icons = {
     [primaryRoutes.home]: '⌂',
     [primaryRoutes.events]: '◇',
@@ -49,7 +50,7 @@ function PrimaryTabs() {
       tabBarInactiveTintColor: colors.textMuted,
       tabBarStyle: { height: tabBarHeight(fontScale, bottom) },
       tabBarLabelPosition: 'below-icon',
-      tabBarLabel: ({ children, color }) => <Text style={{ color, fontSize: 12, lineHeight: 18, textAlign: 'center', width: '100%' }}>{children}</Text>,
+      tabBarLabel: ({ children, color }) => <Text style={{ color, fontSize: 12, lineHeight: 18, textAlign: 'center', width: labelWidth }}>{children}</Text>,
       tabBarIcon: ({ color, size }) => <Text accessibilityElementsHidden allowFontScaling={false} style={{ color, fontSize: size }}>{icons[route.name]}</Text>,
     })}>
       <Tab.Screen name={primaryRoutes.home} component={HomeScreen} options={{ title: t('tabs.home'), tabBarAccessibilityLabel: t('tabs.home') }} />

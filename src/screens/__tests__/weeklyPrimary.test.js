@@ -16,10 +16,10 @@ const source = readFileSync(new URL('../../../App.js', import.meta.url), 'utf8')
 const ast = parseSync(source, { babelrc: false, configFile: false, parserOpts: { plugins: ['jsx'] } });
 const definition = ast.program.body.find(node => node.type === 'FunctionDeclaration' && node.id.name === 'PrimaryTabs');
 const code = transformSync(source.slice(definition.start, definition.end), { babelrc: false, configFile: false, plugins: ['@babel/plugin-transform-react-jsx'] }).code;
-function render(catalog, fontScale = 1, bottom = 0) {
+function render(catalog, fontScale = 1, bottom = 0, width = 402, left = 0, right = 0) {
   const t = key => key.split('.').reduce((value, part) => value[part], catalog);
   const names = ['React', 'useLocale', 'useWindowDimensions', 'useSafeAreaInsets', 'primaryRoutes', 'Tab', 'HomeScreen', 'SpecialEventsScreen', 'WeeklyScreen', 'VenuesScreen', 'MoreScreen', 'Text', 'headerOptions', 'colors', 'tabBarHeight'];
-  return new Function(...names, code + '\nreturn PrimaryTabs();')(React, () => ({ t }), () => ({ fontScale }), () => ({ bottom }), primaryRoutes, { Navigator: 'Navigator', Screen: 'Screen' }, 'Home', 'Events', 'WeeklyContent', 'Places', 'More', 'Text', () => ({}), {}, tabBarHeight);
+  return new Function(...names, code + '\nreturn PrimaryTabs();')(React, () => ({ t }), () => ({ fontScale, width }), () => ({ bottom, left, right }), primaryRoutes, { Navigator: 'Navigator', Screen: 'Screen' }, 'Home', 'Events', 'WeeklyContent', 'Places', 'More', 'Text', () => ({}), {}, tabBarHeight);
 }
 
 test('actual primary navigator reaches Weekly directly from every primary destination', () => {
@@ -94,10 +94,28 @@ test('actual five-tab labels expose localized names and uncapped wrapping', () =
     for (const screen of screens) {
       const options = tree.props.screenOptions({ route: { name: screen.props.name } });
       const label = options.tabBarLabel({ children: screen.props.options.title, color: 'black' });
-      assert.equal(label.props.style.width, '100%');
+      assert.ok(Number.isFinite(label.props.style.width));
       assert.equal(label.props.numberOfLines, undefined);
       assert.equal(label.props.maxFontSizeMultiplier, undefined);
       assert.notEqual(label.props.allowFontScaling, false);
+    }
+  }
+});
+
+
+test('actual labels receive full safe tab-cell width rather than an inset percentage', () => {
+  for (const [width, left, right] of [[320, 0, 0], [402, 0, 0], [411.4286, 0, 0], [402, 16, 16]]) {
+    const tree = render(pt, 2.143, 34, width, left, right);
+    const screens = React.Children.toArray(tree.props.children);
+    let edge = left;
+    for (const screen of screens) {
+      const label = tree.props.screenOptions({ route: { name: screen.props.name } }).tabBarLabel({ children: screen.props.options.title, color: 'black' });
+      assert.ok(Number.isFinite(label.props.style.width), 'label must receive actual full-cell dimensions');
+      assert.equal(label.props.style.width, (width - left - right) / screens.length);
+      assert.ok(edge >= left && edge + label.props.style.width <= width - right + Number.EPSILON * width);
+      assert.equal(label.props.numberOfLines, undefined);
+      assert.notEqual(label.props.allowFontScaling, false);
+      edge += label.props.style.width;
     }
   }
 });
