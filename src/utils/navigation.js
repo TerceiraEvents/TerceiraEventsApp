@@ -9,5 +9,6 @@ export function handleNotificationNavigation(navigation, data) {
 export function homeFeedback(status, eventCount, loading) {
   if (loading) return 'loading';
   if (status === 'error' || status === 'cached') return status;
+  if (status === 'stored') return null;
   return eventCount ? null : 'emptyDate';
 }

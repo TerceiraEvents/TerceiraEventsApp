@@ -1,6 +1,7 @@
 import { useFocusEffect } from '@react-navigation/native';
 import { reconcileSaved } from '../utils/eventIdentity';
 import { getSavedEvents } from '../utils/storage';
+import useSpecialFeed from '../hooks/useSpecialFeed';
 import { eventDetailParams } from '../utils/eventRoute';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
@@ -77,6 +78,7 @@ export default function SpecialEventsScreen({ navigation, route }) {
   }, []);
   useFocusEffect(useCallback(() => { loadSaved(); }, [loadSaved]));
 
+  useSpecialFeed(useCallback((all, state) => { setEvents(all); setFeedState(state); setLoading(false); }, []));
   const loadEvents = useCallback(async (forceRefresh = false) => {
     const all = await fetchSpecialEvents(forceRefresh);
     setEvents(all);
@@ -131,6 +133,7 @@ export default function SpecialEventsScreen({ navigation, route }) {
         </View>
         <Text style={styles.header}>{t('specialEvents.title')}</Text>
         {['cached', 'error'].includes(feedState.status) && <TouchableOpacity accessibilityRole="button" style={{ padding: 16 }} onPress={onRefresh}><Text accessibilityLiveRegion="polite">{t(`discovery.${feedState.status}`)} · {t('discovery.retry')}</Text></TouchableOpacity>}
+        {feedState.refreshing && <Text accessibilityLiveRegion="polite" style={{ padding: 16 }}>{t('discovery.refreshing')}</Text>}
         {feedState.cacheTimeUnknown && <Text accessibilityLiveRegion="polite" style={{ padding: 16 }}>{t('discovery.cacheTimeUnknown')}</Text>}
         {!!feedState.rejectedRecords && <Text accessibilityLiveRegion="polite">{t('discovery.partial', { count: feedState.rejectedRecords })}</Text>}
         {feedState.fetchedAt && <Text>{t('discovery.fetched')} {feedState.fetchedAt}</Text>}
@@ -224,7 +227,9 @@ export default function SpecialEventsScreen({ navigation, route }) {
         ListEmptyComponent={
           <View style={styles.empty}>
             <Text style={styles.emptyText}>
-              {search || selectedTag || locality || free || family
+              {feedState.refreshing
+                ? t('discovery.refreshing')
+                : search || selectedTag || locality || free || family
                 ? t('specialEvents.empty.filtered')
                 : range === 'archive'
                   ? t('specialEvents.empty.archive')

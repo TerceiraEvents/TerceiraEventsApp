@@ -1,4 +1,5 @@
-import { reminderDate } from '../utils/eventTime';
+import useSpecialFeed from '../hooks/useSpecialFeed';
+import { reminderDate, publishedEventTime } from '../utils/eventTime';
 import React, { useCallback, useEffect, useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, Alert, StyleSheet } from 'react-native';
 import { useLocale } from '../i18n';
@@ -44,6 +45,14 @@ export default function EventDetailScreen({ route }) {
     finally { setLoading(false); }
   }, [id, route.params?.event, t]);
 
+  useSpecialFeed(useCallback((events, state) => {
+    const resolved = resolveEventDetail({ id, snapshot: route.params?.event, events, feedState: state });
+    setEvent(resolved.event);
+    setUnavailable(resolved.unavailable);
+    setFeedState(state);
+    setLoading(false);
+    if (!state.refreshing && state.status !== 'error') load();
+  }, [id, route.params?.event, load]));
   useEffect(() => { load(); }, [load]);
 
   const toggleReminder = async () => {
@@ -70,9 +79,10 @@ export default function EventDetailScreen({ route }) {
           <Text accessibilityLiveRegion="polite">{t(`discovery.${feedState.status}`)} · {t('discovery.retry')}</Text>
         </TouchableOpacity>
       )}
+      {feedState.refreshing && <Text accessibilityLiveRegion="polite" style={{ padding: 16 }}>{t('discovery.refreshing')}</Text>}
       {feedState.cacheTimeUnknown && <Text accessibilityLiveRegion="polite" style={{ padding: 16 }}>{t('discovery.cacheTimeUnknown')}</Text>}
       {!!feedState.rejectedRecords && <Text style={styles.notice}>{t('discovery.partial', { count: feedState.rejectedRecords })}</Text>}
-      {feedState.status === 'cached' && !event && <Text style={styles.notice}>{t('discovery.detailUncertain')}</Text>}
+      {['cached', 'stored'].includes(feedState.status) && !event && <Text style={styles.notice}>{t('discovery.detailUncertain')}</Text>}
       {unavailable && <Text style={styles.notice}>{t('discovery.unavailable')}</Text>}
       {savedFailed && event && <TouchableOpacity accessibilityRole="button" style={styles.notice} onPress={() => load(true)}><Text accessibilityLiveRegion="polite">{t('discovery.savedUnknown')} · {t('discovery.retry')}</Text></TouchableOpacity>}
       {reminderFailed && event && <TouchableOpacity accessibilityRole="button" style={styles.notice} onPress={() => load(true)}><Text accessibilityLiveRegion="polite">{t('discovery.reminderUnknown')} · {t('discovery.retry')}</Text></TouchableOpacity>}
@@ -89,7 +99,8 @@ export default function EventDetailScreen({ route }) {
             catch { Alert.alert(t('discovery.storageError')); }
           }}
         ><Text>{t(saved === null ? 'discovery.savedUnknown' : saved ? 'discovery.unsave' : 'discovery.save')}</Text></TouchableOpacity>
-        <EventCard event={event} calendarEnabled={!isEnded(event)} reminded={reminded} onToggleReminder={isEnded(event) || reminded === null ? undefined : toggleReminder} />
+        {reminded === true && !publishedEventTime(event).start && <Text style={styles.notice}>{t('discovery.reminderStoredUnavailable')}</Text>}
+        <EventCard reminderUnavailable={reminded === true && !publishedEventTime(event).start} event={event} calendarEnabled={!isEnded(event)} reminded={reminded} onToggleReminder={isEnded(event) || reminded === null ? undefined : toggleReminder} />
         <Text style={styles.notice}>{t('discovery.localOnly')}</Text>
       </>}
     </ScrollView>

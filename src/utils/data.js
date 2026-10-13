@@ -13,8 +13,22 @@ const STORAGE_KEY_SPECIAL = 'terceiraevents_cache_special';
 const STORAGE_KEY_WEEKLY = 'terceiraevents_cache_weekly';
 
 let cachedSpecialEvents = null;
-let specialFeedState = { status: 'loading', fetchedAt: null, cacheTimeUnknown: false };
+let specialRequest = null;
+let specialCacheRead = null;
+let cacheGeneration = 0;
+const specialListeners = new Set();
+let specialFeedState = { status: 'loading', fetchedAt: null, cacheTimeUnknown: false, refreshing: false };
 export function getSpecialFeedState() { return { ...specialFeedState }; }
+
+/** Subscribe to validated cache-ready and settled publication updates; returns an unsubscribe function. */
+export function subscribeSpecialEvents(listener) {
+  specialListeners.add(listener);
+  return () => specialListeners.delete(listener);
+}
+
+function publishSpecialEvents() {
+  for (const listener of specialListeners) listener(cachedSpecialEvents || [], getSpecialFeedState());
+}
 let cachedWeeklyEvents = null;
 
 async function loadFromStorage(key, validate = validateEventDataset) {
@@ -37,34 +51,60 @@ async function saveToStorage(key, yamlText) {
   }
 }
 
-export async function fetchSpecialEvents(forceRefresh = false) {
-  if (cachedSpecialEvents && !forceRefresh) return cachedSpecialEvents;
-  try {
-    const response = await fetch(SPECIAL_EVENTS_URL);
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const text = await response.text();
-    const parsed = inspectEventDataset(yamlLoad(text));
-    if (parsed.rejectedRecords && !parsed.events.length) throw new Error('No usable event records');
-    cachedSpecialEvents = parsed.events;
-    specialFeedState = { status: 'current', fetchedAt: new Date().toISOString(), cacheTimeUnknown: false, rejectedRecords: parsed.rejectedRecords };
-    await saveToStorage(STORAGE_KEY_SPECIAL, text);
-    return cachedSpecialEvents;
-  } catch (error) {
-    console.error('Failed to fetch special events:', error);
-    const fetchedAt = cachedSpecialEvents ? specialFeedState.fetchedAt : null;
-    const stored = cachedSpecialEvents || await loadFromStorage(STORAGE_KEY_SPECIAL, (value) => {
+async function primeSpecialCache() {
+  if (cachedSpecialEvents !== null) return;
+  if (!specialCacheRead) {
+    const generation = cacheGeneration;
+    specialCacheRead = loadFromStorage(STORAGE_KEY_SPECIAL, (value) => {
       const parsed = inspectEventDataset(value);
       if (parsed.rejectedRecords && !parsed.events.length) throw new Error('No usable cached event records');
-      specialFeedState.rejectedRecords = parsed.rejectedRecords;
-      return parsed.events;
+      return parsed;
+    }).then((parsed) => {
+      if (generation !== cacheGeneration || !parsed || (parsed.rejectedRecords && !parsed.events.length)) return;
+      cachedSpecialEvents = parsed.events;
+      specialFeedState = { status: 'stored', fetchedAt: null, cacheTimeUnknown: true, refreshing: false, rejectedRecords: parsed.rejectedRecords };
     });
-    specialFeedState = { status: stored ? 'cached' : 'error', fetchedAt, cacheTimeUnknown: Boolean(stored) && !fetchedAt, rejectedRecords: specialFeedState.rejectedRecords || 0 };
-    if (stored) {
-      cachedSpecialEvents = stored;
-      return cachedSpecialEvents;
-    }
-    return [];
   }
+  await specialCacheRead;
+}
+
+function refreshSpecialEvents() {
+  if (specialRequest) return specialRequest;
+  const generation = cacheGeneration;
+  specialRequest = Promise.resolve().then(async () => {
+    specialFeedState = { ...specialFeedState, refreshing: true };
+    if (cachedSpecialEvents !== null) publishSpecialEvents();
+    try {
+      const response = await fetch(SPECIAL_EVENTS_URL);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const text = await response.text();
+      const parsed = inspectEventDataset(yamlLoad(text));
+      if (parsed.rejectedRecords && !parsed.events.length) throw new Error('No usable event records');
+      if (generation !== cacheGeneration) return parsed.events;
+      cachedSpecialEvents = parsed.events;
+      specialFeedState = { status: 'current', fetchedAt: new Date().toISOString(), cacheTimeUnknown: false, refreshing: false, rejectedRecords: parsed.rejectedRecords };
+      publishSpecialEvents();
+      await saveToStorage(STORAGE_KEY_SPECIAL, text);
+      return cachedSpecialEvents;
+    } catch (error) {
+      console.error('Failed to fetch special events:', error);
+      if (generation !== cacheGeneration) return [];
+      const stored = cachedSpecialEvents !== null;
+      specialFeedState = { ...specialFeedState, status: stored ? 'cached' : 'error', refreshing: false, cacheTimeUnknown: stored && !specialFeedState.fetchedAt };
+      publishSpecialEvents();
+      return cachedSpecialEvents || [];
+    }
+  }).finally(() => { if (generation === cacheGeneration) specialRequest = null; });
+  return specialRequest;
+}
+
+/** Return usable cached data promptly; forced refreshes await the coalesced publication request. */
+export async function fetchSpecialEvents(forceRefresh = false) {
+  if (cachedSpecialEvents !== null && !forceRefresh) return cachedSpecialEvents;
+  await primeSpecialCache();
+  const request = refreshSpecialEvents();
+  if (cachedSpecialEvents !== null && !forceRefresh) return cachedSpecialEvents;
+  return request;
 }
 
 export async function fetchWeeklyEvents() {
@@ -88,7 +128,10 @@ export async function fetchWeeklyEvents() {
 }
 
 export function clearCache() {
-  specialFeedState = { status: 'loading', fetchedAt: null, cacheTimeUnknown: false, rejectedRecords: 0 };
+  cacheGeneration++;
+  specialRequest = null;
+  specialCacheRead = null;
+  specialFeedState = { status: 'loading', fetchedAt: null, cacheTimeUnknown: false, refreshing: false, rejectedRecords: 0 };
   cachedSpecialEvents = null;
   cachedWeeklyEvents = null;
 }
