@@ -50,7 +50,7 @@ function PrimaryTabs() {
       tabBarStyle: { height: tabBarHeight(fontScale, bottom) },
       tabBarLabelPosition: 'below-icon',
       tabBarLabel: ({ children, color }) => <Text style={{ color, fontSize: 12, lineHeight: 18, textAlign: 'center', width: '100%' }}>{children}</Text>,
-      tabBarIcon: ({ color, size }) => <Text accessibilityElementsHidden style={{ color, fontSize: size }}>{icons[route.name]}</Text>,
+      tabBarIcon: ({ color, size }) => <Text accessibilityElementsHidden allowFontScaling={false} style={{ color, fontSize: size }}>{icons[route.name]}</Text>,
     })}>
       <Tab.Screen name={primaryRoutes.home} component={HomeScreen} options={{ title: t('tabs.home'), tabBarAccessibilityLabel: t('tabs.home') }} />
       <Tab.Screen name={primaryRoutes.events} component={SpecialEventsScreen} options={{ title: t('discovery.explore'), tabBarAccessibilityLabel: t('discovery.explore') }} />
