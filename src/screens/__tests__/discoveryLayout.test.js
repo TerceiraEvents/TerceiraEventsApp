@@ -40,7 +40,7 @@ test('actual primary tab options reserve large-label space without disabling sca
   for (const fontScale of [1, 2, 3]) {
     const imports = { '../hooks/useSpecialFeed': () => {},
       react: React,
-      'react-native': { Text: 'Text', useWindowDimensions: () => ({ fontScale }) },
+      'react-native': { Text: 'Text', useWindowDimensions: () => ({ fontScale, width: 402 }) },
       'react-native-safe-area-context': { useSafeAreaInsets: () => ({ bottom: 24 }) },
       '@react-navigation/native-stack': { createNativeStackNavigator: () => ({ Navigator: 'Stack', Screen: 'Screen' }) },
       '@react-navigation/bottom-tabs': { createBottomTabNavigator: () => ({ Navigator: 'Tabs', Screen: 'Screen' }) },

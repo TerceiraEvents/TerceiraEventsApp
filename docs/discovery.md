@@ -1,6 +1,6 @@
 # Event discovery
 
-Primary destinations are Home, Events, Places, and More. More provides Blog, Resources, Settings, and Suggest an Event. Events separates dated events and Exhibitions and provides access to weekly published schedules.
+Primary destinations are Home, Events, Weekly, Places, and More. More provides Blog, Resources, Settings, and Suggest an Event. Events separates dated events and Exhibitions. Weekly provides published recurring schedules with the primary tabs visible. The Home Weekly shortcut, Events weekly action, `/weekly/` and `/pt/weekly/` links, and root Weekly navigation entries open this primary destination.
 
 The shared dataset's explicit `id` identifies an event. Website links use `https://eventosterceira.pt/events/?id=<id>`; Portuguese links use `/pt/events/?id=<id>`. The application accepts these routes and `terceiraevents://events?id=<id>`. Universal-link association files and native platform association configuration are required for operating-system delivery of HTTPS links. The custom scheme works with builds containing the declared scheme. An ID absent from the dataset opens an unavailable state.
 
@@ -42,3 +42,5 @@ Production deferred-network tests cover prompt cold cache, force/coalescing, bac
 ## Artwork in event details
 
 Artwork uses a fixed 360-point frame with contain sizing and an independent full-size link. A failed or rejected image displays localized feedback while retaining the published event and its actions. Android uses a polite live region; iOS image-load failures invoke the public accessibility announcement API. A rejected URL has no full-size control. Published `image_alt_en`/`image_alt_pt`, `image_credit`, `image_rights`, and HTTP(S) `image_source` provide accessibility and provenance. Relative artwork paths use `/assets/images/` in the shared repository; unsafe or malformed URLs have no image control. The component tests simulate image failure and inspect framing and EN/PT labels; they do not establish native decoding of portrait, landscape, or oversized files. Permission-cleared source samples and actual Android/iOS artwork rendering remain required.
+
+Tab labels use their full share of the viewport after horizontal safe insets. Events and Weekly receive larger shares, with Weekly the widest, through the public tab item flex style; label widths match those same weights. Text keeps system scaling and wrapping within its own tab cell.
