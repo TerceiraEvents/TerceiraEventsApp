@@ -27,8 +27,8 @@ function render(screen, catalog) {
   const module = { exports: {} }; new Function('require', 'module', 'exports', code)(name => imports[name] || 'Component', module, module.exports);
   return nodes(module.exports.default({ navigation: {}, route: {} }));
 }
-for (const catalog of [en, pt]) test(`rendered Places heading matches its ${catalog === en ? 'EN' : 'PT'} tab label`, () => {
-  assert.ok(render('VenuesScreen', catalog).some(node => node?.type === 'Text' && node.props.children === catalog.tabs.venues));
+for (const catalog of [en, pt]) test(`rendered Venues heading matches its ${catalog === en ? 'EN' : 'PT'} tab label`, () => {
+  assert.ok(render('VenuesScreen', catalog).some(node => node?.type === 'Text' && node.props.children === (catalog === en ? 'Venues' : 'Locais')));
 });
 
 for (const catalog of [en, pt]) test(`rendered primary and shortcut destination heading inventory (${catalog === en ? 'EN' : 'PT'})`, () => {

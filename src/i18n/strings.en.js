@@ -72,7 +72,7 @@ export default
   "tabs": {
     "home": "Home",
     "weekly": "Weekly",
-    "venues": "Places",
+    "venues": "Venues",
     "resources": "More",
     "settings": "Settings",
     "suggestEvent": "Suggest Event",
@@ -171,7 +171,7 @@ export default
     "stackTitle": "Post"
   },
   "venues": {
-    "title": "Places",
+    "title": "Venues",
     "intro": "Bars, restaurants, cultural spaces, and other venues hosting events in Angra do Heroísmo.",
     "links": {
       "website": "Website",

@@ -20,7 +20,7 @@ for (const catalog of [en, pt]) test(`actual primary tabs have explicit localize
   const screens = React.Children.toArray(tree.props.children);
   assert.equal(screens.length, 5);
   for (const [index, key] of ['tabs.home', 'discovery.explore', 'tabs.weekly', 'tabs.venues', 'discovery.more'].entries()) {
-    const literal = catalog === en ? ['Home', 'Events', 'Weekly', 'Places', 'More'] : ['Início', 'Eventos', 'Semanais', 'Locais', 'Mais'];
+    const literal = catalog === en ? ['Home', 'Events', 'Weekly', 'Venues', 'More'] : ['Início', 'Eventos', 'Semanais', 'Locais', 'Mais'];
     assert.equal(screens[index].props.options.title, literal[index]);
     assert.equal(screens[index].props.options.tabBarAccessibilityLabel, t(key));
     assert.equal(screens[index].props.options.tabBarAccessibilityLabel, screens[index].props.options.title);
