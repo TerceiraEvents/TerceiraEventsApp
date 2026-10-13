@@ -1,3 +1,4 @@
+import { todayAzores } from './data.js';
 import { createSavedPlans } from './savedPlans.js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -73,13 +74,11 @@ export async function isEventReminded(event) {
 // Clean up reminders for events that have already passed
 export async function cleanupPastReminders() {
   const reminders = await getRemindedEvents();
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const today = todayAzores();
   const cleaned = new Set();
   for (const key of reminders) {
     const dateStr = key.split('|')[0];
-    const d = new Date(dateStr + 'T23:59:59');
-    if (d >= today) {
+    if (dateStr.slice(0, 10) >= today) {
       cleaned.add(key);
     }
   }

@@ -1,5 +1,6 @@
+import { calendarDraft } from '../utils/eventTime';
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Linking, Alert, Share, Platform, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Linking, Alert, Share, Platform, Image, AccessibilityInfo } from 'react-native';
 import * as Calendar from 'expo-calendar';
 import { colors, fonts } from '../utils/theme';
 import { parseEventDate, formatDate, eventDateRange } from '../utils/data';
@@ -12,16 +13,26 @@ import FlagEventModal from './FlagEventModal';
 const BASE_URL =
   'https://raw.githubusercontent.com/TerceiraEvents/EventosTerceira.pt/main';
 
-function getImageUrl(imagePath) {
-  // Full URL (e.g. from R2 uploads): use as-is
-  if (/^https?:\/\//i.test(imagePath)) return imagePath;
-  // Relative path on the website repo: prepend GitHub raw base
-  return `${BASE_URL}${imagePath}`;
+function safeArtworkUrl(value, relative = false) {
+  if (typeof value !== 'string' || /[\s\\]/.test(value)) return null;
+  if (relative && /^\/assets\/images\/[\w./-]+$/.test(value) && !value.includes('..')) return `${BASE_URL}${value}`;
+  try {
+    const url = new URL(value);
+    return ['https:', 'http:'].includes(url.protocol) && !url.username && !url.password ? url.href : null;
+  } catch { return null; }
 }
 
 export default function EventCard({ event, reminded, onToggleReminder, onOpen, compact = false, calendarEnabled = Boolean(onToggleReminder) }) {
   const { t, locale } = useLocale();
   const [flagVisible, setFlagVisible] = useState(false);
+  const [failedArtwork, setFailedArtwork] = useState(null);
+  const artworkUrl = safeArtworkUrl(event.image, true);
+  const artworkSource = safeArtworkUrl(event.image_source);
+  const artworkPresent = event.image !== undefined && event.image !== null && event.image !== '';
+  const artworkUnavailable = () => {
+    setFailedArtwork(artworkUrl);
+    if (Platform.OS === 'ios') AccessibilityInfo.announceForAccessibility(t('discovery.artworkUnavailable'));
+  };
   const date = parseEventDate(event.date);
   const formatted = date ? formatDate(date, locale) : null;
   const range = eventDateRange(event);
@@ -41,66 +52,35 @@ export default function EventCard({ event, reminded, onToggleReminder, onOpen, c
   };
 
   const addToCalendar = async () => {
-    try {
-      const { status } = await Calendar.requestCalendarPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert(
-          t('eventCard.calendarPermissionTitle'),
-          t('eventCard.calendarPermissionBody'),
-        );
-        return;
-      }
-
-      const calendars = await Calendar.getCalendarsAsync(Calendar.EntityTypes.EVENT);
-      let targetCalendar;
-      if (Platform.OS === 'ios') {
-        targetCalendar = await Calendar.getDefaultCalendarAsync();
-      } else {
-        targetCalendar =
-          calendars.find((c) => c.accessLevel === 'owner' && c.isPrimary) ||
-          calendars.find((c) => c.accessLevel === 'owner') ||
-          calendars.find((c) => c.allowsModifications);
-      }
-
-      if (!targetCalendar) {
-        Alert.alert(
-          t('eventCard.calendarErrorTitle'),
-          t('eventCard.calendarNoWritable'),
-        );
-        return;
-      }
-
-      const eventDate = parseEventDate(event.date);
-      const startDate = new Date(eventDate);
-      if (event.time) {
-        const [hours, minutes] = event.time.split(':').map(Number);
-        startDate.setHours(hours, minutes, 0, 0);
-      } else {
-        startDate.setHours(12, 0, 0, 0);
-      }
-
-      const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
-
-      const location = [displayVenue, displayAddress].filter(Boolean).join(', ');
-
-      await Calendar.createEventAsync(targetCalendar.id, {
-        title: displayName,
-        startDate,
-        endDate,
-        location,
-        notes: displayDescription || '',
-      });
-
-      Alert.alert(
-        t('eventCard.calendarAddedTitle'),
-        t('eventCard.calendarAddedBody', { name: displayName }),
-      );
-    } catch (error) {
-      Alert.alert(
-        t('eventCard.calendarErrorTitle'),
-        t('eventCard.calendarAddFailed', { error: error.message }),
-      );
+    const draft = calendarDraft(event);
+    if (!draft.event) {
+      Alert.alert(t('eventCard.calendarErrorTitle'), t('eventCard.calendarTimeUnresolved'));
+      return;
     }
+    const openDraft = async () => {
+      try {
+        if (Platform.OS === 'ios' && Number.parseFloat(Platform.Version) < 17) {
+          const { status } = await Calendar.requestCalendarPermissionsAsync();
+          if (status !== 'granted') {
+            Alert.alert(t('eventCard.calendarPermissionTitle'), t('eventCard.calendarPermissionBody'));
+            return;
+          }
+        }
+        const notice = draft.notice ? t(draft.notice === 'all-day-draft' ? 'eventCard.calendarAllDayDraft' : 'eventCard.calendarDurationDraft') : '';
+        const result = await Calendar.createEventInCalendarAsync({
+          ...draft.event,
+          title: displayName,
+          location: [displayVenue, displayAddress].filter(Boolean).join(', '),
+          notes: [displayDescription, notice, event.time, eventUrl(event)].filter(Boolean).join('\n\n'),
+        });
+        if (result.action === 'saved') Alert.alert(t('eventCard.calendarAddedTitle'), t('eventCard.calendarAddedBody', { name: displayName }));
+      } catch (error) {
+        Alert.alert(t('eventCard.calendarErrorTitle'), t('eventCard.calendarAddFailed', { error: error.message }));
+      }
+    };
+    if (draft.notice) {
+      Alert.alert(t('eventCard.calendarReviewTitle'), t(draft.notice === 'all-day-draft' ? 'eventCard.calendarAllDayDraft' : 'eventCard.calendarDurationDraft'), [{ text: t('eventCard.calendarCancel'), style: 'cancel' }, { text: t('eventCard.calendarReview'), onPress: openDraft }]);
+    } else await openDraft();
   };
 
   const shareEvent = async () => {
@@ -221,13 +201,20 @@ export default function EventCard({ event, reminded, onToggleReminder, onOpen, c
         {displayDescription && (
           <Text style={styles.description}>{displayDescription}</Text>
         )}
-        {event.image && (
-          <TouchableOpacity accessibilityRole="link" accessibilityLabel={t('discovery.poster')} onPress={() => Linking.openURL(getImageUrl(event.image))}><Image
-            source={{ uri: getImageUrl(event.image) }}
-            style={styles.eventImage}
-            resizeMode="contain"
-            accessibilityLabel={`${displayName}`}
-          /><Text style={styles.linkText}>{t('discovery.poster')}</Text></TouchableOpacity>
+        {artworkPresent && (
+          <View>
+            {!artworkUrl || failedArtwork === artworkUrl ? <Text accessibilityLiveRegion="polite" style={styles.address}>{t('discovery.artworkUnavailable')}</Text> : <Image
+              source={{ uri: artworkUrl }}
+              style={styles.eventImage}
+              resizeMode="contain"
+              accessibilityLabel={localizedField(event, 'image_alt', locale) || displayName}
+              onError={artworkUnavailable}
+            />}
+            {artworkUrl && <TouchableOpacity accessibilityRole="link" accessibilityLabel={t('discovery.poster')} style={styles.artworkAction} onPress={() => Linking.openURL(artworkUrl)}><Text style={styles.linkText}>{t('discovery.poster')}</Text></TouchableOpacity>}
+            {event.image_credit && <Text style={styles.address}>{t('discovery.artworkCredit')} {event.image_credit}</Text>}
+            {event.image_rights && <Text style={styles.address}>{event.image_rights}</Text>}
+            {artworkSource && <TouchableOpacity accessibilityRole="link" accessibilityLabel={t('discovery.artworkSource')} style={styles.artworkAction} onPress={() => Linking.openURL(artworkSource)}><Text style={styles.linkText}>{t('discovery.artworkSource')}</Text></TouchableOpacity>}
+          </View>
         )}
         {event.organizer && <Text style={styles.address}>{event.organizer}</Text>}
         {[['source_url', 'discovery.source'], ['booking_url', 'discovery.booking']].map(([field, label]) => /^https?:\/\//i.test(event[field] || '') ? <TouchableOpacity key={field} accessibilityRole="link" style={{ paddingVertical: 12 }} onPress={() => Linking.openURL(event[field])}><Text>{t(label)}</Text></TouchableOpacity> : null)}
@@ -413,6 +400,11 @@ const styles = StyleSheet.create({
     color: colors.textLight,
     marginTop: 4,
     lineHeight: 20,
+  },
+  artworkAction: {
+    minHeight: 44,
+    paddingVertical: 12,
+    justifyContent: 'center',
   },
   eventImage: {
     width: '100%',

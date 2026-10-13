@@ -6,6 +6,7 @@ import React from 'react';
 import en from '../../i18n/strings.en.js';
 import pt from '../../i18n/strings.pt.js';
 import { primaryRoutes } from '../../utils/navigation.js';
+import { tabBarHeight } from '../../utils/tabLayout.js';
 const require = createRequire(import.meta.url);
 const { parseSync, transformSync } = require('@babel/core');
 const source = readFileSync(new URL('../../../App.js', import.meta.url), 'utf8');
@@ -23,5 +24,23 @@ for (const catalog of [en, pt]) test(`actual primary tabs have explicit localize
     assert.equal(screens[index].props.options.title, literal[index]);
     assert.equal(screens[index].props.options.tabBarAccessibilityLabel, t(key));
     assert.equal(screens[index].props.options.tabBarAccessibilityLabel, screens[index].props.options.title);
+  }
+});
+
+test('actual tab glyphs keep their fixed icon budget while labels retain uncapped scaling', () => {
+  const names = ['React', 'useLocale', 'useWindowDimensions', 'useSafeAreaInsets', 'primaryRoutes', 'Tab', 'HomeScreen', 'SpecialEventsScreen', 'VenuesScreen', 'SavedScreen', 'MoreScreen', 'Text', 'headerOptions', 'colors', 'tabBarHeight'];
+  for (const fontScale of [1, 2.353, 3]) for (const bottom of [0, 34]) {
+    const tree = new Function(...names, code + '\nreturn PrimaryTabs();')(React, () => ({ t: (key) => key }), () => ({ fontScale }), () => ({ bottom }), primaryRoutes, { Navigator: 'Navigator', Screen: 'Screen' }, 'Home', 'Events', 'Venues', 'Saved', 'More', 'Text', () => ({}), {}, tabBarHeight);
+    for (const route of Object.values(primaryRoutes)) {
+      const options = tree.props.screenOptions({ route: { name: route } });
+      const icon = options.tabBarIcon({ color: 'black', size: 24 });
+      const label = options.tabBarLabel({ children: 'Label', color: 'black' });
+      assert.equal(icon.props.allowFontScaling, false, 'decorative glyph cannot outgrow its reserved icon area');
+      assert.equal(icon.props.accessibilityElementsHidden, true);
+      assert.notEqual(label.props.allowFontScaling, false, 'readable label respects user text size');
+      assert.equal(label.props.maxFontSizeMultiplier, undefined);
+      assert.equal(label.props.numberOfLines, undefined);
+      assert.ok(options.tabBarStyle.height >= icon.props.style.fontSize + 2 * label.props.style.lineHeight * fontScale + 10 + bottom);
+    }
   }
 });
