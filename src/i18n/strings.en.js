@@ -186,7 +186,7 @@ export default
       "section": "Event Reminders",
       "leadTime": "Remind Me Before Event",
       "leadTimeDescription": "How long before an event to send the reminder notification",
-      "info": "Use Reminder on an event with a published future time."
+      "info": "Tap the bell to set a reminder. The event must have a future start time."
     },
     "notifications": {
     "reminderChannel": "Event reminders",
