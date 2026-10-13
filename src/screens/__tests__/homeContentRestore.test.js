@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import React from 'react';
+import pt from '../../i18n/strings.pt.js';
 import en from '../../i18n/strings.en.js';
 import * as data from '../../utils/data.js';
 import * as discovery from '../../utils/discovery.js';
@@ -57,4 +58,12 @@ test('Home retains descriptive destinations and three exact blog previews after 
   for (const post of posts.slice(0, 3)) { const preview = button(tree, post.title); assert.ok(text(preview).includes(data.formatPostDate(post.date, 'en'))); preview.props.onPress(); assert.deepEqual(calls.pop(), ['Blog', { screen: 'Post', params: { slug: post.slug, post } }]); }
   assert.ok(!rendered.includes(posts[3].title)); button(tree, home.t('home.links.allPosts')).props.onPress(); assert.deepEqual(calls.pop(), ['Blog']);
   const weekly = content.find(node => node.type === 'TouchableOpacity' && text(node) === home.t('tabs.weekly')); assert.ok(content.indexOf(weekly) < content.indexOf(cards[0])); weekly.props.onPress(); assert.deepEqual(calls.pop(), ['Weekly']);
+});
+
+for (const catalog of [en, pt]) test(`Home event tile uses the literal ${catalog === en ? 'Events' : 'Eventos'} label`, async () => {
+  const calls = []; const home = screen('../HomeScreen.js', catalog, { navigation: { navigate: (...args) => calls.push(args) } });
+  const content = nodes(await home.settle());
+  const tile = content.find(node => node.type === 'TouchableOpacity' && text(node).includes(home.t('home.buttons.specialEventsSubtitle')));
+  assert.ok(nodes(tile).some(node => node.type === 'Text' && node.props.children === (catalog === en ? 'Events' : 'Eventos')));
+  tile.props.onPress(); assert.deepEqual(calls, [['Events', { kind: 'event', range: 'all', resetFilters: true }]]);
 });

@@ -86,13 +86,13 @@ export default
       "p2": "This app helps you discover what's happening across Terceira: today's lineup, the week ahead, and venues worth knowing."
     },
     "sections": {
-      "specialEvents": "Upcoming special events",
+      "specialEvents": "Events",
       "blog": "From the blog"
     },
     "buttons": {
       "weekly": "Weekly Events",
       "weeklySubtitle": "Recurring entertainment",
-      "specialEvents": "Special Events",
+      "specialEvents": "Events",
       "specialEventsSubtitle": "What's on this week",
       "venues": "Venues",
       "venuesSubtitle": "Where to go",

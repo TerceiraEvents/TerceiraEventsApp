@@ -86,13 +86,13 @@ export default
       "p2": "Esta aplicação ajuda-te a descobrir o que se passa pela Terceira: o programa de hoje, a semana que se aproxima e os locais que vale a pena conhecer."
     },
     "sections": {
-      "specialEvents": "Próximos eventos especiais",
+      "specialEvents": "Eventos",
       "blog": "Do blog"
     },
     "buttons": {
       "weekly": "Eventos Semanais",
       "weeklySubtitle": "Diversão recorrente",
-      "specialEvents": "Eventos Especiais",
+      "specialEvents": "Eventos",
       "specialEventsSubtitle": "O que há esta semana",
       "venues": "Locais",
       "venuesSubtitle": "Onde ir",
