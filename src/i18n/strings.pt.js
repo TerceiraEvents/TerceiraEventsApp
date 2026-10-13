@@ -9,6 +9,8 @@ export default
 
     "localityPartial": "Nem todos os eventos têm localidade confirmada. Escolha Todos os locais para incluir os restantes.",
     "savedUnknown": "Não foi possível ler os planos guardados. Tente novamente antes de os alterar.",
+    "reminderStoredUnavailable": "Este lembrete guardado não pode ser agendado porque a hora publicada não está definida sem ambiguidade. Remova o pedido ou confirme com o organizador.",
+    "removeUnavailableReminder": "Remover pedido de lembrete indisponível",
     "reminderTimeUnknown": "É necessária uma hora publicada futura e sem ambiguidade para definir este lembrete. Não foi definido nenhum lembrete.",
     "reminderPermissionDenied": "As notificações não estão autorizadas. Não foi definido nenhum lembrete; os planos guardados continuam disponíveis.",
     "reminderUnknown": "Não foi possível ler o estado do lembrete. O evento e os planos continuam disponíveis.",

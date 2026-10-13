@@ -22,7 +22,7 @@ function safeArtworkUrl(value, relative = false) {
   } catch { return null; }
 }
 
-export default function EventCard({ event, reminded, onToggleReminder, onOpen, compact = false, calendarEnabled = Boolean(onToggleReminder) }) {
+export default function EventCard({ event, reminded, reminderUnavailable = false, onToggleReminder, onOpen, compact = false, calendarEnabled = Boolean(onToggleReminder) }) {
   const { t, locale } = useLocale();
   const [flagVisible, setFlagVisible] = useState(false);
   const [failedArtwork, setFailedArtwork] = useState(null);
@@ -153,11 +153,11 @@ export default function EventCard({ event, reminded, onToggleReminder, onOpen, c
           </TouchableOpacity>
           {onToggleReminder && (
             <TouchableOpacity
-              accessibilityRole="button" accessibilityLabel={t('discovery.reminder')} onPress={() => onToggleReminder(event)}
-              style={[styles.bellButton, reminded && styles.bellActive]}
+              accessibilityRole="button" accessibilityLabel={t(reminderUnavailable ? 'discovery.removeUnavailableReminder' : 'discovery.reminder')} onPress={() => onToggleReminder(event)}
+              style={[styles.bellButton, reminded && !reminderUnavailable && styles.bellActive]}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
-              <Text style={styles.bellIcon}>{reminded ? '\u{1F514}' : '\u{1F515}'}</Text>
+              <Text style={styles.bellIcon}>{reminded && !reminderUnavailable ? '\u{1F514}' : '\u{1F515}'}</Text>
             </TouchableOpacity>
           )}
         </View>
