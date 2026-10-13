@@ -16,7 +16,7 @@ const code = transformSync(source.slice(definition.start, definition.end), { bab
 for (const catalog of [en, pt]) test(`actual primary tabs have explicit localized spoken labels (${catalog === en ? 'EN' : 'PT'})`, () => {
   const t = (key) => key.split('.').reduce((value, part) => value[part], catalog);
   const names = ['React', 'useLocale', 'useWindowDimensions', 'useSafeAreaInsets', 'primaryRoutes', 'Tab', 'HomeScreen', 'SpecialEventsScreen', 'WeeklyScreen', 'VenuesScreen', 'MoreScreen'];
-  const tree = new Function(...names, code + '\nreturn PrimaryTabs();')(React, () => ({ t }), () => ({ fontScale: 1 }), () => ({ bottom: 0 }), primaryRoutes, { Navigator: 'Navigator', Screen: 'Screen' }, 'Home', 'Events', 'Weekly', 'Venues', 'More');
+  const tree = new Function(...names, code + '\nreturn PrimaryTabs();')(React, () => ({ t }), () => ({ fontScale: 1, width: 402 }), () => ({ bottom: 0 }), primaryRoutes, { Navigator: 'Navigator', Screen: 'Screen' }, 'Home', 'Events', 'Weekly', 'Venues', 'More');
   const screens = React.Children.toArray(tree.props.children);
   assert.equal(screens.length, 5);
   for (const [index, key] of ['tabs.home', 'discovery.explore', 'tabs.weekly', 'tabs.venues', 'discovery.more'].entries()) {
@@ -30,7 +30,7 @@ for (const catalog of [en, pt]) test(`actual primary tabs have explicit localize
 test('actual tab glyphs keep their fixed icon budget while labels retain uncapped scaling', () => {
   const names = ['React', 'useLocale', 'useWindowDimensions', 'useSafeAreaInsets', 'primaryRoutes', 'Tab', 'HomeScreen', 'SpecialEventsScreen', 'WeeklyScreen', 'VenuesScreen', 'SavedScreen', 'MoreScreen', 'Text', 'headerOptions', 'colors', 'tabBarHeight'];
   for (const fontScale of [1, 2.353, 3]) for (const bottom of [0, 34]) {
-    const tree = new Function(...names, code + '\nreturn PrimaryTabs();')(React, () => ({ t: (key) => key }), () => ({ fontScale }), () => ({ bottom }), primaryRoutes, { Navigator: 'Navigator', Screen: 'Screen' }, 'Home', 'Events', 'Weekly', 'Venues', 'Saved', 'More', 'Text', () => ({}), {}, tabBarHeight);
+    const tree = new Function(...names, code + '\nreturn PrimaryTabs();')(React, () => ({ t: (key) => key }), () => ({ fontScale, width: 402 }), () => ({ bottom }), primaryRoutes, { Navigator: 'Navigator', Screen: 'Screen' }, 'Home', 'Events', 'Weekly', 'Venues', 'Saved', 'More', 'Text', () => ({}), {}, tabBarHeight);
     for (const route of Object.values(primaryRoutes)) {
       const options = tree.props.screenOptions({ route: { name: route } });
       const icon = options.tabBarIcon({ color: 'black', size: 24 });
