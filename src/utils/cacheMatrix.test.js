@@ -40,6 +40,7 @@ test('legacy disk cache remains usable with explicitly unknown fetch time', asyn
   disk.set(cacheKey, '- name: Old published record\n  id: one\n  date: 2025-01-01\n');
   state.failure = new Error('Offline');
   assert.equal((await fetchSpecialEvents())[0].name, 'Old published record');
+  await fetchSpecialEvents(true);
   assert.equal(getSpecialFeedState().status, 'cached');
   assert.equal(getSpecialFeedState().fetchedAt, null);
   assert.equal(getSpecialFeedState().cacheTimeUnknown, true);
@@ -94,6 +95,7 @@ test('partial legacy cache retains valid records and reports rejection count', a
   disk.set(cacheKey, '- name: Published\n  id: one\n- name: 1984\n');
   state.failure = new Error('Offline');
   assert.equal((await fetchSpecialEvents()).length, 1);
+  await fetchSpecialEvents(true);
   assert.equal(getSpecialFeedState().rejectedRecords, 1);
   assert.equal(getSpecialFeedState().cacheTimeUnknown, true);
 }));
@@ -101,6 +103,7 @@ test('partial legacy cache retains valid records and reports rejection count', a
 test('empty disk cache is a valid cached dataset, while unreadable cache is an error', async () => fixture(async (state, disk) => {
   disk.set(cacheKey, '[]'); state.failure = new Error('Offline');
   assert.deepEqual(await fetchSpecialEvents(), []);
+  await fetchSpecialEvents(true);
   assert.equal(getSpecialFeedState().status, 'cached');
   clearCache(); disk.set(cacheKey, '[unterminated');
   assert.deepEqual(await fetchSpecialEvents(), []);
