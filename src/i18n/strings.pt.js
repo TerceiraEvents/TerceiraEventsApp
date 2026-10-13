@@ -1,6 +1,7 @@
 export default
 {
   "discovery": {
+    "savedFiltered": "Nenhum evento guardado corresponde a estes filtros.",
     "result": "resultado",
     "reset": "Limpar filtros",
     "otherFilters": "Os outros filtros também se aplicam. Usa o Arquivo para eventos guardados que já terminaram.",

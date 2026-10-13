@@ -16,13 +16,14 @@ function nodes(element) { return [element, ...React.Children.toArray(element?.pr
 
 for (const catalog of [en, pt]) test(`actual Saved events filter and result count (${catalog === en ? 'EN' : 'PT'})`, async () => {
   const state = [], effects = [], focus = [];
+  let publicationUpdate = null;
   let cursor = 0, initial = true, saved = [], denied = false;
   const events = [{ id: 'keep', name: 'Saved free', date: '2099-01-01', tags: ['free'] }, { id: 'other', name: 'Unsaved free', date: '2099-01-01', tags: ['free'] }, { id: 'paid', name: 'Saved paid', date: '2099-01-01', tags: [] }];
   saved = [{ id: 'keep', event: events[0] }, { id: 'paid', event: events[2] }];
   const react = { ...React, useState: (value) => { const index = cursor++; if (!(index in state)) state[index] = value; return [state[index], (next) => { state[index] = typeof next === 'function' ? next(state[index]) : next; }]; }, useEffect: (effect) => { if (initial) effects.push(effect); }, useCallback: (value) => value, useMemo: (compute) => compute() };
   const native = Object.fromEntries(['View', 'Text', 'FlatList', 'TouchableOpacity', 'RefreshControl', 'TextInput', 'Modal', 'Pressable', 'ScrollView'].map((name) => [name, name]));
   native.StyleSheet = { create: (styles) => styles };
-  const imports = { '../hooks/useSpecialFeed': () => {}, '../utils/eventIdentity': identity, react, 'react-native': native, '@react-navigation/native': { useFocusEffect: (effect) => { if (initial) focus.push(effect); } }, '../utils/storage': { getSavedEvents: async () => { if (denied) throw new Error('Unreadable'); return saved; } }, '../utils/data': { ...data, fetchSpecialEvents: async () => events, getSpecialFeedState: () => ({ status: 'current' }) }, '../utils/discovery': discovery, '../utils/tags': tags, '../utils/theme': theme, '../utils/eventRoute': {}, '../utils/notifications': {}, '../components/EventCard': () => null, '../components/LoadingView': 'Loading', '../i18n': { useLocale: () => ({ t: (key) => ['discovery.result', 'discovery.results'].includes(key) ? catalog.discovery[key.split('.')[1]] : key }) } };
+  const imports = { '../hooks/useSpecialFeed': (callback) => { publicationUpdate = callback; }, '../utils/eventIdentity': identity, react, 'react-native': native, '@react-navigation/native': { useFocusEffect: (effect) => { if (initial) focus.push(effect); } }, '../utils/storage': { getSavedEvents: async () => { if (denied) throw new Error('Unreadable'); return saved; } }, '../utils/data': { ...data, fetchSpecialEvents: async () => events, getSpecialFeedState: () => ({ status: 'current' }) }, '../utils/discovery': discovery, '../utils/tags': tags, '../utils/theme': theme, '../utils/eventRoute': {}, '../utils/notifications': {}, '../components/EventCard': () => null, '../components/LoadingView': 'Loading', '../i18n': { useLocale: () => ({ t: (key) => ['discovery.result', 'discovery.results'].includes(key) ? catalog.discovery[key.split('.')[1]] : key }) } };
   const code = transformSync(readFileSync(new URL('../SpecialEventsScreen.js', import.meta.url), 'utf8'), { babelrc: false, configFile: false, plugins: ['@babel/plugin-transform-react-jsx', '@babel/plugin-transform-modules-commonjs'] }).code;
   const module = { exports: {} };
   new Function('require', 'module', 'exports', code)((name) => { assert.ok(name in imports, name); return imports[name]; }, module, module.exports);
@@ -31,6 +32,7 @@ for (const catalog of [en, pt]) test(`actual Saved events filter and result coun
   render(); effects.forEach((effect) => effect()); focus.forEach((effect) => effect()); await settle();
   const find = (tree, label) => nodes(tree).find((node) => node?.type === 'TouchableOpacity' && nodes(node).some((child) => child?.type === 'Text' && child.props.children === label));
   let tree = render();
+  const emptyLabel = (value) => nodes(nodes(value).find((node) => node?.type === 'FlatList').props.ListEmptyComponent).filter((node) => node?.type === 'Text').map((node) => React.Children.toArray(node.props.children).join('')).join(' ');
   const checkbox = find(tree, 'discovery.saved');
   assert.ok(checkbox, 'Saved events is a visible filter');
   assert.equal(checkbox.props.accessibilityRole, 'checkbox');
@@ -40,6 +42,9 @@ for (const catalog of [en, pt]) test(`actual Saved events filter and result coun
   find(tree, 'discovery.free').props.onPress(); tree = render();
   assert.deepEqual(nodes(tree).find((node) => node?.type === 'FlatList').props.data.map((event) => event.id), ['keep']);
   assert.ok(nodes(tree).some((node) => React.Children.toArray(node.props?.children).join('') === (catalog === en ? '1 result' : '1 resultado')));
+  find(tree, 'discovery.family').props.onPress(); tree = render();
+  assert(emptyLabel(tree).includes('discovery.savedFiltered'), 'known saved IDs with unmatched facets have a Saved-specific empty state');
+  find(tree, 'discovery.family').props.onPress(); tree = render();
   saved = [{ id: 'missing', event: { id: 'missing', name: 'Unavailable snapshot', date: '2099-01-01', tags: ['free'] } }];
   focus.forEach((effect) => effect()); await settle(); tree = render();
   const list = nodes(tree).find((node) => node?.type === 'FlatList');
@@ -47,7 +52,16 @@ for (const catalog of [en, pt]) test(`actual Saved events filter and result coun
   assert.ok(nodes(list.props.renderItem({ item: list.props.data[0] })).some((node) => node.props?.children === 'discovery.unavailable'));
   saved = []; focus.forEach((effect) => effect()); await settle(); tree = render();
   assert.deepEqual(nodes(tree).find((node) => node?.type === 'FlatList').props.data, [], 'return after unsaving refreshes persisted IDs');
-  denied = true; focus.forEach((effect) => effect()); await settle(); tree = render();
+  assert(emptyLabel(tree).includes('discovery.savedEmpty'));
+  publicationUpdate(events, {status:'stored',refreshing:true}); tree=render();
+  assert(emptyLabel(tree).includes('discovery.refreshing'), 'publication refresh keeps the empty state neutral');
+  publicationUpdate(events, {status:'current'}); tree=render();
+  denied = true; focus.forEach((effect) => effect()); tree = render();
+  assert(emptyLabel(tree).includes('discovery.loadingSaved'));
+  assert(!emptyLabel(tree).includes('specialEvents.empty.upcoming'));
+  await settle(); tree = render();
+  assert(emptyLabel(tree).includes('discovery.savedUnknown'));
+  assert(!emptyLabel(tree).includes('specialEvents.empty.upcoming'));
   assert.ok(nodes(tree).some((node) => React.Children.toArray(node.props?.children).join('') === 'discovery.savedUnknown · discovery.retry'), 'unreadable storage has explicit feedback');
   find(tree, 'discovery.reset').props.onPress(); tree = render();
   assert.equal(find(tree, 'discovery.saved').props.accessibilityState.checked, false);

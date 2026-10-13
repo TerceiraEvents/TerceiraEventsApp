@@ -1,6 +1,7 @@
 export default
 {
   "discovery": {
+    "savedFiltered": "No saved events match these filters.",
     "result": "result",
     "reset": "Clear filters",
     "otherFilters": "Other filters also apply. Use Archive for ended saved events.",

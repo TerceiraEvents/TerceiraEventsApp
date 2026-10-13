@@ -229,6 +229,14 @@ export default function SpecialEventsScreen({ navigation, route }) {
             <Text style={styles.emptyText}>
               {feedState.refreshing
                 ? t('discovery.refreshing')
+                : savedOnly && savedReadError
+                  ? t('discovery.savedUnknown')
+                : savedOnly && savedRecords === null
+                  ? t('discovery.loadingSaved')
+                : savedOnly && savedRecords.length === 0
+                  ? t('discovery.savedEmpty')
+                : savedOnly
+                  ? t('discovery.savedFiltered')
                 : search || selectedTag || locality || free || family
                 ? t('specialEvents.empty.filtered')
                 : range === 'archive'
