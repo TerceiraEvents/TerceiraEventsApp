@@ -16,6 +16,10 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.terceiraevents.app",
       "buildNumber": "1",
+      "associatedDomains": [
+        "applinks:eventosterceira.pt",
+        "applinks:www.eventosterceira.pt"
+      ],
       "infoPlist": {
         "CFBundleAllowMixedLocalizations": true,
         "ITSAppUsesNonExemptEncryption": false
@@ -28,7 +32,32 @@
       },
       "edgeToEdgeEnabled": true,
       "package": "com.terceiraevents.app",
-      "versionCode": 4
+      "versionCode": 4,
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            { "scheme": "https", "host": "eventosterceira.pt", "pathPrefix": "/events" },
+            { "scheme": "https", "host": "eventosterceira.pt", "pathPrefix": "/weekly" },
+            { "scheme": "https", "host": "eventosterceira.pt", "pathPrefix": "/special" },
+            { "scheme": "https", "host": "eventosterceira.pt", "pathPrefix": "/saved" },
+            { "scheme": "https", "host": "eventosterceira.pt", "pathPrefix": "/pt/events" },
+            { "scheme": "https", "host": "eventosterceira.pt", "pathPrefix": "/pt/weekly" },
+            { "scheme": "https", "host": "eventosterceira.pt", "pathPrefix": "/pt/special" },
+            { "scheme": "https", "host": "eventosterceira.pt", "pathPrefix": "/pt/saved" },
+            { "scheme": "https", "host": "www.eventosterceira.pt", "pathPrefix": "/events" },
+            { "scheme": "https", "host": "www.eventosterceira.pt", "pathPrefix": "/weekly" },
+            { "scheme": "https", "host": "www.eventosterceira.pt", "pathPrefix": "/special" },
+            { "scheme": "https", "host": "www.eventosterceira.pt", "pathPrefix": "/saved" },
+            { "scheme": "https", "host": "www.eventosterceira.pt", "pathPrefix": "/pt/events" },
+            { "scheme": "https", "host": "www.eventosterceira.pt", "pathPrefix": "/pt/weekly" },
+            { "scheme": "https", "host": "www.eventosterceira.pt", "pathPrefix": "/pt/special" },
+            { "scheme": "https", "host": "www.eventosterceira.pt", "pathPrefix": "/pt/saved" }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
