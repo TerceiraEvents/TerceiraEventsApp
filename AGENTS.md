@@ -64,13 +64,17 @@ weaken contrast, or introduce jargon without a demonstrated benefit.
   (`src/utils/coldCache.test.js`, `src/utils/cacheMatrix.test.js`).
 - Resolved-color, cascade, and contrast checks apply to rendered text;
   token presence alone proves nothing about visible labels.
-- Accessibility: generated focus captions demonstrate focused utterances
-  and activation only — not audio pronunciation or automatic announcements.
-  Simulator checks never establish physical-device screen-reader speech.
-  Record the boundary on every such claim.
-- Calendar: inspect or cancel drafts; persisting a draft is a separate,
-  explicitly authorized step. A generic offline calendar editor needs no
-  account; account-specific onboarding is a separate check.
+- Accessibility: generated captions can establish the focused utterance
+  strings and activation actually observed — but not audio pronunciation,
+  and automatic status announcements still need an actual
+  assistive-technology run. Simulator checks never establish
+  physical-device screen-reader speech. Record the boundary on every such
+  claim.
+- Calendar: verify calendar drafts and persistence within the user's
+  authorized task scope, distinguish editor-field checks from actual saved
+  events, and clean only exact disposable QA records. A generic offline
+  calendar editor needs no account; account-specific onboarding is a
+  separate check.
 - Production HTTPS app links require a real Apple Team ID, release
   certificate fingerprints, native association configuration, and domain
   files. Custom-scheme success is a separate, weaker result; never imply
