@@ -421,7 +421,7 @@ export const venues = [
   {
     name: 'Tasca do Camões',
     address: 'Rua Da Rocha 64, Angra do Heroísmo',
-    description: 'Weekly schedule:\n• Wednesday — Karaoke Night\n• Thursday — Latin Night\n\nAlso hosts live concerts and special events throughout the year.',
+    description: 'Weekly schedule:\n• Wednesday — Karaoke Night\n\nAlso hosts live concerts and special events throughout the year.',
     mapQuery: 'Tasca+do+Camões+Angra+do+Heroísmo',
   },
   {

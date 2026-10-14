@@ -10,6 +10,8 @@ import * as navigation from '../../utils/navigation.js';
 import * as tags from '../../utils/tags.js';
 import * as theme from '../../utils/theme.js';
 const require = createRequire(import.meta.url);
+// Cache-ready records and the screen day share a deterministic island date.
+const cachedFeedDay = '2026-10-13';
 const { transformSync } = require('@babel/core');
 function nodes(element) { return [element, ...React.Children.toArray(element?.props?.children).flatMap(nodes)]; }
 
@@ -19,7 +21,7 @@ for (const screen of ['HomeScreen', 'SpecialEventsScreen', 'EventDetailScreen'])
     const react = { ...React, useRef: value => ({ current: value }), useState: (initial) => { const index = cursor++; if (!(index in state)) state[index] = initial; return [state[index], (value) => { state[index] = value; }]; }, useCallback: (callback) => callback, useEffect: () => {}, useMemo: (callback) => callback() };
     const native = Object.fromEntries(['View', 'Text', 'ScrollView', 'FlatList', 'TouchableOpacity', 'RefreshControl', 'TextInput', 'Modal', 'Pressable'].map((name) => [name, name]));
     native.StyleSheet = { create: (styles) => styles };
-    const imports = { '../utils/posts': { fetchPosts: async () => [] }, '../utils/i18nFields': { localizedField: (item, field) => item[field] }, '../components/CategoryPill': 'CategoryPill', './fontHeader': { fontHeaderOptions: (options) => options }, './src/navigation/fontHeader': { fontHeaderOptions: (options) => options }, '../components/TextInput': 'TextInput', './TextInput': 'TextInput', '../utils/nativeFontMetrics': { hasNativeFontMetrics: false }, '../components/markdownRules': { markdownRules: {} }, '../components/Text': 'Text', './Text': 'Text', './src/components/Text': { __esModule: true, default: 'Text', TextProvider: 'TextProvider' }, '@react-navigation/native': { useFocusEffect: () => {} }, '../utils/storage': { getSavedEvents: async () => [] }, react, 'react-native': native, '../hooks/useAzoresDay': () => '2026-10-13', '../hooks/useSpecialFeed': (callback) => subscriptions.push(callback), '../utils/data': data, '../utils/eventIdentity': identity, '../utils/discovery': discovery, '../utils/navigation': navigation, '../utils/tags': tags, '../utils/theme': theme, '../components/EventCard': 'EventCard', '../components/LoadingView': 'LoadingView', '../i18n': { useLocale: () => ({ t: (key) => key }) } };
+    const imports = { '../utils/posts': { fetchPosts: async () => [] }, '../utils/i18nFields': { localizedField: (item, field) => item[field] }, '../components/CategoryPill': 'CategoryPill', './fontHeader': { fontHeaderOptions: (options) => options }, './src/navigation/fontHeader': { fontHeaderOptions: (options) => options }, '../components/TextInput': 'TextInput', './TextInput': 'TextInput', '../utils/nativeFontMetrics': { hasNativeFontMetrics: false }, '../components/markdownRules': { markdownRules: {} }, '../components/Text': 'Text', './Text': 'Text', './src/components/Text': { __esModule: true, default: 'Text', TextProvider: 'TextProvider' }, '@react-navigation/native': { useFocusEffect: () => {} }, '../utils/storage': { getSavedEvents: async () => [] }, react, 'react-native': native, '../hooks/useAzoresDay': () => cachedFeedDay, '../hooks/useSpecialFeed': (callback) => subscriptions.push(callback), '../utils/data': data, '../utils/eventIdentity': identity, '../utils/discovery': discovery, '../utils/navigation': navigation, '../utils/tags': tags, '../utils/theme': theme, '../components/EventCard': 'EventCard', '../components/LoadingView': 'LoadingView', '../i18n': { useLocale: () => ({ t: (key) => key }) } };
     const code = transformSync(readFileSync(new URL(`../${screen}.js`, import.meta.url), 'utf8'), { babelrc: false, configFile: false, plugins: ['@babel/plugin-transform-react-jsx', '@babel/plugin-transform-modules-commonjs'] }).code;
     const module = { exports: {} };
     new Function('require', 'module', 'exports', code)((name) => imports[name] || {}, module, module.exports);
@@ -27,7 +29,7 @@ for (const screen of ['HomeScreen', 'SpecialEventsScreen', 'EventDetailScreen'])
     const render = () => { cursor = 0; return module.exports.default(props); };
     render();
     assert.equal(subscriptions.length, 1);
-    const event = { id: 'one', name: 'Cached published record', date: data.todayAzores() };
+    const event = { id: 'one', name: 'Cached published record', date: cachedFeedDay };
     subscriptions[0]([event], { status: 'stored', refreshing: true, cacheTimeUnknown: true });
     const tree = render(); const all = nodes(tree);
     assert.notEqual(tree.type, 'LoadingView');

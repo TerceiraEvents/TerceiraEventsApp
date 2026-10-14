@@ -4,6 +4,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  venues,
   matchesSearchQuery,
   matchesTag,
   applyEventFilters,
@@ -489,4 +490,13 @@ test('applyEventFilters: original array is not mutated', () => {
     selectedTag: 'kid-friendly',
   });
   assert.deepEqual(sample, before);
+});
+
+
+test('Tasca bundled fallback retains karaoke without an unsupported Thursday recurrence', () => {
+  const tasca = venues.find((venue) => venue.name === 'Tasca do Camões');
+  assert.ok(tasca);
+  assert.match(tasca.description, /Wednesday — Karaoke Night/);
+  assert.doesNotMatch(tasca.description, /Thursday|Latin Night|Noite Latina/);
+  assert.match(tasca.description, /Also hosts live concerts and special events/);
 });
