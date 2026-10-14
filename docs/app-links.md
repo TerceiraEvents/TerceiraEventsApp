@@ -1,12 +1,16 @@
 # HTTPS app links
 
-The app opens the public website's links directly. `App.js` registers the
-prefixes `https://eventosterceira.pt` and `https://www.eventosterceira.pt`
-alongside the `terceiraevents://` custom scheme, and `src/navigation/linking.js`
-routes `/events/?id=<id>`, `/weekly/`, `/special/`, `/saved/` and their `/pt/`
-variants to the matching screens. `src/utils/eventLinks.js` accepts only those
-origins; unrelated hosts return no event ID. Website paths with no app
-destination (Venues, Blog, Contribute, Resources) stay in the browser.
+The app declares the native side of HTTPS app links for the public site.
+Operating-system delivery is not active yet: it requires the hosted domain
+association files described below and a new native build.
+
+`App.js` registers the prefixes `https://eventosterceira.pt` and
+`https://www.eventosterceira.pt` alongside the `terceiraevents://` custom
+scheme, and `src/navigation/linking.js` routes `/events/?id=<id>`,
+`/weekly/`, `/special/` and their `/pt/` variants to the matching screens.
+`src/utils/eventLinks.js` accepts only those origins; unrelated hosts return
+no event ID. Website paths with no app destination — including `/saved/` and
+`/pt/saved/`, which are browser redirects to Events — stay in the browser.
 
 ## Declared native configuration
 
@@ -16,11 +20,12 @@ destination (Venues, Blog, Contribute, Resources) stay in the browser.
   `applinks:www.eventosterceira.pt`. No Apple Team ID appears here; the team
   identity belongs to the hosted association file.
 - `android.intentFilters` declares one `VIEW` filter with `autoVerify: true`
-  and `BROWSABLE`/`DEFAULT` categories covering `https` data entries for each
-  linked path prefix on both hosts.
+  and `BROWSABLE`/`DEFAULT` categories whose `https` data entries use exact
+  `path` values — both the trailing-slash and bare spellings — for the linked
+  routes on both hosts, so unrelated paths like `/events-other/` never match.
 
-The custom scheme remains registered and unchanged; HTTPS declarations are
-additive.
+The `terceiraevents://` scheme stays registered; opening it resolves the same
+routes including the Saved events filter.
 
 ## Remaining real inputs
 
@@ -45,8 +50,8 @@ universal links do not activate until the AASA is fetched at install/update.
 ## Verification that requires devices
 
 `expo export` validates the JavaScript bundle only. Association behavior
-requires a new native build containing these declarations (the e7a57b2 task
-artifacts predate them) and a physical or emulator check per platform:
+requires a new native build containing these declarations and a physical or
+emulator check per platform:
 
 - iOS: install the build, host the AASA, open `https://eventosterceira.pt/events/?id=<id>` from Notes/Safari and confirm the app opens the event.
 - Android: install the build, host `assetlinks.json`, check `adb shell pm get-app-links com.terceiraevents.app` shows a verified domain, then open the same URL.
