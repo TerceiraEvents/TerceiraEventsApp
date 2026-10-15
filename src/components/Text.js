@@ -1,5 +1,5 @@
-import React, { createContext, forwardRef, useContext } from 'react';
-import { Text as NativeText, StyleSheet, useWindowDimensions } from 'react-native';
+import React, { createContext, forwardRef, useContext, useEffect } from 'react';
+import { AccessibilityInfo, Platform, Text as NativeText, StyleSheet, useWindowDimensions } from 'react-native';
 import { fontStyles } from '../utils/fontMetrics';
 import { hasNativeFontMetrics, scaledFontSize } from '../utils/nativeFontMetrics';
 
@@ -17,8 +17,21 @@ export function useFontScale() {
   return useContext(FontScaleContext);
 }
 
+function textContent(children) {
+  return React.Children.toArray(children).map((child) => (typeof child === 'string' || typeof child === 'number' ? String(child) : '')).join('');
+}
+
 /** Refreshes scaling text while preserving props/ref and the platform's font curve. */
 const Text = forwardRef(function Text(props, ref) {
+  // iOS has no live-region concept; VoiceOver hears content changes through a
+  // queued announcement. A short delay coalesces fast status updates, and the
+  // effect cleanup drops pending work on unmount.
+  const announcement = props.accessibilityLiveRegion ? textContent(props.children) : '';
+  useEffect(() => {
+    if (Platform.OS !== 'ios' || !announcement) return undefined;
+    const timer = setTimeout(() => AccessibilityInfo.announceForAccessibilityWithOptions(announcement, { queue: true }), 350);
+    return () => clearTimeout(timer);
+  }, [announcement]);
   const fontScale = useFontScale();
   const inherited = useContext(FontStyleContext);
   const resolved = StyleSheet.flatten(props.style) || {};
