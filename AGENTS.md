@@ -79,6 +79,11 @@ weaken contrast, or introduce jargon without a demonstrated benefit.
   certificate fingerprints, native association configuration, and domain
   files. Custom-scheme success is a separate, weaker result; never imply
   production association from debug artifacts.
+- Declare only the canonical shared-URL host (`eventosterceira.pt`)
+  natively: Android verification requires association data for every
+  declared host, and the `www` alias only redirects to the apex. JavaScript
+  link parsing may still accept `www` website URLs; OS registration is
+  narrower than accepted input.
 - Keep task tools and data isolated; restore device settings
   (accessibility, font scale, locale, home state) to baseline; remove only
   exact disposable QA records.

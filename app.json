@@ -17,8 +17,7 @@
       "bundleIdentifier": "com.terceiraevents.app",
       "buildNumber": "1",
       "associatedDomains": [
-        "applinks:eventosterceira.pt",
-        "applinks:www.eventosterceira.pt"
+        "applinks:eventosterceira.pt"
       ],
       "infoPlist": {
         "CFBundleAllowMixedLocalizations": true,
@@ -49,19 +48,7 @@
             { "scheme": "https", "host": "eventosterceira.pt", "path": "/pt/weekly" },
             { "scheme": "https", "host": "eventosterceira.pt", "path": "/pt/weekly/" },
             { "scheme": "https", "host": "eventosterceira.pt", "path": "/pt/special" },
-            { "scheme": "https", "host": "eventosterceira.pt", "path": "/pt/special/" },
-            { "scheme": "https", "host": "www.eventosterceira.pt", "path": "/events" },
-            { "scheme": "https", "host": "www.eventosterceira.pt", "path": "/events/" },
-            { "scheme": "https", "host": "www.eventosterceira.pt", "path": "/weekly" },
-            { "scheme": "https", "host": "www.eventosterceira.pt", "path": "/weekly/" },
-            { "scheme": "https", "host": "www.eventosterceira.pt", "path": "/special" },
-            { "scheme": "https", "host": "www.eventosterceira.pt", "path": "/special/" },
-            { "scheme": "https", "host": "www.eventosterceira.pt", "path": "/pt/events" },
-            { "scheme": "https", "host": "www.eventosterceira.pt", "path": "/pt/events/" },
-            { "scheme": "https", "host": "www.eventosterceira.pt", "path": "/pt/weekly" },
-            { "scheme": "https", "host": "www.eventosterceira.pt", "path": "/pt/weekly/" },
-            { "scheme": "https", "host": "www.eventosterceira.pt", "path": "/pt/special" },
-            { "scheme": "https", "host": "www.eventosterceira.pt", "path": "/pt/special/" }
+            { "scheme": "https", "host": "eventosterceira.pt", "path": "/pt/special/" }
           ],
           "category": ["BROWSABLE", "DEFAULT"]
         }
