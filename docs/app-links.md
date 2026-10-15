@@ -3,8 +3,8 @@
 The app declares the native side of HTTPS app links for the public site.
 The hosted association files are live on `eventosterceira.pt`; activating
 operating-system delivery still requires the native declarations below in a
-new release build and, on iOS, the Associated Domains capability enabled on
-the App ID (pending in the Apple Developer portal at the time of writing).
+new release build and, on iOS, a provisioning profile carrying the
+Associated Domains entitlement.
 
 `App.js` registers the prefixes `https://eventosterceira.pt` and
 `https://www.eventosterceira.pt` alongside the `terceiraevents://` custom
@@ -33,9 +33,9 @@ Only the canonical `eventosterceira.pt` host is registered natively. The
 matching `assetlinks.json` for every declared host on Android 11 (API 30) and
 lower, so declaring `www` would make verification fail. Shared URLs already
 use the canonical host (`eventUrl` in `src/utils/eventIdentity.js`), and
-`www` URLs keep working as a normal website alias: they redirect to the apex
-and the JavaScript linking prefixes and parser still accept them, so a pasted
-`www` link inside the app resolves the same routes.
+`www` URLs keep working as a normal website alias: they redirect to the apex,
+and the JavaScript linking prefixes and `eventIdFromUrl` still accept any
+`www` URL handed to the app's URL handling, resolving the same routes.
 
 The `terceiraevents://` scheme stays registered; opening it resolves the same
 routes including the Saved events filter.
