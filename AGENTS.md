@@ -79,6 +79,16 @@ weaken contrast, or introduce jargon without a demonstrated benefit.
   certificate fingerprints, native association configuration, and domain
   files. Custom-scheme success is a separate, weaker result; never imply
   production association from debug artifacts.
+- Apple capability changes require matching provisioning-profile contents
+  in both the Apple portal and EAS. Check the exact app identifier, granted
+  entitlement and existing distribution certificate before replacing an
+  authorized profile. Keep certificate and private-key changes separate.
+- A successful build-dispatch workflow establishes submission to EAS.
+  Check the completed native EAS build itself before reporting build
+  success; preserve its source commit, profile and build number.
+- Native UI verification records the actual executed test count. An empty
+  suite proves no behavior. Use observed system-editor roles and identifiers,
+  and inspect a failed locator before treating it as an application defect.
 - Declare only the canonical shared-URL host (`eventosterceira.pt`)
   natively: Android verification requires association data for every
   declared host, and the `www` alias only redirects to the apex. JavaScript
