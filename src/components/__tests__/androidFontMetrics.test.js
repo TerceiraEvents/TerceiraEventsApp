@@ -19,7 +19,7 @@ function fixture(available = true) {
   const scaledFontSize = (size) => { calls.push(size); return scale === 1 ? size : curve[size]; };
   const flatten = (style) => Array.isArray(style) ? Object.assign({}, ...style.map(flatten)) : style || {};
   const native = { Text: 'NativeText', TextInput: 'NativeInput', StyleSheet: { flatten }, useWindowDimensions: () => ({ fontScale: scale }) };
-  const react = { ...React, createContext: (value) => ({ value, Provider: 'Provider' }), forwardRef: (render) => render, useContext: (context) => typeof context.value === 'number' ? scale : inherited };
+  const react = { ...React, createContext: (value) => ({ value, Provider: 'Provider' }), forwardRef: (render) => render, useContext: (context) => typeof context.value === 'number' ? scale : inherited, useEffect: () => {} };
   const metrics = { hasNativeFontMetrics: available, scaledFontSize };
   const text = load('../Text.js', { react, 'react-native': native, '../utils/fontMetrics': fontMetrics, '../utils/nativeFontMetrics': metrics });
   const input = load('../TextInput.js', { react, 'react-native': native, './Text': text, '../utils/fontMetrics': fontMetrics, '../utils/nativeFontMetrics': metrics }).default;

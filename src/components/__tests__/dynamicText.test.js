@@ -16,7 +16,7 @@ function load(path, imports) {
 }
 function fixture() {
   let scale = 1; let subscriptions = 0;
-  const react = { ...React, createContext: (value) => ({ Provider: 'FontScaleProvider', value }), forwardRef: (render) => render, useContext: (context) => typeof context.value === 'number' ? scale : context.value };
+  const react = { ...React, createContext: (value) => ({ Provider: 'FontScaleProvider', value }), forwardRef: (render) => render, useContext: (context) => typeof context.value === 'number' ? scale : context.value, useEffect: () => {} };
   const native = { StyleSheet: { flatten: (style) => style }, Text: 'NativeText', useWindowDimensions: () => { subscriptions++; return { fontScale: scale }; } };
   const text = load('../Text.js', { react, 'react-native': native, '../utils/fontMetrics': metrics, '../utils/nativeFontMetrics': { hasNativeFontMetrics: false } });
   return { text, setScale: (value) => { scale = value; }, subscriptions: () => subscriptions };
